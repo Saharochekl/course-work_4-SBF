@@ -1,0 +1,23 @@
+requires 1.3.0
+cd "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work/data/siril_seq/b3"
+
+# подчистить кеш рег/статистики
+seqclean b3_ -reg -stat
+
+# ВАРИАНТ A: кадры SW (nrca1–4 / nrcb1–4)
+#   пиксель 18 µm, эквив. фокус ~119767 мм → sampling ~0.031″/px
+#   если у тебя тут LW, см. вариант B ниже.
+#seqplatesolve b3_ -downscale -order=3 -radius=0.3 -catalog=gaia -pixelsize=18 -focal=119767
+
+# ВАРИАНТ B (если работаешь с nrcalong): замени строку выше на:
+# seqplatesolve b3_ -downscale -order=3 -radius=0.3 -catalog=gaia -pixelsize=18 -focal=58933
+
+# Альтернатива при упрямом провале: локальный astrometry.net (слепой режим)
+seqplatesolve b3_ -localasnet -blindpos -blindres -pixelsize=18 -focal=119767
+
+# применить сохранённые трансформации, расширив холст
+seqapplyreg b3_ -framing=max -prefix=reg_
+
+# стек всей площади
+stack reg_b3_ mean -norm=addscale -maximize -out=b3_mosaic.fit
+quit
