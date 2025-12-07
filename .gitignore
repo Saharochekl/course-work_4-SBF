@@ -1,0 +1,15 @@
+*.a
+*.o
+*.csv.gz
+*.tar
+*.gz
+*.zip
+*.vot
+*.fits
+*.toc
+*.out
+*.log
+*.aux
+.venv
+*.png
+*.seq
