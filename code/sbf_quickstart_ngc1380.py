@@ -13,6 +13,39 @@ from photutils.isophote import EllipseGeometry, Ellipse, build_ellipse_model
 import stpsf                                    # PSF под JWST файл
 from numpy.fft import rfft2, rfftfreq, fftshift
 
+
+def inpaint_for_isophote(img_c, valid_c):
+    """
+    Заполнение больших NaN / дыр для задачи аппроксимации изофот.
+    ВАЖНО: это используется ТОЛЬКО для подгонки гладкой модели галактики.
+    Для SBF-статистики по остаткам продолжаем использовать исходный img_c.
+    """
+    from astropy.convolution import Gaussian2DKernel, interpolate_replace_nans
+
+    arr = img_c.copy()
+    # всё, что заведомо невалидно, считаем NaN
+    arr[~valid_c] = np.nan
+
+    nan0 = int(np.isnan(arr).sum())
+    total = arr.size
+    print(f"[INPAINT] start: {nan0} NaNs из {total} пикселей ({100*nan0/total:.2f}%) в вырезке")
+
+    if nan0 == 0:
+        return arr
+
+    # последовательно увеличиваем размер ядра, чтобы перешить большие дыры
+    for fwhm in (7.0, 15.0, 25.0, 40.0, 60.0, 100.0, 150.0, 200.0):
+        ker = Gaussian2DKernel(fwhm)
+        arr = interpolate_replace_nans(arr, ker)
+        nan_now = int(np.isnan(arr).sum())
+        print(f"[INPAINT] после FWHM={fwhm}: {nan_now} NaNs "
+              f"({100*nan_now/total:.2f}%)")
+        if nan_now == 0:
+            break
+
+    return arr
+
+
 def load_i2d(path):
     hdul = fits.open(path, memmap=False)
     sci = hdul['SCI'].data.astype(float)
@@ -205,17 +238,29 @@ def subtract_galaxy(img, mask, valid):
     #x0, y0 = guess_center(img, valid)
     x0, y0 = 6306.0, 2730.0
 
-
     img_c, valid_c, (x0, y0), (x1, x2, y1, y2) = cutout_connected_valid(img, valid, x0, y0, pad=24)
     mask_c = mask[y1:y2, x1:x2]
 
+    # разделяем "дырки" мозаики и реальные источники
+    mask_seam = ~valid_c  # разрывы / пустые области мозаики
+    mask_src_only = mask_c & valid_c  # источники (маска объектов) в валидных пикселях
+
     finite_c = np.isfinite(img_c)
     print(f"[ISO-DBG] img_c shape={img_c.shape}")
-    print(f"[ISO-DBG] finite={finite_c.sum()}, valid={valid_c.sum()}, mask_c={mask_c.sum()}")
+    print(f"[ISO-DBG] finite={finite_c.sum()}, valid={valid_c.sum()}, "
+          f"mask_src_only={mask_src_only.sum()}, seam={mask_seam.sum()}")
     print(f"[ISO-DBG] min/max img_c (finite): {np.nanmin(img_c):.3g}/{np.nanmax(img_c):.3g}")
 
+    # предварительно залечиваем большие NaN / дыры для задачи фиттинга изофот
+    img_iso = inpaint_for_isophote(img_c, valid_c)
+
     # 2) Стартовый радиус по реально доступным пикселям
-    r0 = int(pick_start_radius(mask_c, valid_c, x0, y0, max_probe=200, min_frac=0.15, min_pix=150))
+    #r0 = int(pick_start_radius(mask_src_only, valid_c, x0, y0, max_probe=200, min_frac=0.15, min_pix=150))
+    # ВРЕМЕННЫЙ ХАРДКОД ДЛЯ ОТЛАДКИ
+    r0 = 20
+    maxsma = 400
+    print(f"[ISO-DBG] FORCE r0={r0}, maxsma={maxsma}")
+
     print(f"[ISO-DBG] start center=({x0:.1f},{y0:.1f}), r0={r0}")
 
     # Немного размаскируем центр, чтобы было от чего стартовать
@@ -229,14 +274,14 @@ def subtract_galaxy(img, mask, valid):
     rr = np.hypot(yy - y0, xx - x0)
 
     # маска, которая реально блокирует пиксели для фиттинга
-    mask2 = mask_c.copy()
-    mask2[(yy - y0) ** 2 + (xx - x0) ** 2 <= (r0 * r0)] = False  # как у тебя
-
+    mask2 = mask_src_only.copy()
+    mask2[(yy - y0) ** 2 + (xx - x0) ** 2 <= (r0 * r0)] = False
+    print(f"[ISO-DBG] mask2 frac = {mask2.mean():.3f}")
 
 
     # 3) Перебор масштабов яркости
-    finite = np.isfinite(img_c)
-    s = float(np.nanmedian(np.abs(img_c[finite]))) if finite.any() else 0.0
+    finite = np.isfinite(img_iso)
+    s = float(np.nanmedian(np.abs(img_iso[finite]))) if finite.any() else 0.0
     if not np.isfinite(s) or s <= 0:
         s = 1e-12
     base_exp = int(np.clip(np.ceil(-np.log10(s)), 0, 18))
@@ -244,7 +289,8 @@ def subtract_galaxy(img, mask, valid):
 
     best = None
     last_err = None
-    maxsma = seam_limited_maxsma(valid_c, x0, y0)
+
+    # maxsma = seam_limited_maxsma(valid_c, x0, y0)
     print(f"[ISO-DBG] seam_limited_maxsma={maxsma}")
 
 
@@ -275,7 +321,7 @@ def subtract_galaxy(img, mask, valid):
 
     for exp in exps:
         scale = 10.0 ** exp
-        img_scaled = img_c * scale
+        img_scaled = img_iso * scale
 
         img_ma = np.ma.masked_invalid(img_scaled, copy=False)
         img_ma.mask |= mask2
@@ -293,12 +339,12 @@ def subtract_galaxy(img, mask, valid):
                 sma0=r0,
                 minsma=max(2, r0 - 3),
                 maxsma=maxsma,
-                step=0.18,
-                sclip=3.0,
-                nclip=2,
-                fflag=0.7,
+                step=0.3,
+                sclip=2.5,
+                nclip=1,
+                fflag=0.5,
                 fix_center=False,
-                integrmode="median",
+                integrmode="mean",
             )
         except Exception as e_fit:
             print(f"[ISO] scale=1e{exp}: {e_fit.__class__.__name__}: {e_fit}")
@@ -312,6 +358,10 @@ def subtract_galaxy(img, mask, valid):
         print(f"[ISO] scale=1e{exp}: OK, n_isophotes={len(isolist)}")
         best = (isolist, scale)
         break
+
+
+    # if best is None:
+    #     raise RuntimeError(f"Ellipse fit failed for all scales; base_exp={base_exp}, r0={r0}. Last error: {last_err}")
 
     if best is None:
         print(f"[ISO] Ellipse fit failed for all scales; base_exp={base_exp}, r0={r0}. "
@@ -364,6 +414,8 @@ def subtract_galaxy(img, mask, valid):
     resid_full[y1:y2, x1:x2] = img_c - model_sub
     resid_full[mask] = np.nan
     return resid_full, model_full
+
+
 
 def build_psf_for_file(fits_path, size=129):
     # stpsf сам читает header и настраивает инструмент
@@ -473,7 +525,7 @@ def main():
     Pk = radial_power(resid, mask)
     Ek = radial_power(psf, np.zeros_like(psf, bool))
 
-    P0, P1, kwin = fit_P0(Pk, Ek, kmin=0.03, kmax=0.20)  # окно по стабильности подберешь позже
+    P0, P1, kwin = fit_P0(Pk, Ek, kmin=0.03, kmax=0.40)  # окно по стабильности подберешь позже
 
     # первый проход: Pr ~ 0
     Pf = max(P0, 0.0)
@@ -483,10 +535,28 @@ def main():
 
     # цвет (в AB маг/arcsec^2 на тех же масках и изофотах): возьмем медиану по модели
     # только если F090W есть
+    # цвет (в AB маг/arcsec^2 на тех же масках): берём медианы по совпадающей области
     if img_f090 is not None:
-        color = -2.5*np.log10(
-            np.nanmedian(img_f090[~mask]) / np.nanmedian(img_f150[~mask])
-        )
+        ny = min(img_f090.shape[0], img_f150.shape[0], mask.shape[0])
+        nx = min(img_f090.shape[1], img_f150.shape[1], mask.shape[1])
+
+        if (ny, nx) != img_f090.shape or (ny, nx) != img_f150.shape or (ny, nx) != mask.shape:
+            print(f"[COLOR] shape mismatch: F090W={img_f090.shape}, "
+                  f"F150W={img_f150.shape}, mask={mask.shape} → crop to ({ny},{nx})")
+
+        m_sub = mask[:ny, :nx]
+        f090_sub = img_f090[:ny, :nx]
+        f150_sub = img_f150[:ny, :nx]
+
+        num = np.nanmedian(f090_sub[~m_sub])
+        den = np.nanmedian(f150_sub[~m_sub])
+
+        if not np.isfinite(num) or not np.isfinite(den) or den <= 0 or num <= 0:
+            print(f"[COLOR] WARNING: bad medians for color: num={num}, den={den}")
+            color = np.nan
+        else:
+            color = -2.5 * np.log10(num / den)
+
         print(f"m̄(F150W) = {mbar:.3f} mag   (окно k={kwin[0]:.02f}..{kwin[1]:.02f} pix^-1)")
         print(f"(F090W − F150W) ≈ {color:.3f} mag (грубая оценка)")
     else:
