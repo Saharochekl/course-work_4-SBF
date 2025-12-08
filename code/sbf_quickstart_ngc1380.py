@@ -12,6 +12,35 @@ from photutils.segmentation import detect_sources, deblend_sources
 from photutils.isophote import EllipseGeometry, Ellipse, build_ellipse_model
 import stpsf                                    # PSF под JWST файл
 from numpy.fft import rfft2, rfftfreq, fftshift
+from astropy.convolution import Gaussian2DKernel, interpolate_replace_nans
+
+def build_radial_profile(img_c, valid_c, mask_c, x0, y0, dr=1.0, min_pix=200):
+    ny, nx = img_c.shape
+    yy, xx = np.ogrid[:ny, :nx]
+    rr = np.hypot(yy - y0, xx - x0)
+
+    ok = valid_c & (~mask_c) & np.isfinite(img_c)
+
+    if ok.sum() < 1000:
+        raise RuntimeError("слишком мало валидных пикселей")
+
+    r_max = float(rr[ok].max())
+    nbins = int(r_max // dr)
+
+    radii, intens = [], []
+    for i in range(nbins):
+        r_in, r_out = i*dr, (i+1)*dr
+        ring = (rr>=r_in) & (rr<r_out) & ok
+        n = int(ring.sum())
+        if n < min_pix:
+            continue
+        vals = img_c[ring]
+        if not np.isfinite(vals).any():
+            continue
+        radii.append(0.5*(r_in+r_out))
+        intens.append(float(np.nanmedian(vals)))
+
+    return np.array(radii), np.array(intens)
 
 
 def inpaint_for_isophote(img_c, valid_c):
@@ -20,7 +49,7 @@ def inpaint_for_isophote(img_c, valid_c):
     ВАЖНО: это используется ТОЛЬКО для подгонки гладкой модели галактики.
     Для SBF-статистики по остаткам продолжаем использовать исходный img_c.
     """
-    from astropy.convolution import Gaussian2DKernel, interpolate_replace_nans
+
 
     arr = img_c.copy()
     # всё, что заведомо невалидно, считаем NaN
@@ -44,6 +73,21 @@ def inpaint_for_isophote(img_c, valid_c):
             break
 
     return arr
+
+def fill_nan_with_radial(img_c, valid_c, mask_c, x0, y0, radii, intens):
+    ny, nx = img_c.shape
+    yy, xx = np.ogrid[:ny, :nx]
+    rr = np.hypot(yy - y0, xx - x0)
+
+    ok = valid_c & (~mask_c) & np.isfinite(img_c)
+    img_iso = img_c.copy()
+
+    # где нет данных – заливаем профилем
+    bad = ~ok
+    img_iso[bad] = np.interp(rr[bad], radii, intens,
+                             left=intens[0], right=intens[-1])
+    return img_iso
+
 
 
 def load_i2d(path):
@@ -230,192 +274,126 @@ def seam_limited_maxsma(valid, x0, y0):
                 return max(5, r - 2)
         return max(5, int(min(ny, nx) / 2) - 2)
 
-def subtract_galaxy(img, mask, valid):
-    """Fit elliptical isophotes and build a smooth model (NaN/mask aware).
-    Подбираем масштаб яркости, чтобы избежать 'No meaningful fit was possible'.
-    """
-    # 1) Центр по данным (не по центру кадра)
-    #x0, y0 = guess_center(img, valid)
-    x0, y0 = 6306.0, 2730.0
+def cutout_box(img, valid, x0, y0, half_size):
+    ny, nx = img.shape
+    x1 = max(0, int(x0 - half_size))
+    x2 = min(nx, int(x0 + half_size))
+    y1 = max(0, int(y0 - half_size))
+    y2 = min(ny, int(y0 + half_size))
+    img_c   = img[y1:y2, x1:x2]
+    valid_c = valid[y1:y2, x1:x2]
+    return img_c, valid_c, (x0 - x1, y0 - y1), (x1, x2, y1, y2)
 
-    img_c, valid_c, (x0, y0), (x1, x2, y1, y2) = cutout_connected_valid(img, valid, x0, y0, pad=24)
+def subtract_galaxy(img, mask, valid):
+    """
+    Строим гладкую модель галактики через радиальный профиль вокруг центра
+    и вычитаем её. Без photutils.Ellipse, без изофот.
+
+    На вход:
+      img   – кадр F150W (фон уже вычтен)
+      mask  – bool-маска (True = пиксель не использовать)
+      valid – bool-маска валидных пикселей (WHT>0, не NaN)
+    """
+    # 1) Центр. Можно вернуть guess_center, можно оставить руками:
+    # x0, y0 = guess_center(img, valid)
+    x0, y0 = 6306.0, 2730.0
+    print(f"[RADIAL] use center=({x0:.1f}, {y0:.1f})")
+
+    # 2) Вырезка по связной валидной области вокруг центра
+    img_c, valid_c, (x0, y0), (x1, x2, y1, y2) = cutout_box(
+        img, valid, x0, y0, half_size=3000  # подобрать под размер галактики
+    )
     mask_c = mask[y1:y2, x1:x2]
 
-    # разделяем "дырки" мозаики и реальные источники
-    mask_seam = ~valid_c  # разрывы / пустые области мозаики
-    mask_src_only = mask_c & valid_c  # источники (маска объектов) в валидных пикселях
-
     finite_c = np.isfinite(img_c)
-    print(f"[ISO-DBG] img_c shape={img_c.shape}")
-    print(f"[ISO-DBG] finite={finite_c.sum()}, valid={valid_c.sum()}, "
-          f"mask_src_only={mask_src_only.sum()}, seam={mask_seam.sum()}")
-    print(f"[ISO-DBG] min/max img_c (finite): {np.nanmin(img_c):.3g}/{np.nanmax(img_c):.3g}")
+    print(f"[RADIAL] img_c shape={img_c.shape}, "
+          f"finite={finite_c.sum()}, valid={valid_c.sum()}, "
+          f"mask_c={mask_c.sum()}")
 
-    # предварительно залечиваем большие NaN / дыры для задачи фиттинга изофот
-    img_iso = inpaint_for_isophote(img_c, valid_c)
+    # 3) Радиальный профиль по сырому img_c
+    radii0, intens0 = build_radial_profile(img_c, valid_c, mask_c, x0, y0)
+    print(f"[RADIAL] primary radial bins: {len(radii0)}")
 
-    # 2) Стартовый радиус по реально доступным пикселям
-    #r0 = int(pick_start_radius(mask_src_only, valid_c, x0, y0, max_probe=200, min_frac=0.15, min_pix=150))
-    # ВРЕМЕННЫЙ ХАРДКОД ДЛЯ ОТЛАДКИ
-    r0 = 20
-    maxsma = 400
-    print(f"[ISO-DBG] FORCE r0={r0}, maxsma={maxsma}")
+    # ny, nx = img_c.shape
+    # yy, xx = np.ogrid[:ny, :nx]
+    # rr = np.hypot(yy - y0, xx - x0)
+    # prof_1d = np.interp(rr.ravel(), radii, intens, left=intens[0], right=intens[-1]).reshape(rr.shape)
+    #
+    # model_full = np.full_like(img, np.nan)
+    # resid_full = img.copy()
+    # model_full[y1:y2, x1:x2] = prof_1d
+    # resid_full[y1:y2, x1:x2] = img_c - prof_1d
+    # resid_full[mask] = np.nan
 
-    print(f"[ISO-DBG] start center=({x0:.1f},{y0:.1f}), r0={r0}")
+    # print(f"[RADIAL] img_c shape={img_c.shape}")
+    # print(f"[RADIAL] finite={finite_c.sum()}, valid={valid_c.sum()}, "
+    #       f"mask_c={mask_c.sum()}")
 
-    # Немного размаскируем центр, чтобы было от чего стартовать
-    # yy, xx = np.ogrid[:img_c.shape[0], :img_c.shape[1]]
-    # center = (yy - y0)**2 + (xx - x0)**2 <= (r0 * r0)
-    # mask2 = mask_c.copy()
-    # mask2[center] = False
+    # 3) inpaint только по valid_c, как и раньше
 
-    ny, nx = img_c.shape
+    # 4) Залечиваем NaN по этому профилю
+    img_iso = fill_nan_with_radial(img_c, valid_c, mask_c, x0, y0, radii0, intens0)
+
+    # 5) Строим ОКОНЧАТЕЛЬНЫЙ радиальный профиль по img_iso
+    ny, nx = img_iso.shape
     yy, xx = np.ogrid[:ny, :nx]
     rr = np.hypot(yy - y0, xx - x0)
 
-    # маска, которая реально блокирует пиксели для фиттинга
-    mask2 = mask_src_only.copy()
-    mask2[(yy - y0) ** 2 + (xx - x0) ** 2 <= (r0 * r0)] = False
-    print(f"[ISO-DBG] mask2 frac = {mask2.mean():.3f}")
+    bad = (~valid_c) | mask_c | (~np.isfinite(img_iso))
+    ok = ~bad
+    if ok.sum() < 1000:
+        raise RuntimeError("[RADIAL] слишком мало валидных пикселей в вырезке")
 
 
-    # 3) Перебор масштабов яркости
-    finite = np.isfinite(img_iso)
-    s = float(np.nanmedian(np.abs(img_iso[finite]))) if finite.any() else 0.0
-    if not np.isfinite(s) or s <= 0:
-        s = 1e-12
-    base_exp = int(np.clip(np.ceil(-np.log10(s)), 0, 18))
-    exps = [e for e in sorted(set([base_exp-2, base_exp-1, base_exp, base_exp+1, base_exp+2, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18])) if 0 <= e <= 12]
+    r_max = float(rr[ok].max())
+    dr = 1.0  # шаг по радиусу в пикселях
+    nbins = int(r_max // dr)
+    min_pix = 200
 
-    best = None
-    last_err = None
+    radii, intens = [], []
+    print(f"[RADIAL] r_max≈{r_max:.1f}, nbins≈{nbins}")
 
-    # maxsma = seam_limited_maxsma(valid_c, x0, y0)
-    print(f"[ISO-DBG] seam_limited_maxsma={maxsma}")
-
-
-    # --- Fallback на случай бредового maxsma ---
-    # допустимый максимум по размеру вырезки (чтобы не вылезать за края)
-    max_possible = int(0.45 * min(img_c.shape))  # 45% от меньшего размера
-
-    # если seam_limited_maxsma слишком маленький или кривой – переопределяем
-    if (not np.isfinite(maxsma)) or (maxsma <= r0 + 5):
-        print(f"[ISO-DBG] seam_limited_maxsma={maxsma} <= r0+5, "
-              f"используем fallback")
-        maxsma = max(r0 + 10, max_possible)
-    else:
-        # на всякий ограничим сверху разумным пределом
-        maxsma = min(maxsma, max_possible)
-
-    print(f"[ISO-DBG] final maxsma={maxsma}")
-
-
-    for test_r in [r0 - 10, r0 - 5, r0, r0 + 5, r0 + 10]:
-        if test_r <= 0 or test_r >= maxsma:
+    for i in range(nbins):
+        r_in = i * dr
+        r_out = r_in + dr
+        ring = (rr >= r_in) & (rr < r_out) & ok
+        n = int(ring.sum())
+        if n < min_pix:
             continue
-        ring = (rr >= test_r - 0.5) & (rr < test_r + 0.5)
-        total = int(ring.sum())
-        good = int((ring & valid_c & (~mask2)).sum())
-        frac = good / max(total, 1)
-        print(f"[ISO-DBG] r={test_r}: total={total}, good={good}, frac={frac:.3f}")
-
-    for exp in exps:
-        scale = 10.0 ** exp
-        img_scaled = img_iso * scale
-
-        img_ma = np.ma.masked_invalid(img_scaled, copy=False)
-        img_ma.mask |= mask2
-
-        geom = EllipseGeometry(x0=x0, y0=y0, sma=r0, eps=0.2, pa=0.0)
-        print(f"[ISO-DBG] try scale=1e{exp}")
-        print(f"[ISO-DBG] img_scaled median={np.median(img_scaled[finite]):.3g}, "
-              f"min={np.min(img_scaled[finite]):.3g}, max={np.max(img_scaled[finite]):.3g}")
-        print(f"[ISO-DBG] masked fraction={img_ma.mask.mean():.3f}")
-
-        e = Ellipse(img_ma, geometry=geom, threshold=0.05)  # включаем центрировщик
-
-        try:
-            isolist = e.fit_image(
-                sma0=r0,
-                minsma=max(2, r0 - 3),
-                maxsma=maxsma,
-                step=0.3,
-                sclip=2.5,
-                nclip=1,
-                fflag=0.5,
-                fix_center=False,
-                integrmode="mean",
-            )
-        except Exception as e_fit:
-            print(f"[ISO] scale=1e{exp}: {e_fit.__class__.__name__}: {e_fit}")
-            last_err = e_fit
+        vals = img_iso[ring]
+        if not np.isfinite(vals).any():
             continue
+        radii.append(0.5 * (r_in + r_out))
+        intens.append(float(np.nanmedian(vals)))
 
-        if len(isolist) == 0:
-            print(f"[ISO] scale=1e{exp}: empty isolist")
-            continue
+    radii = np.array(radii)
+    intens = np.array(intens)
+    print(f"[RADIAL] good radial bins: {len(radii)}")
 
-        print(f"[ISO] scale=1e{exp}: OK, n_isophotes={len(isolist)}")
-        best = (isolist, scale)
-        break
-
-
-    # if best is None:
-    #     raise RuntimeError(f"Ellipse fit failed for all scales; base_exp={base_exp}, r0={r0}. Last error: {last_err}")
-
-    if best is None:
-        print(f"[ISO] Ellipse fit failed for all scales; base_exp={base_exp}, r0={r0}. "
-              f"Last error: {last_err}")
-        print("[ISO] FALLBACK: using pure Gaussian smoothing model (no isophotes).")
-
+    if len(radii) < 5:
+        # fallback: гауссовое сглаживание
         from astropy.convolution import convolve, Gaussian2DKernel
-
-        # сглаживаем вырезку
-        img_c_smooth = convolve(
-            img_c,
-            Gaussian2DKernel(10.0),  # можно чуть крупнее, чем в <5 изофот
-            normalize_kernel=True,
-        )
+        img_c_smooth = convolve(img_c, Gaussian2DKernel(10.0),
+                                normalize_kernel=True)
 
         model_full = np.full_like(img, np.nan)
         resid_full = img.copy()
-
         model_full[y1:y2, x1:x2] = img_c_smooth
         resid_full[y1:y2, x1:x2] = img_c - img_c_smooth
         resid_full[mask] = np.nan
         return resid_full, model_full
 
-    print(f"[ISO] maxsma={maxsma}, n_isophotes={len(isolist)}")
-
-    isolist, scale = best
-    if len(isolist) < 5:
-        print(f"[ISO] too few isophotes ({len(isolist)}), "
-              "fallback to simple smoothing model")
-
-        # грубый fallback: сгладить галактику фильтром
-        from astropy.convolution import convolve, Gaussian2DKernel
-
-        img_c_smooth = convolve(img_c, Gaussian2DKernel(5.0), normalize_kernel=True)
-
-        model_full = np.full_like(img, np.nan)
-        resid_full = img.copy()
-
-        model_full[y1:y2, x1:x2] = img_c_smooth
-        resid_full[y1:y2, x1:x2] = img_c - img_c_smooth
-        resid_full[mask] = np.nan
-        return resid_full, model_full
-
-    model_scaled = build_ellipse_model(img_c.shape, isolist, fill=0.0)
-    model_sub = model_scaled / scale
+    # 6) ОДИН раз строим модель и вычитаем
+    prof_1d = np.interp(rr.ravel(), radii, intens,
+                        left=intens[0], right=intens[-1]).reshape(rr.shape)
 
     model_full = np.full_like(img, np.nan)
     resid_full = img.copy()
-    model_full[y1:y2, x1:x2] = model_sub
-    resid_full[y1:y2, x1:x2] = img_c - model_sub
+    model_full[y1:y2, x1:x2] = prof_1d
+    resid_full[y1:y2, x1:x2] = img_c - prof_1d
     resid_full[mask] = np.nan
+
     return resid_full, model_full
-
-
 
 def build_psf_for_file(fits_path, size=129):
     # stpsf сам читает header и настраивает инструмент
@@ -423,7 +401,7 @@ def build_psf_for_file(fits_path, size=129):
     psf = sim.calc_psf(nlambda=7, fov_pixels=size)
 
     # на всякий лог, если хочется убедиться:
-    # print("DEBUG psf type:", type(psf))
+    print("DEBUG psf type:", type(psf))
 
     # 1) Разруливаем тип
     if isinstance(psf, fits.HDUList):
@@ -518,6 +496,50 @@ def main():
         return
 
     resid, model = subtract_galaxy(img, mask, valid150)
+
+    # === Сохраняем модель и остатки в FITS, чтобы результат был НЕ "виртуальный" ===
+    base = Path(args.f150w)
+    stem = base.stem  # jw03055-o001_t001_nircam_clear-f150w_i2d или i2d_crop1
+    out_dir = base.parent
+
+    model_path = out_dir / f"{stem}_sbf_model.fits"
+    resid_path = out_dir / f"{stem}_sbf_resid.fits"
+
+    # модель и остатки в тех же единицах, что img (MJy/sr после вычитания фона)
+    fits.writeto(model_path, model, hdr150, overwrite=True)
+    fits.writeto(resid_path, resid, hdr150, overwrite=True)
+
+    print(f"[OUT] model → {model_path}")
+    print(f"[OUT] resid → {resid_path}")
+
+    finite_resid = np.isfinite(resid)
+    if finite_resid.sum() == 0:
+        print("[CHK] resid: вообще нет валидных пикселей, что-то сломали")
+    else:
+        print("[CHK] resid: finite={:d}, min={:.3e}, med={:.3e}, max={:.3e}".format(
+            int(finite_resid.sum()),
+            float(np.nanmin(resid)),
+            float(np.nanmedian(resid)),
+            float(np.nanmax(resid))
+        ))
+
+    # DEBUG: локальный mean / RMS флуктуаций в кольце вокруг центра
+    x0_dbg, y0_dbg = 6306.0, 2730.0  # центр галактики в полных координатах кадра
+    yy_dbg, xx_dbg = np.ogrid[:resid.shape[0], :resid.shape[1]]
+    rr_dbg = np.hypot(yy_dbg - y0_dbg, xx_dbg - x0_dbg)
+
+    R1, R2 = 30.0, 40.0  # внутренний/внешний радиусы кольца, в пикселях
+    ring = (rr_dbg >= R1) & (rr_dbg < R2) & (~mask)
+
+    vals = resid[ring]
+    if vals.size > 0:
+        mean_I = float(np.nanmean(vals))
+        rms_I  = float(np.nanstd(vals))
+        print(f"[RMS-DBG] ring {R1:.1f}-{R2:.1f} px: "
+              f"mean={mean_I:.4e}, rms={rms_I:.4e}, N={vals.size}")
+    else:
+        print("[RMS-DBG] ring empty, no pixels.")
+
 
     # PSF и его E(k)
     psf_file = args.psfref if args.psfref is not None else args.f150w
