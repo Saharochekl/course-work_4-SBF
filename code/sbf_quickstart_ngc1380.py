@@ -14,6 +14,8 @@ import stpsf                                    # PSF под JWST файл
 from numpy.fft import rfft2, rfftfreq, fftshift
 from astropy.convolution import Gaussian2DKernel, interpolate_replace_nans
 
+
+
 def build_radial_profile(img_c, valid_c, mask_c, x0, y0, dr=1.0, min_pix=200):
     ny, nx = img_c.shape
     yy, xx = np.ogrid[:ny, :nx]
@@ -299,6 +301,14 @@ def subtract_galaxy(img, mask, valid):
     x0, y0 = 6306.0, 2730.0
     print(f"[RADIAL] use center=({x0:.1f}, {y0:.1f})")
 
+    ny, nx = img.shape
+
+    # если центр вообще не попадает в кадр (кроп), переопределяем его по данным
+    if not (0 <= x0 < nx and 0 <= y0 < ny):
+        x0, y0 = guess_center(img, valid)
+        print(f"[CENTER] global center out of frame, "
+              f"use guess_center → ({x0:.1f}, {y0:.1f})")
+
     # 2) Вырезка по связной валидной области вокруг центра
     img_c, valid_c, (x0, y0), (x1, x2, y1, y2) = cutout_box(
         img, valid, x0, y0, half_size=3000  # подобрать под размер галактики
@@ -429,12 +439,17 @@ def build_psf_for_file(fits_path, size=129):
     return arr
 
 def radial_power(img, mask):
-    # k-спектр по остаткам с маской: FFT(mask*img); азим. усреднение
     data = np.zeros_like(img)
     tmp = np.nan_to_num(img, nan=0.0)
     data[~mask] = tmp[~mask]
-    F = np.abs(rfft2(data))**2
-    # радиальная выкладка (по частоте пик^-1)
+
+    n_pix = np.sum(~mask)  # сколько реально используем
+    if n_pix == 0:
+        raise RuntimeError("radial_power: no unmasked pixels")
+
+    # нормировка: средняя мощность на пиксель
+    F = np.abs(rfft2(data))**2 / (n_pix**2)
+
     ny, nx = data.shape
     ky = np.fft.fftfreq(ny)
     kx = rfftfreq(nx)
