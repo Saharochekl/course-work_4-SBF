@@ -562,6 +562,11 @@ def main():
     Pk = radial_power(resid, mask)
     Ek = radial_power(psf, np.zeros_like(psf, bool))
 
+    # нормируем PSF power к сумме 1, чтобы P0 был просто дисперсией
+    Ek_k, Ek_P = Ek
+    Ek_P_norm = Ek_P / np.trapz(Ek_P, Ek_k)
+    Ek = (Ek_k, Ek_P_norm)
+    
     P0, P1, kwin = fit_P0(Pk, Ek, kmin=0.03, kmax=0.40)  # окно по стабильности подберешь позже
 
     # первый проход: Pr ~ 0
