@@ -438,43 +438,180 @@ def build_psf_for_file(fits_path, size=129):
     arr /= s
     return arr
 
+
+
 def radial_power(img, mask):
     data = np.zeros_like(img)
     tmp = np.nan_to_num(img, nan=0.0)
     data[~mask] = tmp[~mask]
 
-    n_pix = np.sum(~mask)  # сколько реально используем
+    use = (~mask) & np.isfinite(data)
+    n_pix = int(use.sum())
     if n_pix == 0:
         raise RuntimeError("radial_power: no unmasked pixels")
 
-    # нормировка: средняя мощность на пиксель
-    F = np.abs(rfft2(data))**2 / (n_pix**2)
+    # вычитаем среднее, чтобы не тянуть DC-компонент
+    mean = float(np.nanmean(data[use]))
+    data[use] -= mean
+
+    # FFT
+    F = rfft2(data)
+    power2d = np.abs(F)**2
+
+    # дисперсия по пикселям
+    var_direct = float(np.nanvar(data[use]))
+
+    # "по-Parseval'у" из FFT
+    var_fft = power2d.sum() / (n_pix**2)
+    if var_fft > 0 and np.isfinite(var_fft):
+        scale = var_direct / var_fft
+    else:
+        scale = 1.0
+
+    # окончательная 2D-мощность
+    P2d = power2d * scale / (n_pix**2)
 
     ny, nx = data.shape
     ky = np.fft.fftfreq(ny)
     kx = rfftfreq(nx)
     KX, KY = np.meshgrid(kx, ky)
     kr = np.hypot(KX, KY)
+
     kbins = np.linspace(0, kr.max(), 80)
-    P = np.zeros(len(kbins)-1); kc = np.zeros_like(P)
+    P = np.zeros(len(kbins) - 1, float)
+    kc = np.zeros_like(P)
+
     for i in range(len(P)):
-        sel = (kr>=kbins[i]) & (kr<kbins[i+1])
-        vals = F[sel]
-        if vals.size>10:
-            P[i] = np.median(vals)
-            kc[i] = 0.5*(kbins[i]+kbins[i+1])
+        sel = (kr >= kbins[i]) & (kr < kbins[i+1])
+        vals = P2d[sel]
+        if vals.size > 10:
+            P[i] = np.nanmedian(vals)
+            kc[i] = 0.5 * (kbins[i] + kbins[i+1])
         else:
-            P[i] = np.nan; kc[i]=np.nan
-    m = np.isfinite(P) & (kc>0)
+            P[i] = np.nan
+            kc[i] = np.nan
+
+    m = np.isfinite(P) & (kc > 0)
     return kc[m], P[m]
 
-def fit_P0(Pk, Ek, kmin=0.02, kmax=0.25):
-    sel = (Pk[0]>=kmin) & (Pk[0]<=kmax)
-    x = Ek[1][sel]   # E(k)
-    y = Pk[1][sel]   # P(k)
+
+def radial_power_psf(psf_small, img_shape):
+    ny, nx = img_shape
+    big = np.zeros((ny, nx), float)
+
+    py, px = psf_small.shape
+    y0 = ny // 2 - py // 2
+    x0 = nx // 2 - px // 2
+    big[y0:y0+py, x0:x0+px] = psf_small
+
+    mask_big = np.zeros_like(big, bool)
+    return radial_power(big, mask_big)
+
+def fit_P0(Pk, Ek, kmin=0.03, kmax=0.40):
+    """
+    Линейный фит P(k) = P0 * E(k) + P1 с проверками адекватности.
+
+    Pk, Ek: кортежи (k, P(k)) и (k, E(k))
+    Возвращает (P0, P1, (kmin, kmax)) или (nan, nan, (kmin, kmax)), если фит не доверяем.
+    """
+    kP, P = Pk
+    kE, E = Ek
+
+    kP = np.asarray(kP, float)
+    P = np.asarray(P, float)
+    kE = np.asarray(kE, float)
+    E = np.asarray(E, float)
+
+    sel = (kP >= kmin) & (kP <= kmax)
+    n_sel = int(sel.sum())
+    if n_sel < 10:
+        print(f"[FIT] мало точек в окне k={kmin:.3f}..{kmax:.3f}, N={n_sel}")
+        return np.nan, np.nan, (kmin, kmax)
+
+    # интерполируем E(k) в те же k, где есть P(k)
+    E_int = np.interp(kP[sel], kE, E, left=np.nan, right=np.nan)
+
+    x = E_int
+    y = P[sel]
+
+    m = np.isfinite(x) & np.isfinite(y) & (x > 0) & (y > 0)
+    x = x[m]
+    y = y[m]
+
+    if x.size < 10:
+        print(f"[FIT] после маскировки валидных точек < 10, N={x.size}")
+        return np.nan, np.nan, (kmin, kmax)
+
+    # корреляция между E и P
+    try:
+        corr = np.corrcoef(x, y)[0, 1]
+    except Exception:
+        corr = np.nan
+
+    print(f"[FIT] window k={kmin:.3f}..{kmax:.3f}, N={x.size}, corr(E,P)≈{corr:.3f}")
+    if not np.isfinite(corr) or abs(corr) < 0.3:
+        print("[FIT] слабая корреляция E(k) и P(k) → фит недостоверен")
+        return np.nan, np.nan, (kmin, kmax)
+
     A = np.vstack([x, np.ones_like(x)]).T
-    P0, P1 = np.linalg.lstsq(A, y, rcond=None)[0]
+    try:
+        P0, P1 = np.linalg.lstsq(A, y, rcond=None)[0]
+    except Exception as e:
+        print(f"[FIT] lstsq failed: {e}")
+        return np.nan, np.nan, (kmin, kmax)
+
+    if (not np.isfinite(P0)) or (not np.isfinite(P1)):
+        print(f"[FIT] невалидные коэффициенты: P0={P0}, P1={P1}")
+        return np.nan, np.nan, (kmin, kmax)
+
+    if P0 <= 0 or (P0 + P1) <= 0:
+        print(f"[FIT] нефизичные значения: P0={P0}, P0+P1={P0+P1}")
+        return np.nan, np.nan, (kmin, kmax)
+
+    frac = P0 / (P0 + P1)
+    print(f"[FIT] P0={P0:.3e}, P1={P1:.3e}, frac={frac:.3f}")
+    if abs(P1) > 5.0 * P0:
+        print(f"[FIT] |P1|={abs(P1):.3e} >> P0={P0:.3e} → фит ненадёжен")
+        return np.nan, np.nan, (kmin, kmax)
+
     return float(P0), float(P1), (kmin, kmax)
+def check_sbf_region(resid, mask_sbf, label="[SBF]"):
+    """
+    Проверка адекватности области, в которой меряем SBF:
+    - достаточно пикселей
+    - разумный динамический диапазон и дисперсия.
+    """
+    use = (~mask_sbf) & np.isfinite(resid)
+    n = int(use.sum())
+    if n < 5000:
+        print(f"{label} слишком мало пикселей в аннулусе: N={n}")
+        return False
+
+    vals = resid[use]
+    vmin = float(np.nanmin(vals))
+    vmax = float(np.nanmax(vals))
+    med = float(np.nanmedian(vals))
+    mean = float(np.nanmean(vals))
+    std = float(np.nanstd(vals))
+    dyn = vmax - vmin
+
+    print(
+        f"{label} N={n}, min={vmin:.3e}, med={med:.3e}, "
+        f"max={vmax:.3e}, mean={mean:.3e}, std={std:.3e}, dyn={dyn:.3e}"
+    )
+
+    # Порог по динамическому диапазону: на полном кадре у тебя ~1e3,
+    # на нормальном кропе ~1e-2. Здесь оставляем запас.
+    if dyn > 0.2:
+        print(f"{label} динамический диапазон {dyn:.3e} слишком велик → область грязная")
+    #     return False
+
+    # Слишком маленький std означает, что сигнал ниже шума/квантизации
+    if std < 1e-7:
+        print(f"{label} std={std:.3e} слишком мал → сигнал неотличим от нуля")
+    #     return False
+
+    return True
 
 def mjysr_to_ab_zp(pix_area_arcsec2):
     # m_AB для 1 (MJy/sr) на 1 пиксель
@@ -556,24 +693,93 @@ def main():
         print("[RMS-DBG] ring empty, no pixels.")
 
 
+    # SBF-аннулус: считаем флуктуации только в кольце вокруг центра галактики
+    x0_sbf, y0_sbf = 6306.0, 2730.0  # грубый центр галактики в полных координатах
+    ny_r, nx_r = resid.shape
+    if not (0 <= x0_sbf < nx_r and 0 <= y0_sbf < ny_r):
+        # на случай кропа используем автоматический центр
+        x0_sbf, y0_sbf = guess_center(resid, valid150)
+    yy_r, xx_r = np.ogrid[:ny_r, :nx_r]
+    rr_r = np.hypot(yy_r - y0_sbf, xx_r - x0_sbf)
+
+    rin, rout = 50.0, 200.0  # радиусы кольца в пикселях, можно потом подкрутить
+    annulus = (rr_r >= rin) & (rr_r <= rout)
+    mask_sbf = mask | (~annulus)
+
+    # Проверка адекватности области для измерения флуктуаций
+    if not check_sbf_region(resid, mask_sbf, label="[SBF-REGION]"):
+        print("[SBF] область для измерения флуктуаций неадекватна, m̄ не считаем")
+        return
+
     # PSF и его E(k)
     psf_file = args.psfref if args.psfref is not None else args.f150w
     psf = build_psf_for_file(psf_file, size=129)
-    Pk = radial_power(resid, mask)
-    Ek = radial_power(psf, np.zeros_like(psf, bool))
+    Pk = radial_power(resid, mask_sbf)
+    Ek = radial_power_psf(psf, resid.shape)
 
-    # нормируем PSF power к сумме 1, чтобы P0 был просто дисперсией
+    # нормируем PSF power к сумме 1, чтобы P0 был примерно дисперсией
     Ek_k, Ek_P = Ek
-    Ek_P_norm = Ek_P / np.trapz(Ek_P, Ek_k)
+    norm = np.trapezoid(Ek_P, Ek_k)
+    if norm <= 0 or not np.isfinite(norm):
+        Ek_P_norm = Ek_P
+    else:
+        Ek_P_norm = Ek_P / norm
     Ek = (Ek_k, Ek_P_norm)
-    
-    P0, P1, kwin = fit_P0(Pk, Ek, kmin=0.03, kmax=0.40)  # окно по стабильности подберешь позже
 
-    # первый проход: Pr ~ 0
-    Pf = max(P0, 0.0)
+    P0, P1, kwin = fit_P0(Pk, Ek, kmin=0.03, kmax=0.40)  # окно по стабильности подберёшь позже
 
-    # величина колебаний в абс. системе единиц изображения
-    mbar = -2.5*np.log10(Pf) + mjysr_to_ab_zp(area)
+    # Оценка дисперсии SBF-сигнала:
+    # берём реальную дисперсию по остаткам в том же аннулусе
+    use_sbf_vals = (~mask_sbf) & np.isfinite(resid)
+    vals_sbf = resid[use_sbf_vals]
+    if vals_sbf.size == 0:
+        print("[SBF] в аннулусе нет валидных пикселей для оценки дисперсии")
+        return
+
+    var_sbf = float(np.nanvar(vals_sbf))
+
+    if (not np.isfinite(var_sbf)) or (var_sbf <= 0.0):
+        print(f"[SBF] некорректная дисперсия в аннулусе: var={var_sbf}")
+        return
+
+    # Для отладки смотрим, насколько P0 занижен относительно реальной дисперсии
+    if np.isfinite(P0) and (P0 > 0.0):
+        print(f"[SBF-DBG] P0={P0:.3e}, var_sbf={var_sbf:.3e}, ratio=var_sbf/P0={var_sbf/P0:.3e}")
+    else:
+        print(f"[SBF-DBG] P0 некорректен (P0={P0}) → используем только var_sbf")
+
+    sigma2 = var_sbf
+
+    # Средняя поверхностная яркость галактики в том же аннулусе (по гладкой модели)
+    use_I = (~mask_sbf) & np.isfinite(model)
+    n_I = int(use_I.sum())
+    if n_I < 5000:
+        print(f"[SBF] слишком мало пикселей для оценки средней яркости галактики: N={n_I}")
+        return
+
+    Imean = float(np.nanmean(model[use_I]))
+    if (not np.isfinite(Imean)) or (Imean <= 0.0):
+        print(f"[SBF] некорректная средняя яркость галактики в аннулусе: Imean={Imean}")
+        return
+
+    # Флуктуационная яркость в тех же единицах, что и изображение (MJy/sr)
+    Pf = sigma2 / Imean
+
+    if (not np.isfinite(Pf)) or (Pf <= 0.0):
+        print(f"[SBF] некорректный Pf после нормировки: Pf={Pf}")
+        return
+
+    print(f"[SBF] sigma^2={sigma2:.3e}, Imean={Imean:.3e}, Pf={Pf:.3e}")
+
+    # Величина флуктуаций в AB-магнитудах
+    mbar = -2.5 * np.log10(Pf) + mjysr_to_ab_zp(area)
+
+    # очень грубый sanity-check по диапазону SBF-магнитуд
+    if not (10.0 <= mbar <= 40.0):
+        print(
+            f"[SBF] WARNING: m̄(F150W) = {mbar:.3f} mag выглядит нефизично, "
+            f"проверь маску/аннулус/PSF"
+        )
 
     # цвет (в AB маг/arcsec^2 на тех же масках и изофотах): возьмем медиану по модели
     # только если F090W есть
