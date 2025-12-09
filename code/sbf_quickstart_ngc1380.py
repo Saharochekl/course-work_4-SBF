@@ -297,17 +297,17 @@ def subtract_galaxy(img, mask, valid):
       valid – bool-маска валидных пикселей (WHT>0, не NaN)
     """
     # 1) Центр. Можно вернуть guess_center, можно оставить руками:
-    # x0, y0 = guess_center(img, valid)
-    x0, y0 = 6306.0, 2730.0
+    x0, y0 = guess_center(img, valid)
+    #x0, y0 = 6306.0, 2730.0
     print(f"[RADIAL] use center=({x0:.1f}, {y0:.1f})")
 
     ny, nx = img.shape
 
-    # если центр вообще не попадает в кадр (кроп), переопределяем его по данным
-    if not (0 <= x0 < nx and 0 <= y0 < ny):
-        x0, y0 = guess_center(img, valid)
-        print(f"[CENTER] global center out of frame, "
-              f"use guess_center → ({x0:.1f}, {y0:.1f})")
+    # # если центр вообще не попадает в кадр (кроп), переопределяем его по данным
+    # if not (0 <= x0 < nx and 0 <= y0 < ny):
+    #     x0, y0 = guess_center(img, valid)
+    #     print(f"[CENTER] global center out of frame, "
+    #           f"use guess_center → ({x0:.1f}, {y0:.1f})")
 
     # 2) Вырезка по связной валидной области вокруг центра
     img_c, valid_c, (x0, y0), (x1, x2, y1, y2) = cutout_box(
@@ -787,11 +787,11 @@ def main():
 
 
     # SBF-аннулус: считаем флуктуации только в кольце вокруг центра галактики
-    x0_sbf, y0_sbf = 6306.0, 2730.0  # грубый центр галактики в полных координатах
+    # x0_sbf, y0_sbf = 6306.0, 2730.0  # грубый центр галактики в полных координатах
     ny_r, nx_r = resid.shape
-    if not (0 <= x0_sbf < nx_r and 0 <= y0_sbf < ny_r):
-        # на случай кропа используем автоматический центр
-        x0_sbf, y0_sbf = guess_center(resid, valid150)
+    # if not (0 <= x0_sbf < nx_r and 0 <= y0_sbf < ny_r):
+    #     # на случай кропа используем автоматический центр
+    x0_sbf, y0_sbf = guess_center(resid, valid150)
     yy_r, xx_r = np.ogrid[:ny_r, :nx_r]
     rr_r = np.hypot(yy_r - y0_sbf, xx_r - x0_sbf)
 
