@@ -613,6 +613,99 @@ def check_sbf_region(resid, mask_sbf, label="[SBF]"):
 
     return True
 
+
+# === Диагностический прогон по радиусам SBF-аннулуса ===
+def scan_sbf_annuli(resid, model, mask, area, x0_sbf, y0_sbf, label_prefix="[SCAN]"):
+    """
+    Диагностический прогон по радиусам SBF-аннулуса.
+    Для каждой пары (rin, rout) печатает Imean, std, dyn, var_sbf, Pf, m̄.
+
+    Радиусы подбираются автоматически под размер кадра:
+    - для больших полей (полный кадр): rin~100..800, ширина ~100 пикс;
+    - для меньших (кроп): rin~30..(Rmax-20), ширина ~60 пикс.
+    """
+    ny, nx = resid.shape
+    yy, xx = np.ogrid[:ny, :nx]
+    rr = np.hypot(yy - y0_sbf, xx - x0_sbf)
+
+    # максимальный радиус, который ещё помещается внутри кадра
+    r_max_img = min(
+        np.hypot(y0_sbf, x0_sbf),
+        np.hypot(y0_sbf, nx - 1 - x0_sbf),
+        np.hypot(ny - 1 - y0_sbf, x0_sbf),
+        np.hypot(ny - 1 - y0_sbf, nx - 1 - x0_sbf),
+    )
+
+    if not np.isfinite(r_max_img) or r_max_img <= 60.0:
+        print(f"{label_prefix} r_max_img≈{r_max_img:.1f} px, сканировать радиусы бессмысленно")
+        return
+
+    # крупное поле (полный кадр JWST) vs кроп
+    if r_max_img > 800.0:
+        r_min, r_max, step, width = 100.0, min(800.0, r_max_img - 50.0), 50.0, 100.0
+    else:
+        r_min, r_max, step, width = 30.0, max(60.0, r_max_img - 20.0), 20.0, 60.0
+
+    if r_max <= r_min:
+        print(f"{label_prefix} r_max_img≈{r_max_img:.1f} px, рабочий диапазон радиусов не нашёлся")
+        return
+
+    print(f"{label_prefix} scan radii: rin∈[{r_min:.0f},{r_max:.0f}], width≈{width:.0f} px")
+
+    for rin in np.arange(r_min, r_max, step):
+        rout = rin + width
+        if rout > r_max_img:
+            rout = r_max_img
+
+        annulus = (rr >= rin) & (rr <= rout)
+        if not annulus.any():
+            continue
+
+        mask_sbf = mask | (~annulus)
+
+        # пиксели для флуктуаций
+        use = (~mask_sbf) & np.isfinite(resid)
+        n = int(use.sum())
+        if n < 5000:
+            continue
+
+        vals = resid[use]
+        vmin = float(np.nanmin(vals))
+        vmax = float(np.nanmax(vals))
+        std = float(np.nanstd(vals))
+        dyn = vmax - vmin
+
+        # дисперсия по усечённому распределению (обрезаем хвосты)
+        lo, hi = np.nanpercentile(vals, [5, 95])
+        core_mask = (vals >= lo) & (vals <= hi)
+        if core_mask.sum() < 100:
+            continue
+        var_sbf = float(np.nanvar(vals[core_mask]))
+
+        # средняя яркость галактики в той же области (по модели)
+        use_I = (~mask_sbf) & np.isfinite(model)
+        n_I = int(use_I.sum())
+        if n_I < 5000:
+            continue
+        Imean = float(np.nanmean(model[use_I]))
+
+        if (not np.isfinite(Imean)) or (Imean <= 0.0):
+            continue
+        if (not np.isfinite(var_sbf)) or (var_sbf <= 0.0):
+            continue
+
+        Pf = var_sbf / Imean
+        if (not np.isfinite(Pf)) or (Pf <= 0.0):
+            continue
+
+        mbar = -2.5 * np.log10(Pf) + mjysr_to_ab_zp(area)
+
+        print(
+            f"{label_prefix} rin={rin:5.1f}, rout={rout:5.1f}, "
+            f"N={n:7d}, Imean={Imean:.3e}, std={std:.3e}, dyn={dyn:.3e}, "
+            f"var_sbf={var_sbf:.3e}, Pf={Pf:.3e}, m̄={mbar:.3f}"
+        )
+
 def mjysr_to_ab_zp(pix_area_arcsec2):
     # m_AB для 1 (MJy/sr) на 1 пиксель
     jy_per_pix = 2.350443e-5 * pix_area_arcsec2  # 1 MJy/sr -> Jy/arcsec^2
@@ -709,6 +802,8 @@ def main():
     # Проверка адекватности области для измерения флуктуаций
     if not check_sbf_region(resid, mask_sbf, label="[SBF-REGION]"):
         print("[SBF] область для измерения флуктуаций неадекватна, m̄ не считаем")
+        # даже если базовый аннулус плохой, всё равно прогоняем скан по радиусам
+        scan_sbf_annuli(resid, model, mask, area, x0_sbf, y0_sbf)
         return
 
     # PSF и его E(k)
@@ -735,8 +830,9 @@ def main():
     if vals_sbf.size == 0:
         print("[SBF] в аннулусе нет валидных пикселей для оценки дисперсии")
         return
-
-    var_sbf = float(np.nanvar(vals_sbf))
+    lo, hi = np.nanpercentile(vals_sbf, [5, 95])  # или ещё жёстче, 10–90
+    core = (vals_sbf >= lo) & (vals_sbf <= hi)
+    var_sbf = float(np.nanvar(vals_sbf[core]))
 
     if (not np.isfinite(var_sbf)) or (var_sbf <= 0.0):
         print(f"[SBF] некорректная дисперсия в аннулусе: var={var_sbf}")
@@ -807,9 +903,13 @@ def main():
 
         print(f"m̄(F150W) = {mbar:.3f} mag   (окно k={kwin[0]:.02f}..{kwin[1]:.02f} pix^-1)")
         print(f"(F090W − F150W) ≈ {color:.3f} mag (грубая оценка)")
+        # Диагностический прогон по радиусам SBF-аннулуса для оценки плато m̄
+        scan_sbf_annuli(resid, model, mask, area, x0_sbf, y0_sbf)
     else:
         print(f"m̄(F150W) = {mbar:.3f} mag   (окно k={kwin[0]:.02f}..{kwin[1]:.02f} pix^-1)")
         print("[INFO] Второй фильтр не задан, цвет не считается.")
+        # Диагностический прогон по радиусам SBF-аннулуса для оценки плато m̄
+        scan_sbf_annuli(resid, model, mask, area, x0_sbf, y0_sbf)
 
 if __name__ == "__main__":
     main()
