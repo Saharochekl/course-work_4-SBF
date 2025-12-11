@@ -614,6 +614,70 @@ def check_sbf_region(resid, mask_sbf, label="[SBF]"):
     return True
 
 
+# === Helper to pick m̄ plateau ===
+def pick_mbar_plateau(rows, label_prefix="[PLATEAU]", dm_max=0.4, min_len=3):
+    """
+    По итогам скана по радиусам выбирает 'плато' m̄:
+    - rows: список словарей с полями rin, rout, mbar.
+    - dm_max: макс. разброс m̄ внутри плато.
+    - min_len: минимальное число колец в плато.
+
+    Возвращает (rin_min, rout_max, mbar_mean, mbar_min, mbar_max, n_rings)
+    или (None,)*6, если плато не найдено.
+    """
+    if not rows:
+        print(f"{label_prefix} нет данных для поиска плато")
+        return None, None, None, None, None, None
+
+    # сортируем по внутреннему радиусу
+    rows_sorted = sorted(rows, key=lambda r: r["rin"])
+    best = None  # (score, i_start, i_end)
+
+    mvals = [r["mbar"] for r in rows_sorted]
+
+    n = len(rows_sorted)
+    for i in range(n):
+        cur_min = mvals[i]
+        cur_max = mvals[i]
+        for j in range(i + 1, n):
+            v = mvals[j]
+            if v < cur_min:
+                cur_min = v
+            if v > cur_max:
+                cur_max = v
+            if cur_max - cur_min > dm_max:
+                break
+            length = j - i + 1
+            if length >= min_len:
+                # чем длиннее плато и ближе к середине радиуса, тем лучше
+                rin = rows_sorted[i]["rin"]
+                rout = rows_sorted[j]["rout"]
+                rmid = 0.5 * (rin + rout)
+                score = (length, -abs(rmid))  # сначала макс. длина, потом минимальный |rmid|
+                if (best is None) or (score > best[0]):
+                    best = (score, i, j)
+
+    if best is None:
+        print(f"{label_prefix} плато m̄ с dm<={dm_max:.2f} mag не найдено")
+        return None, None, None, None, None, None
+
+    _, i0, j0 = best
+    subset = rows_sorted[i0:j0 + 1]
+    rin_min = subset[0]["rin"]
+    rout_max = subset[-1]["rout"]
+    m_list = [r["mbar"] for r in subset]
+    mbar_mean = float(np.mean(m_list))
+    mbar_min = float(min(m_list))
+    mbar_max = float(max(m_list))
+    n_rings = len(subset)
+
+    print(
+        f"{label_prefix} rin≈{rin_min:.1f}..{rout_max:.1f} px, "
+        f"m̄≈{mbar_mean:.3f} mag, Δm̄={mbar_max - mbar_min:.3f} mag, "
+        f"N_rings={n_rings}"
+    )
+    return rin_min, rout_max, mbar_mean, mbar_min, mbar_max, n_rings
+
 # === Диагностический прогон по радиусам SBF-аннулуса ===
 def scan_sbf_annuli(resid, model, mask, area, x0_sbf, y0_sbf, label_prefix="[SCAN]"):
     """
@@ -624,6 +688,7 @@ def scan_sbf_annuli(resid, model, mask, area, x0_sbf, y0_sbf, label_prefix="[SCA
     - для больших полей (полный кадр): rin~100..800, ширина ~100 пикс;
     - для меньших (кроп): rin~30..(Rmax-20), ширина ~60 пикс.
     """
+    rows = []
     ny, nx = resid.shape
     yy, xx = np.ogrid[:ny, :nx]
     rr = np.hypot(yy - y0_sbf, xx - x0_sbf)
@@ -705,6 +770,20 @@ def scan_sbf_annuli(resid, model, mask, area, x0_sbf, y0_sbf, label_prefix="[SCA
             f"N={n:7d}, Imean={Imean:.3e}, std={std:.3e}, dyn={dyn:.3e}, "
             f"var_sbf={var_sbf:.3e}, Pf={Pf:.3e}, m̄={mbar:.3f}"
         )
+        rows.append(
+            {
+                "rin": float(rin),
+                "rout": float(rout),
+                "N": n,
+                "Imean": Imean,
+                "std": std,
+                "dyn": dyn,
+                "var_sbf": var_sbf,
+                "Pf": Pf,
+                "mbar": mbar,
+            }
+        )
+    pick_mbar_plateau(rows, label_prefix=f"{label_prefix} PLATEAU")
 
 def mjysr_to_ab_zp(pix_area_arcsec2):
     # m_AB для 1 (MJy/sr) на 1 пиксель
