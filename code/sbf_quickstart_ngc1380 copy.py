@@ -1,61 +1,21 @@
+#!/usr/bin/env python3
 # sbf_quickstart_ngc1380.py
-#
-# SBF-пайплайн для JWST/NIRCam i2d (быстрый прототип).
-#
-# Что делает скрипт
-#   1) Загружает i2d (SCI) и строит маску валидных пикселей (finite SCI и, если есть, WHT>0).
-#   2) Оценивает фон (robust tile-median) и вычитает его.
-#   3) Строит маску компактных источников (звёзды/ГК/фоновые) через photutils.segmentation.
-#   4) Строит гладкую модель галактики по радиальному профилю вокруг центра и вычитает её.
-#   5) В SBF-аннулусе оценивает дисперсию флуктуаций и среднюю яркость галактики.
-#   6) Переводит Pf = sigma^2 / Imean в m̄ по формуле AB-системы для MJy/sr.
-#   7) Дополнительно: считает P(k) и E(k) (PSF), фитит P(k)=P0*E(k)+P1 как диагностику.
-#
-# Вход/выход
-#   --f150w  : i2d FITS для F150W (SBF).
-#   --f090w  : i2d FITS для F090W (цвет), опционально.
-#   --psfref : i2d FITS с корректным header для stpsf (если PSF считаем не из того же файла).
-#
-#   Вывод в stdout:
-#     - m̄(F150W) и использованное окно k (если был валидный P0-фит).
-#     - (F090W − F150W) грубо по медианам (если задан второй фильтр).
-#     - диагностический скан m̄ по кольцам (поиск «плато»).
-#
-#   Пишет FITS рядом с входным файлом:
-#     *_sbf_model.fits  : гладкая модель галактики
-#     *_sbf_resid.fits  : остатки (img - model) с NaN на маске
-#
-# Единицы и смысл величин
-#   - Входной SCI для JWST i2d обычно в MJy/sr (поверхностная яркость).
-#   - Imean: средняя поверхностная яркость галактики в аннулусе (MJy/sr).
-#   - sigma^2: дисперсия остатков в аннулусе (MJy/sr)^2.
-#   - Pf = sigma^2 / Imean имеет размерность MJy/sr и конвертится в AB mag через ZP.
-#
-# Тюнинг (параметры, которые реально меняют поведение)
-#   - mask_sources: nsigma, npixels, (и kernel=7.0 для сглаживания при пороге)
-#   - subtract_galaxy: half_size вырезки, dr/min_pix для радиального профиля
-#   - SBF-аннулус: rin/rout (или скан scan_sbf_annuli)
-#   - окно частот k: kmin/kmax в fit_P0 (диагностика, не основное m̄ в текущей версии)
-#
-# Ограничения прототипа
-#   - Модель галактики осесимметрична (радиальный профиль), без изофот/эллиптичности.
-#   - NaN-разрывы мозаики не «восстанавливаются»: для модели они заполняются профилем.
-#   - Плотная маска, неверный центр или «грязный» аннулус легко уводят m̄ в мусор.
+# Вход: пути к i2d для F150W (SBF) и F090W (цвет). Выход: m_bar(F150W), цвет, окно k.
 
 import argparse, numpy as np
 from pathlib import Path
 from astropy.io import fits
 from astropy.wcs import WCS
-from astropy.stats import sigma_clipped_stats
+from astropy.stats import SigmaClip, sigma_clipped_stats
 from astropy.convolution import Gaussian2DKernel, interpolate_replace_nans
 from photutils.segmentation import detect_sources, deblend_sources
+from photutils.isophote import EllipseGeometry, Ellipse, build_ellipse_model
 import stpsf                                    # PSF под JWST файл
-from numpy.fft import rfft2, rfftfreq, fftshift # fftshift сейчас не используется (оставлено на будущее)
+from numpy.fft import rfft2, rfftfreq, fftshift
+from astropy.convolution import Gaussian2DKernel, interpolate_replace_nans
 
 
-# -----------------------------------------------------------------------------
-# Галактика: радиальный профиль и заливка дыр (модель для вычитания)
-# -----------------------------------------------------------------------------
+
 def build_radial_profile(img_c, valid_c, mask_c, x0, y0, dr=1.0, min_pix=200):
     ny, nx = img_c.shape
     yy, xx = np.ogrid[:ny, :nx]
@@ -84,7 +44,38 @@ def build_radial_profile(img_c, valid_c, mask_c, x0, y0, dr=1.0, min_pix=200):
 
     return np.array(radii), np.array(intens)
 
-# Заливаем невалидные/замаскированные области радиальным профилем (только для построения модели)
+
+def inpaint_for_isophote(img_c, valid_c):
+    """
+    Заполнение больших NaN / дыр для задачи аппроксимации изофот.
+    ВАЖНО: это используется ТОЛЬКО для подгонки гладкой модели галактики.
+    Для SBF-статистики по остаткам продолжаем использовать исходный img_c.
+    """
+
+
+    arr = img_c.copy()
+    # всё, что заведомо невалидно, считаем NaN
+    arr[~valid_c] = np.nan
+
+    nan0 = int(np.isnan(arr).sum())
+    total = arr.size
+    print(f"[INPAINT] start: {nan0} NaNs из {total} пикселей ({100*nan0/total:.2f}%) в вырезке")
+
+    if nan0 == 0:
+        return arr
+
+    # последовательно увеличиваем размер ядра, чтобы перешить большие дыры
+    for fwhm in (7.0, 15.0, 25.0, 40.0, 60.0, 100.0, 150.0, 200.0):
+        ker = Gaussian2DKernel(fwhm)
+        arr = interpolate_replace_nans(arr, ker)
+        nan_now = int(np.isnan(arr).sum())
+        print(f"[INPAINT] после FWHM={fwhm}: {nan_now} NaNs "
+              f"({100*nan_now/total:.2f}%)")
+        if nan_now == 0:
+            break
+
+    return arr
+
 def fill_nan_with_radial(img_c, valid_c, mask_c, x0, y0, radii, intens):
     ny, nx = img_c.shape
     yy, xx = np.ogrid[:ny, :nx]
@@ -93,16 +84,14 @@ def fill_nan_with_radial(img_c, valid_c, mask_c, x0, y0, radii, intens):
     ok = valid_c & (~mask_c) & np.isfinite(img_c)
     img_iso = img_c.copy()
 
-    # bad: невалидно/замаскировано/NaN → подставляем профиль (только для модели)
+    # где нет данных – заливаем профилем
     bad = ~ok
     img_iso[bad] = np.interp(rr[bad], radii, intens,
                              left=intens[0], right=intens[-1])
     return img_iso
 
 
-# -----------------------------------------------------------------------------
-# I/O: чтение i2d и базовые маски валидности
-# -----------------------------------------------------------------------------
+
 def load_i2d(path):
     hdul = fits.open(path, memmap=False)
     sci = hdul['SCI'].data.astype(float)
@@ -125,9 +114,6 @@ def load_i2d(path):
     hdul.close()
     return sci, hdr, pix_area, valid
 
-# -----------------------------------------------------------------------------
-# Фон и маскирование источников
-# -----------------------------------------------------------------------------
 def sigma_clipped_bkg(img, box=128):
     h, w = img.shape
     bs = box
@@ -139,19 +125,17 @@ def sigma_clipped_bkg(img, box=128):
                 tiles.append(np.nanmedian(tile))
     return float(np.nanmedian(tiles)) if tiles else float(np.nanmedian(img))
 
-
-
 def mask_sources(img, nsigma=2.0, npixels=20, do_deblend=True):
     """Build a boolean source mask. Nan-safe. Deblend is optional (needs scikit-image)."""
     # If everything is NaN, return empty mask
     if not np.any(np.isfinite(img)):
         return np.zeros_like(img, bool)
 
-    # Сглаживание для стабильного порога (interpolate_replace_nans мостит NaN-дыры) smoothing for thresholding
+    # Nan-safe smoothing for thresholding
     ker = Gaussian2DKernel(7.0)  # a bit wider kernel to bridge big NaN holes
     sm = interpolate_replace_nans(img, ker)
 
-    # Робастные статистики (sigma_clipped_stats терпит NaN)
+    # Robust stats; sigma_clipped_stats tolerates NaNs
     bkg, med, rms = sigma_clipped_stats(sm, sigma=3.0)
     thr = bkg + nsigma * max(rms, 1e-12)  # guard against zero/NaN rms
 
@@ -166,7 +150,7 @@ def mask_sources(img, nsigma=2.0, npixels=20, do_deblend=True):
         except Exception:
             pass
 
-    # Выкидываем крупнейшую(ие) область(и): обычно это галактика; оставляем компактные источники
+    # drop the largest connected regions (likely the target galaxy), keep compact sources
     labels = segm.labels
     counts = np.bincount(segm.data.ravel(), minlength=labels.max()+1)
     # ignore background label 0
@@ -182,10 +166,31 @@ def mask_sources(img, nsigma=2.0, npixels=20, do_deblend=True):
 
     return segm.make_source_mask(size=5)
 
+def pick_start_radius(mask, valid, x0, y0, max_probe=80, min_frac=0.20, min_pix=200):
+    """Pick the smallest SMA whose 1px ring has enough usable pixels."""
+    ny, nx = mask.shape
+    yy, xx = np.ogrid[:ny, :nx]
+    rr = np.hypot(yy - y0, xx - x0)
+    blocked = mask | (~valid)  # blocked pixels are either masked or invalid by WHT/NaN
 
-# -----------------------------------------------------------------------------
-# Геометрия: оценка центра и вырезка вокруг него
-# -----------------------------------------------------------------------------
+    for r in range(3, max_probe):
+        ring = (rr >= r - 0.5) & (rr < r + 0.5)
+        total = int(ring.sum())
+        if total < 1:
+            continue
+        good = int((ring & (~blocked)).sum())
+        if good >= min_pix and good/total >= min_frac:
+            return r
+
+    # fallback: pick ring with maximum good pixels
+    best_r, best_good = None, -1
+    for r in range(3, max_probe):
+        ring = (rr >= r - 0.5) & (rr < r + 0.5)
+        good = int((ring & (~blocked)).sum())
+        if good > best_good:
+            best_good, best_r = good, r
+    return max(3, best_r or 6)
+
 def guess_center(img, valid):
     """Rough center guess from the brightest smoothed pixel (NaN/valid aware)."""
     sm = interpolate_replace_nans(img, Gaussian2DKernel(7.0))
@@ -198,6 +203,78 @@ def guess_center(img, valid):
     y, x = np.unravel_index(np.nanargmax(sm), sm.shape)
     return float(x), float(y)
 
+def cutout_connected_valid(img, valid, x0, y0, pad=24):
+    """Return a cutout around the connected valid region that contains (x0,y0).
+    Returns: (img_cut, valid_cut, (x0_cut, y0_cut), (x1, x2, y1, y2))
+    where [y1:y2, x1:x2] are slice bounds in the original image.
+    """
+    ny, nx = valid.shape
+    y0i = int(round(y0)); x0i = int(round(x0))
+    y0i = np.clip(y0i, 0, ny - 1); x0i = np.clip(x0i, 0, nx - 1)
+
+    # If the guessed center is invalid, jump to nearest valid pixel
+    if not valid[y0i, x0i]:
+        vv = np.argwhere(valid)
+        if vv.size == 0:
+            # hopeless, return the whole image
+            return img, valid, (x0, y0), (0, nx, 0, ny)
+        d2 = (vv[:, 0] - y0i) ** 2 + (vv[:, 1] - x0i) ** 2
+        k = int(np.argmin(d2))
+        y0i, x0i = int(vv[k, 0]), int(vv[k, 1])
+        y0, x0 = float(y0i), float(x0i)
+
+    try:
+        from scipy.ndimage import label
+        lab, _ = label(valid)
+        lab_id = int(lab[y0i, x0i])
+        comp = (lab == lab_id)
+        ys, xs = np.nonzero(comp)
+        y1, y2 = ys.min(), ys.max() + 1
+        x1, x2 = xs.min(), xs.max() + 1
+    except Exception:
+        # Fallback: grow to nearest seam in four directions
+        y1 = y0i
+        while y1 > 0 and valid[y1 - 1, x0i]:
+            y1 -= 1
+        y2 = y0i
+        while y2 < ny - 1 and valid[y2 + 1, x0i]:
+            y2 += 1
+        x1 = x0i
+        while x1 > 0 and valid[y0i, x1 - 1]:
+            x1 -= 1
+        x2 = x0i
+        while x2 < nx - 1 and valid[y0i, x2 + 1]:
+            x2 += 1
+
+    # Pad but stay inside
+    y1 = max(0, y1 - pad); y2 = min(ny, y2 + pad)
+    x1 = max(0, x1 - pad); x2 = min(nx, x2 + pad)
+
+    img_c = img[y1:y2, x1:x2]
+    valid_c = valid[y1:y2, x1:x2]
+    x0_c = x0 - x1
+    y0_c = y0 - y1
+    return img_c, valid_c, (x0_c, y0_c), (x1, x2, y1, y2)
+
+
+def seam_limited_maxsma(valid, x0, y0):
+    """Max SMA before hitting invalid pixels (seams)."""
+    ny, nx = valid.shape
+    y0i = int(round(y0)); x0i = int(round(x0))
+    y0i = np.clip(y0i, 0, ny - 1); x0i = np.clip(x0i, 0, nx - 1)
+    try:
+        from scipy.ndimage import distance_transform_edt
+        dist = distance_transform_edt(valid)
+        return max(5, int(dist[y0i, x0i]) - 2)
+    except Exception:
+        # crude fallback: grow until ring touches invalid
+        yy, xx = np.ogrid[:ny, :nx]
+        rr = np.hypot(yy - y0, xx - x0)
+        for r in range(5, min(ny, nx)):
+            ring = (rr >= r - 0.5) & (rr < r + 0.5)
+            if np.any(ring & (~valid)):
+                return max(5, r - 2)
+        return max(5, int(min(ny, nx) / 2) - 2)
 
 def cutout_box(img, valid, x0, y0, half_size):
     ny, nx = img.shape
@@ -219,15 +296,20 @@ def subtract_galaxy(img, mask, valid):
       mask  – bool-маска (True = пиксель не использовать)
       valid – bool-маска валидных пикселей (WHT>0, не NaN)
     """
-    # Центр галактики: guess_center по данным или вручную (фиксированный x0,y0)
+    # 1) Центр. Можно вернуть guess_center, можно оставить руками:
     x0, y0 = guess_center(img, valid)
     #x0, y0 = 6306.0, 2730.0
     print(f"[RADIAL] use center=({x0:.1f}, {y0:.1f})")
 
     ny, nx = img.shape
 
+    # # если центр вообще не попадает в кадр (кроп), переопределяем его по данным
+    # if not (0 <= x0 < nx and 0 <= y0 < ny):
+    #     x0, y0 = guess_center(img, valid)
+    #     print(f"[CENTER] global center out of frame, "
+    #           f"use guess_center → ({x0:.1f}, {y0:.1f})")
 
-    # Вырезаем квадрат вокруг центра, чтобы не гонять вычисления по всему кадру
+    # 2) Вырезка по связной валидной области вокруг центра
     img_c, valid_c, (x0, y0), (x1, x2, y1, y2) = cutout_box(
         img, valid, x0, y0, half_size=3000  # подобрать под размер галактики
     )
@@ -238,17 +320,31 @@ def subtract_galaxy(img, mask, valid):
           f"finite={finite_c.sum()}, valid={valid_c.sum()}, "
           f"mask_c={mask_c.sum()}")
 
-    # Радиальный профиль по данным в вырезке (игнорируем маску и невалидные)
+    # 3) Радиальный профиль по сырому img_c
     radii0, intens0 = build_radial_profile(img_c, valid_c, mask_c, x0, y0)
     print(f"[RADIAL] primary radial bins: {len(radii0)}")
 
+    # ny, nx = img_c.shape
+    # yy, xx = np.ogrid[:ny, :nx]
+    # rr = np.hypot(yy - y0, xx - x0)
+    # prof_1d = np.interp(rr.ravel(), radii, intens, left=intens[0], right=intens[-1]).reshape(rr.shape)
+    #
+    # model_full = np.full_like(img, np.nan)
+    # resid_full = img.copy()
+    # model_full[y1:y2, x1:x2] = prof_1d
+    # resid_full[y1:y2, x1:x2] = img_c - prof_1d
+    # resid_full[mask] = np.nan
 
-    # Прототип: разрывы мозаики заполняем профилем (это заполнение для модели, не восстановление данных)
+    # print(f"[RADIAL] img_c shape={img_c.shape}")
+    # print(f"[RADIAL] finite={finite_c.sum()}, valid={valid_c.sum()}, "
+    #       f"mask_c={mask_c.sum()}")
 
-    # Строим img_iso: подставляем профиль во все bad-пиксели (seams/маска/NaN)
+    # 3) inpaint только по valid_c, как и раньше
+
+    # 4) Залечиваем NaN по этому профилю
     img_iso = fill_nan_with_radial(img_c, valid_c, mask_c, x0, y0, radii0, intens0)
 
-    # Финальный профиль считаем по img_iso, чтобы кольца не разваливались на NaN-разрывах
+    # 5) Строим ОКОНЧАТЕЛЬНЫЙ радиальный профиль по img_iso
     ny, nx = img_iso.shape
     yy, xx = np.ogrid[:ny, :nx]
     rr = np.hypot(yy - y0, xx - x0)
@@ -267,8 +363,6 @@ def subtract_galaxy(img, mask, valid):
     radii, intens = [], []
     print(f"[RADIAL] r_max≈{r_max:.1f}, nbins≈{nbins}")
 
-    
-    # Медиана по тонким кольцам толщиной dr; кольца с малым числом пикселей пропускаем
     for i in range(nbins):
         r_in = i * dr
         r_out = r_in + dr
@@ -287,7 +381,7 @@ def subtract_galaxy(img, mask, valid):
     print(f"[RADIAL] good radial bins: {len(radii)}")
 
     if len(radii) < 5:
-        # Fallback: если профиля почти нет, используем гауссово сглаживание как грубую модель
+        # fallback: гауссовое сглаживание
         from astropy.convolution import convolve, Gaussian2DKernel
         img_c_smooth = convolve(img_c, Gaussian2DKernel(10.0),
                                 normalize_kernel=True)
@@ -299,7 +393,7 @@ def subtract_galaxy(img, mask, valid):
         resid_full[mask] = np.nan
         return resid_full, model_full
 
-    # Строим 2D модель из 1D профиля и вычитаем её из вырезки
+    # 6) ОДИН раз строим модель и вычитаем
     prof_1d = np.interp(rr.ravel(), radii, intens,
                         left=intens[0], right=intens[-1]).reshape(rr.shape)
 
@@ -311,19 +405,15 @@ def subtract_galaxy(img, mask, valid):
 
     return resid_full, model_full
 
-
-# -----------------------------------------------------------------------------
-# PSF: получение и нормировка PSF через stpsf
-# -----------------------------------------------------------------------------
 def build_psf_for_file(fits_path, size=129):
-    # stpsf настраивает симуляцию, читая JWST header (инструмент/фильтр/детектор)
+    # stpsf сам читает header и настраивает инструмент
     sim = stpsf.setup_sim_to_match_file(fits_path)
     psf = sim.calc_psf(nlambda=7, fov_pixels=size)
 
-    # DEBUG: тип PSF-объекта (на случай смены API)
+    # на всякий лог, если хочется убедиться:
     print("DEBUG psf type:", type(psf))
 
-    # Разруливаем тип результата calc_psf (HDUList / HDU / ndarray)
+    # 1) Разруливаем тип
     if isinstance(psf, fits.HDUList):
         # классический случай для webbpsf/stpsf – вернули HDUList
         data = psf[0].data
@@ -335,11 +425,11 @@ def build_psf_for_file(fits_path, size=129):
 
     arr = np.array(data, dtype=float)
 
-    # Если PSF пришёл как куб (λ, y, x), интегрируем по λ
+    # 2) Если это куб (λ, y, x) – схлопываем по λ
     if arr.ndim == 3:
         arr = arr.sum(axis=0)
 
-    # Чистим NaN и нормируем сумму PSF к 1
+    # 3) Чистим и нормируем
     arr = np.nan_to_num(arr, nan=0.0)
     s = arr.sum()
     if not np.isfinite(s) or s <= 0:
@@ -349,11 +439,8 @@ def build_psf_for_file(fits_path, size=129):
     return arr
 
 
-# -----------------------------------------------------------------------------
-# Спектр: оценка P(k) по остаткам и E(k) по PSF
-# -----------------------------------------------------------------------------
+
 def radial_power(img, mask):
-    # Готовим массив для FFT: замаскированные пиксели = 0, остальное = resid
     data = np.zeros_like(img)
     tmp = np.nan_to_num(img, nan=0.0)
     data[~mask] = tmp[~mask]
@@ -363,25 +450,25 @@ def radial_power(img, mask):
     if n_pix == 0:
         raise RuntimeError("radial_power: no unmasked pixels")
 
-    # Вычитаем среднее по используемым пикселям, чтобы не тащить DC-компонент
+    # вычитаем среднее, чтобы не тянуть DC-компонент
     mean = float(np.nanmean(data[use]))
     data[use] -= mean
 
-    # FFT и 2D power
+    # FFT
     F = rfft2(data)
     power2d = np.abs(F)**2
 
-    # Прямая дисперсия в пространстве (для нормировки по Parseval)
+    # дисперсия по пикселям
     var_direct = float(np.nanvar(data[use]))
 
-    # Дисперсия из FFT (Parseval) и поправка масштаба под прямую дисперсию
+    # "по-Parseval'у" из FFT
     var_fft = power2d.sum() / (n_pix**2)
     if var_fft > 0 and np.isfinite(var_fft):
         scale = var_direct / var_fft
     else:
         scale = 1.0
 
-    # Финальная 2D мощность (нормирована на число пикселей области)
+    # окончательная 2D-мощность
     P2d = power2d * scale / (n_pix**2)
 
     ny, nx = data.shape
@@ -390,7 +477,6 @@ def radial_power(img, mask):
     KX, KY = np.meshgrid(kx, ky)
     kr = np.hypot(KX, KY)
 
-    # Азимутальное усреднение: медиана мощности по кольцам в k-пространстве
     kbins = np.linspace(0, kr.max(), 80)
     P = np.zeros(len(kbins) - 1, float)
     kc = np.zeros_like(P)
@@ -421,10 +507,6 @@ def radial_power_psf(psf_small, img_shape):
     mask_big = np.zeros_like(big, bool)
     return radial_power(big, mask_big)
 
-
-# -----------------------------------------------------------------------------
-# Фит P(k) = P0 * E(k) + P1 (диагностика качества/PSF, не основное m̄)
-# -----------------------------------------------------------------------------
 def fit_P0(Pk, Ek, kmin=0.03, kmax=0.40):
     """
     Линейный фит P(k) = P0 * E(k) + P1 с проверками адекватности.
@@ -493,11 +575,6 @@ def fit_P0(Pk, Ek, kmin=0.03, kmax=0.40):
         return np.nan, np.nan, (kmin, kmax)
 
     return float(P0), float(P1), (kmin, kmax)
-
-
-# -----------------------------------------------------------------------------
-# SBF: проверки адекватности области и поиск «плато» по радиусам
-# -----------------------------------------------------------------------------
 def check_sbf_region(resid, mask_sbf, label="[SBF]"):
     """
     Проверка адекватности области, в которой меряем SBF:
@@ -527,17 +604,17 @@ def check_sbf_region(resid, mask_sbf, label="[SBF]"):
     # на нормальном кропе ~1e-2. Здесь оставляем запас.
     if dyn > 0.2:
         print(f"{label} динамический диапазон {dyn:.3e} слишком велик → область грязная")
-    # NOTE: при желании можно сделать это строгим фейлом (return False)
+    #     return False
 
     # Слишком маленький std означает, что сигнал ниже шума/квантизации
     if std < 1e-7:
         print(f"{label} std={std:.3e} слишком мал → сигнал неотличим от нуля")
-    # NOTE: при желании можно сделать это строгим фейлом (return False)
+    #     return False
 
     return True
 
 
-# Поиск «плато» m̄ по результатам скана радиусов
+# === Helper to pick m̄ plateau ===
 def pick_mbar_plateau(rows, label_prefix="[PLATEAU]", dm_max=0.4, min_len=3):
     """
     По итогам скана по радиусам выбирает 'плато' m̄:
@@ -601,7 +678,7 @@ def pick_mbar_plateau(rows, label_prefix="[PLATEAU]", dm_max=0.4, min_len=3):
     )
     return rin_min, rout_max, mbar_mean, mbar_min, mbar_max, n_rings
 
-# Диагностический прогон по радиусам SBF-аннулуса (ищем диапазон, где m̄ стабилен)
+# === Диагностический прогон по радиусам SBF-аннулуса ===
 def scan_sbf_annuli(resid, model, mask, area, x0_sbf, y0_sbf, label_prefix="[SCAN]"):
     """
     Диагностический прогон по радиусам SBF-аннулуса.
@@ -708,8 +785,6 @@ def scan_sbf_annuli(resid, model, mask, area, x0_sbf, y0_sbf, label_prefix="[SCA
         )
     pick_mbar_plateau(rows, label_prefix=f"{label_prefix} PLATEAU")
 
-
-# Перевод 1 (MJy/sr) * pixel_area в AB magnitude (нулевая точка для Pf)
 def mjysr_to_ab_zp(pix_area_arcsec2):
     # m_AB для 1 (MJy/sr) на 1 пиксель
     jy_per_pix = 2.350443e-5 * pix_area_arcsec2  # 1 MJy/sr -> Jy/arcsec^2
@@ -725,8 +800,7 @@ def main():
     args = ap.parse_args()
 
     img_f150, hdr150, area, valid150 = load_i2d(args.f150w)
-
-    # Второй фильтр (для цвета) загружаем только если он задан
+    # второй кадр грузим только если он передан
     if args.f090w is not None:
         img_f090, hdr090, _, valid090 = load_i2d(args.f090w)
     else:
@@ -747,7 +821,7 @@ def main():
 
     resid, model = subtract_galaxy(img, mask, valid150)
 
-    # Сохраняем модель и остатки в FITS, чтобы проверить глазами в DS9/Siril
+    # === Сохраняем модель и остатки в FITS, чтобы результат был НЕ "виртуальный" ===
     base = Path(args.f150w)
     stem = base.stem  # jw03055-o001_t001_nircam_clear-f150w_i2d или i2d_crop1
     out_dir = base.parent
@@ -773,7 +847,7 @@ def main():
             float(np.nanmax(resid))
         ))
 
-    # DEBUG: локальная проверка RMS остатков в маленьком кольце (sanity-check)
+    # DEBUG: локальный mean / RMS флуктуаций в кольце вокруг центра
     x0_dbg, y0_dbg = 6306.0, 2730.0  # центр галактики в полных координатах кадра
     yy_dbg, xx_dbg = np.ogrid[:resid.shape[0], :resid.shape[1]]
     rr_dbg = np.hypot(yy_dbg - y0_dbg, xx_dbg - x0_dbg)
@@ -795,7 +869,7 @@ def main():
     # x0_sbf, y0_sbf = 6306.0, 2730.0  # грубый центр галактики в полных координатах
     ny_r, nx_r = resid.shape
     # if not (0 <= x0_sbf < nx_r and 0 <= y0_sbf < ny_r):
-    # на случай кропа используем автоматический центр
+    #     # на случай кропа используем автоматический центр
     x0_sbf, y0_sbf = guess_center(resid, valid150)
     yy_r, xx_r = np.ogrid[:ny_r, :nx_r]
     rr_r = np.hypot(yy_r - y0_sbf, xx_r - x0_sbf)
@@ -804,20 +878,20 @@ def main():
     annulus = (rr_r >= rin) & (rr_r <= rout)
     mask_sbf = mask | (~annulus)
 
-    # Быстрые проверки базового аннулуса; при провале всё равно прогоняем скан радиусов
+    # Проверка адекватности области для измерения флуктуаций
     if not check_sbf_region(resid, mask_sbf, label="[SBF-REGION]"):
         print("[SBF] область для измерения флуктуаций неадекватна, m̄ не считаем")
         # даже если базовый аннулус плохой, всё равно прогоняем скан по радиусам
         scan_sbf_annuli(resid, model, mask, area, x0_sbf, y0_sbf)
         return
 
-    # PSF → E(k) и остатки → P(k)
+    # PSF и его E(k)
     psf_file = args.psfref if args.psfref is not None else args.f150w
     psf = build_psf_for_file(psf_file, size=129)
     Pk = radial_power(resid, mask_sbf)
     Ek = radial_power_psf(psf, resid.shape)
 
-    # NOTE: нормировка E(k) экспериментальная; m̄ ниже считается через Pf=sigma^2/Imean
+    # нормируем PSF power к сумме 1, чтобы P0 был примерно дисперсией
     Ek_k, Ek_P = Ek
     norm = np.trapezoid(Ek_P, Ek_k)
     if norm <= 0 or not np.isfinite(norm):
@@ -828,7 +902,7 @@ def main():
 
     P0, P1, kwin = fit_P0(Pk, Ek, kmin=0.03, kmax=0.40)  # окно по стабильности подберёшь позже
 
-    # Дисперсия флуктуаций: var по остаткам в аннулусе (с обрезкой хвостов)
+    # Оценка дисперсии SBF-сигнала:
     # берём реальную дисперсию по остаткам в том же аннулусе
     use_sbf_vals = (~mask_sbf) & np.isfinite(resid)
     vals_sbf = resid[use_sbf_vals]
@@ -843,7 +917,7 @@ def main():
         print(f"[SBF] некорректная дисперсия в аннулусе: var={var_sbf}")
         return
 
-    # DEBUG: сравнение P0 из фита и var_sbf по пикселям (ожидаемо одного порядка)
+    # Для отладки смотрим, насколько P0 занижен относительно реальной дисперсии
     if np.isfinite(P0) and (P0 > 0.0):
         print(f"[SBF-DBG] P0={P0:.3e}, var_sbf={var_sbf:.3e}, ratio=var_sbf/P0={var_sbf/P0:.3e}")
     else:
@@ -863,7 +937,7 @@ def main():
         print(f"[SBF] некорректная средняя яркость галактики в аннулусе: Imean={Imean}")
         return
 
-    # Pf в единицах SCI (MJy/sr): Pf = sigma^2 / Imean
+    # Флуктуационная яркость в тех же единицах, что и изображение (MJy/sr)
     Pf = sigma2 / Imean
 
     if (not np.isfinite(Pf)) or (Pf <= 0.0):
@@ -872,10 +946,10 @@ def main():
 
     print(f"[SBF] sigma^2={sigma2:.3e}, Imean={Imean:.3e}, Pf={Pf:.3e}")
 
-    # Перевод Pf → m̄ в AB-системе
+    # Величина флуктуаций в AB-магнитудах
     mbar = -2.5 * np.log10(Pf) + mjysr_to_ab_zp(area)
 
-    # Грубый sanity-check по диапазону m̄ (порог можно настроить)
+    # очень грубый sanity-check по диапазону SBF-магнитуд
     if not (10.0 <= mbar <= 40.0):
         print(
             f"[SBF] WARNING: m̄(F150W) = {mbar:.3f} mag выглядит нефизично, "
@@ -908,12 +982,12 @@ def main():
 
         print(f"m̄(F150W) = {mbar:.3f} mag   (окно k={kwin[0]:.02f}..{kwin[1]:.02f} pix^-1)")
         print(f"(F090W − F150W) ≈ {color:.3f} mag (грубая оценка)")
-        # Диагностика: сканируем радиусы и ищем «плато» m̄
+        # Диагностический прогон по радиусам SBF-аннулуса для оценки плато m̄
         scan_sbf_annuli(resid, model, mask, area, x0_sbf, y0_sbf)
     else:
         print(f"m̄(F150W) = {mbar:.3f} mag   (окно k={kwin[0]:.02f}..{kwin[1]:.02f} pix^-1)")
         print("[INFO] Второй фильтр не задан, цвет не считается.")
-        # Диагностика: сканируем радиусы и ищем «плато» m̄
+        # Диагностический прогон по радиусам SBF-аннулуса для оценки плато m̄
         scan_sbf_annuli(resid, model, mask, area, x0_sbf, y0_sbf)
 
 if __name__ == "__main__":
