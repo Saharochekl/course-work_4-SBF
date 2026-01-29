@@ -737,6 +737,23 @@ def main():
 
     mask_src = mask_sources(img, nsigma=2.5, npixels=25, do_deblend=not args.dry)
     mask = (~valid150) | mask_src
+
+    # DEBUG: сохраняем диагностические маски (valid / mask_src / mask) отдельными FITS
+    base_dbg = Path(args.f150w)
+    stem_dbg = base_dbg.stem
+    out_dir_dbg = base_dbg.parent
+
+    valid_path = out_dir_dbg / f"{stem_dbg}_dbg_valid.fits"
+    masksrc_path = out_dir_dbg / f"{stem_dbg}_dbg_mask_src.fits"
+    mask_path = out_dir_dbg / f"{stem_dbg}_dbg_mask.fits"
+
+    fits.writeto(valid_path, valid150.astype(np.uint8), hdr150, overwrite=True)
+    fits.writeto(masksrc_path, mask_src.astype(np.uint8), hdr150, overwrite=True)
+    fits.writeto(mask_path, mask.astype(np.uint8), hdr150, overwrite=True)
+
+    print(f"[DBG] valid150  → {valid_path}")
+    print(f"[DBG] mask_src → {masksrc_path}")
+    print(f"[DBG] mask     → {mask_path}")
     if args.dry:
         finite = int(valid150.sum())
         total = int(img.size)
