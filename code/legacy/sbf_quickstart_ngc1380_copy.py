@@ -1,63 +1,72 @@
-# sbf_quickstart_ngc1380.py
-#
-# SBF-пайплайн для JWST/NIRCam i2d (быстрый прототип).
-#
-# Что делает скрипт
-#   1) Загружает i2d (SCI) и строит маску валидных пикселей (finite SCI и, если есть, WHT>0).
-#   2) Оценивает фон (robust tile-median) и вычитает его.
-#   3) Строит маску компактных источников (звёзды/ГК/фоновые) через photutils.segmentation.
-#   4) Строит гладкую модель галактики по радиальному профилю вокруг центра и вычитает её.
-#   5) В SBF-аннулусе оценивает дисперсию флуктуаций и среднюю яркость галактики.
-#   6) Переводит Pf = sigma^2 / Imean в m̄ по формуле AB-системы для MJy/sr.
-#   7) Дополнительно: считает P(k) и E(k) (PSF), фитит P(k)=P0*E(k)+P1 как диагностику.
-#
-# Вход/выход
-#   --f150w  : i2d FITS для F150W (SBF).
-#   --f090w  : i2d FITS для F090W (цвет), опционально.
-#   --psfref : i2d FITS с корректным header для stpsf (если PSF считаем не из того же файла).
-#
-#   Вывод в stdout:
-#     - m̄(F150W) и использованное окно k (если был валидный P0-фит).
-#     - (F090W − F150W) грубо по медианам (если задан второй фильтр).
-#     - диагностический скан m̄ по кольцам (поиск «плато»).
-#
-#   Пишет FITS рядом с входным файлом:
-#     *_sbf_model.fits  : гладкая модель галактики
-#     *_sbf_resid.fits  : остатки (img - model) с NaN на маске
-#
-# Единицы и смысл величин
-#   - Входной SCI для JWST i2d обычно в MJy/sr (поверхностная яркость).
-#   - Imean: средняя поверхностная яркость галактики в аннулусе (MJy/sr).
-#   - sigma^2: дисперсия остатков в аннулусе (MJy/sr)^2.
-#   - Pf = sigma^2 / Imean имеет размерность MJy/sr и конвертится в AB mag через ZP.
-#
-# Тюнинг (параметры, которые реально меняют поведение)
-#   - mask_sources: nsigma, npixels, (и kernel=7.0 для сглаживания при пороге)
-#   - subtract_galaxy: half_size вырезки, dr/min_pix для радиального профиля
-#   - SBF-аннулус: rin/rout (или скан scan_sbf_annuli)
-#   - окно частот k: kmin/kmax в fit_P0 (диагностика, не основное m̄ в текущей версии)
-#
-# Ограничения прототипа
-#   - Модель галактики осесимметрична (радиальный профиль), без изофот/эллиптичности.
-#   - NaN-разрывы мозаики не «восстанавливаются»: для модели они заполняются профилем.
-#   - Плотная маска, неверный центр или «грязный» аннулус легко уводят m̄ в мусор.
+"""
+SBF-пайплайн для JWST/NIRCam i2d (быстрый прототип).
 
+Что делает скрипт
+  1) Загружает i2d (SCI) и строит маску валидных пикселей (finite SCI и, если есть, WHT>0).
+  2) Оценивает фон (robust tile-median) и вычитает его.
+  3) Строит маску компактных источников (звёзды/ГК/фоновые) через photutils.segmentation.
+  4) Строит гладкую модель галактики по радиальному профилю вокруг центра и вычитает её.
+  5) В SBF-аннулусе оценивает дисперсию флуктуаций и среднюю яркость галактики.
+  6) Переводит Pf = sigma^2 / Imean в m̄ по формуле AB-системы для MJy/sr.
+  7) Дополнительно: считает P(k) и E(k) (PSF), фитит P(k)=P0*E(k)+P1 как диагностику.
+
+Вход/выход
+  --f150w  : i2d FITS для F150W (SBF).
+  --f090w  : i2d FITS для F090W (цвет), опционально.
+  --psfref : i2d FITS с корректным header для stpsf (если PSF считаем не из того же файла).
+
+  Вывод в stdout:
+    - m̄(F150W) и использованное окно k (если был валидный P0-фит).
+    - (F090W − F150W) грубо по медианам (если задан второй фильтр).
+    - диагностический скан m̄ по кольцам (поиск «плато»).
+
+  Пишет FITS рядом с входным файлом:
+    *_sbf_model.fits  : гладкая модель галактики
+    *_sbf_resid.fits  : остатки (img - model) с NaN на маске
+
+Единицы и смысл величин
+  - Входной SCI для JWST i2d обычно в MJy/sr (поверхностная яркость).
+  - Imean: средняя поверхностная яркость галактики в аннулусе (MJy/sr).
+  - sigma^2: дисперсия остатков в аннулусе (MJy/sr)^2.
+  - Pf = sigma^2 / Imean имеет размерность MJy/sr и конвертится в AB mag через ZP.
+
+Тюнинг (параметры, которые реально меняют поведение)
+  - mask_sources: nsigma, npixels, (и kernel=7.0 для сглаживания при пороге)
+  - subtract_galaxy: half_size вырезки, dr/min_pix для радиального профиля
+  - SBF-аннулус: rin/rout (или скан scan_sbf_annuli)
+  - окно частот k: kmin/kmax в fit_P0 (диагностика, не основное m̄ в текущей версии)
+
+Ограничения прототипа
+  - Модель галактики осесимметрична (радиальный профиль), без изофот/эллиптичности.
+  - NaN-разрывы мозаики не «восстанавливаются»: для модели они заполняются профилем.
+  - Плотная маска, неверный центр или «грязный» аннулус легко уводят m̄ в мусор.
+"""
 import argparse, numpy as np
+import time
+import builtins
 from pathlib import Path
 from astropy.io import fits
 from astropy.wcs import WCS
 from astropy.stats import sigma_clipped_stats
+from scipy.ndimage import gaussian_filter
 from astropy.convolution import Gaussian2DKernel, interpolate_replace_nans
 from photutils.isophote import Ellipse, EllipseGeometry, build_ellipse_model
 from photutils.segmentation import detect_sources, deblend_sources
 import stpsf                                    # PSF под JWST файл
-from numpy.fft import rfft2, rfftfreq, fftshift # fftshift сейчас не используется (оставлено на будущее)
+from scipy.fft import rfft2, rfftfreq, set_workers # fftshift сейчас не используется (оставлено на будущее)
+
+# Все print в файле автоматически получают префикс с текущим временем устройства
+_orig_print = builtins.print
+
+def print(*args, **kwargs):
+    _orig_print(f"[{time.strftime('%H:%M:%S')}]", *args, **kwargs)
 
 
 # -----------------------------------------------------------------------------
 # Галактика: радиальный профиль и заливка дыр (модель для вычитания)
 # -----------------------------------------------------------------------------
 def build_radial_profile(img_c, valid_c, mask_c, x0, y0, dr=1.0, min_pix=200):
+    print("working function build_radial_profile")
     ny, nx = img_c.shape
     yy, xx = np.ogrid[:ny, :nx]
     rr = np.hypot(yy - y0, xx - x0)
@@ -82,11 +91,12 @@ def build_radial_profile(img_c, valid_c, mask_c, x0, y0, dr=1.0, min_pix=200):
             continue
         radii.append(0.5*(r_in+r_out))
         intens.append(float(np.nanmedian(vals)))
-
+    print("end working function build_radial_profile")
     return np.array(radii), np.array(intens)
 
 # Заливаем невалидные/замаскированные области радиальным профилем (только для построения модели)
 def fill_nan_with_radial(img_c, valid_c, mask_c, x0, y0, radii, intens):
+    print("working function fill_nan_with_radial")
     ny, nx = img_c.shape
     yy, xx = np.ogrid[:ny, :nx]
     rr = np.hypot(yy - y0, xx - x0)
@@ -98,6 +108,7 @@ def fill_nan_with_radial(img_c, valid_c, mask_c, x0, y0, radii, intens):
     bad = ~ok
     img_iso[bad] = np.interp(rr[bad], radii, intens,
                              left=intens[0], right=intens[-1])
+    print("end working function fill_nan_with_radial")
     return img_iso
 
 
@@ -105,6 +116,7 @@ def fill_nan_with_radial(img_c, valid_c, mask_c, x0, y0, radii, intens):
 # I/O: чтение i2d и базовые маски валидности
 # -----------------------------------------------------------------------------
 def load_i2d(path):
+    print("working function load_i2d")
     hdul = fits.open(path, memmap=False)
     sci = hdul['SCI'].data.astype(float)
     hdr = hdul['SCI'].header
@@ -119,17 +131,19 @@ def load_i2d(path):
         except Exception:
             pass
 
-    # площадь пикселя в arcsec^2
-    cd = np.abs(wcs.pixel_scale_matrix)
-    pix_scale = (cd[0,0]*3600, cd[1,1]*3600)
-    pix_area = np.abs(np.linalg.det(wcs.pixel_scale_matrix))*(3600**2)  # arcsec^2
+    # площадь пикселя: используем PIXAR_SR из заголовка (sr) как источник истины
+    pixar_sr = float(hdr['PIXAR_SR'])
+    pix_area = pixar_sr / 2.350443e-11  # arcsec^2 (1 arcsec^2 = 2.350443e-11 sr)
+    print(f"[WCS] PIXAR_SR={pixar_sr:.8e} sr → pix_area={pix_area:.8e} arcsec^2")
     hdul.close()
+    print("end working function load_i2d")
     return sci, hdr, pix_area, valid
 
 # -----------------------------------------------------------------------------
 # Фон и маскирование источников
 # -----------------------------------------------------------------------------
 def sigma_clipped_bkg(img, box=128):
+    print("working function sigma_clipped_bkg")
     h, w = img.shape
     bs = box
     tiles = []
@@ -138,11 +152,13 @@ def sigma_clipped_bkg(img, box=128):
             tile = img[y:y+bs, x:x+bs]
             if np.any(np.isfinite(tile)):
                 tiles.append(np.nanmedian(tile))
+    print("end working function sigma_clipped_bkg")
     return float(np.nanmedian(tiles)) if tiles else float(np.nanmedian(img))
 
 
 
 def mask_sources(img, nsigma=2.0, npixels=20, do_deblend=True):
+    print("working function mask_sources")
     """Build a boolean source mask. Nan-safe. Deblend is optional (needs scikit-image)."""
     # If everything is NaN, return empty mask
     if not np.any(np.isfinite(img)):
@@ -167,20 +183,18 @@ def mask_sources(img, nsigma=2.0, npixels=20, do_deblend=True):
         except Exception:
             pass
 
-    # Выкидываем крупнейшую(ие) область(и): обычно это галактика; оставляем компактные источники
+    # Выкидываем все «слишком большие» области: это почти всегда галактика, иногда разбитая швами/NaN на несколько лейблов.
     labels = segm.labels
-    counts = np.bincount(segm.data.ravel(), minlength=labels.max()+1)
-    # ignore background label 0
-    counts[0] = 0
-    if counts.max() > 0:
-        # zero out the single largest label
-        drop = counts.argmax()
-        segm.remove_labels(drop)
-        # if second-largest is still huge (covers >1% of image), drop it too
-        second = counts.argsort()[-2] if counts.size > 2 else None
-        if second is not None and counts[second] > 0.01 * img.size:
-            segm.remove_labels(second)
+    counts = np.bincount(segm.data.ravel(), minlength=labels.max() + 1)
+    counts[0] = 0  # ignore background
 
+    # Если галактика развалилась на несколько сегментов, прежняя логика могла замаскировать её куски как «источники».
+    # Поэтому убираем ВСЕ лейблы, которые занимают заметную долю изображения.
+    big_frac = 0.005  # 0.5% кадра; подстрой при необходимости
+    big_labels = [lab for lab in labels if lab > 0 and counts[lab] > big_frac * img.size]
+    if big_labels:
+        segm.remove_labels(big_labels)
+    print("end working function mask_sources")
     return segm.make_source_mask(size=5)
 
 
@@ -188,19 +202,52 @@ def mask_sources(img, nsigma=2.0, npixels=20, do_deblend=True):
 # Геометрия: оценка центра и вырезка вокруг него
 # -----------------------------------------------------------------------------
 def guess_center(img, valid):
-    """Rough center guess from the brightest smoothed pixel (NaN/valid aware)."""
-    sm = interpolate_replace_nans(img, Gaussian2DKernel(7.0))
-    # ignore invalid pixels when choosing the maximum
-    sm = np.where(valid, sm, np.nan)
-    # if everything is NaN, fall back to image center
+    print("working function guess_center")
+    """Robust center guess.
+
+    Strategy:
+      1) keep only valid+finite pixels
+      2) smooth (bridge NaN seams a bit)
+      3) take top-quantile pixels and compute weighted centroid (less sensitive to a single bright pixel)
+      4) fallback to argmax if selection is too small
+    """
+    ny, nx = img.shape
+    data = np.where(valid & np.isfinite(img), img, np.nan)
+    if not np.isfinite(data).any():
+        return nx / 2.0, ny / 2.0
+
+    # Larger kernel to better bridge wide NaN seams
+    sm = interpolate_replace_nans(data, Gaussian2DKernel(15.0))
+    sm = np.where(np.isfinite(sm), sm, np.nan)
+
     if not np.isfinite(sm).any():
-        ny, nx = img.shape
-        return nx/2.0, ny/2.0
-    y, x = np.unravel_index(np.nanargmax(sm), sm.shape)
-    return float(x), float(y)
+        return nx / 2.0, ny / 2.0
+
+    # Prefer centroid over a single maximum
+    q = 99.5
+    thr = np.nanpercentile(sm, q)
+    sel = np.isfinite(sm) & (sm >= thr)
+    if sel.sum() < 200:
+        thr = np.nanpercentile(sm, 99.0)
+        sel = np.isfinite(sm) & (sm >= thr)
+
+    if sel.sum() < 50:
+        y, x = np.unravel_index(np.nanargmax(sm), sm.shape)
+        print("end working function guess_center")
+        return float(x), float(y)
+
+    yy, xx = np.indices(sm.shape)
+    w = sm[sel] - np.nanmin(sm[sel])
+    w = np.nan_to_num(w, nan=0.0)
+    w = w + 1e-12
+    x0 = float((xx[sel] * w).sum() / w.sum())
+    y0 = float((yy[sel] * w).sum() / w.sum())
+    print("end working function guess_center")
+    return x0, y0
 
 
 def cutout_box(img, valid, x0, y0, half_size):
+    print("working function cutout_box")
     ny, nx = img.shape
     x1 = max(0, int(x0 - half_size))
     x2 = min(nx, int(x0 + half_size))
@@ -208,9 +255,11 @@ def cutout_box(img, valid, x0, y0, half_size):
     y2 = min(ny, int(y0 + half_size))
     img_c   = img[y1:y2, x1:x2]
     valid_c = valid[y1:y2, x1:x2]
+    print("end working function cutout_box")
     return img_c, valid_c, (x0 - x1, y0 - y1), (x1, x2, y1, y2)
 
-def subtract_galaxy(img, mask, valid):
+def subtract_galaxy(img, mask, valid, center=None):
+    print("working function subtract_galaxy")
     """
     Строим гладкую модель галактики через радиальный профиль вокруг центра
     и вычитаем её. Без photutils.Ellipse, без изофот.
@@ -220,10 +269,14 @@ def subtract_galaxy(img, mask, valid):
       mask  – bool-маска (True = пиксель не использовать)
       valid – bool-маска валидных пикселей (WHT>0, не NaN)
     """
-    # Центр галактики: guess_center по данным или вручную (фиксированный x0,y0)
-    x0, y0 = guess_center(img, valid & (~mask))
-    #x0, y0 = 6306.0, 2730.0
-    print(f"[RADIAL] use center=({x0:.1f}, {y0:.1f})")
+    # Центр галактики: либо фиксированный (--center), либо авто-оценка
+    if center is None:
+        x0, y0 = guess_center(img, valid & (~mask))
+        src = "auto"
+    else:
+        x0, y0 = center
+        src = "fixed"
+    print(f"[RADIAL] use center=({x0:.1f}, {y0:.1f}) [{src}]")
 
     ny, nx = img.shape
 
@@ -298,6 +351,7 @@ def subtract_galaxy(img, mask, valid):
         model_full[y1:y2, x1:x2] = img_c_smooth
         resid_full[y1:y2, x1:x2] = img_c - img_c_smooth
         resid_full[mask] = np.nan
+        print("end working function subtract_galaxy")
         return resid_full, model_full
 
     # Строим 2D модель из 1D профиля и вычитаем её из вырезки
@@ -310,10 +364,12 @@ def subtract_galaxy(img, mask, valid):
     resid_full[y1:y2, x1:x2] = img_c - prof_1d
     resid_full[mask] = np.nan
 
+    print("end working function subtract_galaxy")
     return resid_full, model_full
 
 
-def subtract_galaxy_isophote(img, mask, valid):
+def subtract_galaxy_isophote(img, mask, valid, center=None, return_debug=False, wcs=None):
+    print("working function subtract_galaxy_isophote")
     """
     Заглушка/первая рабочая версия: строим гладкую модель галактики через изофоты
     (photutils.isophote.Ellipse) и вычитаем её.
@@ -324,10 +380,23 @@ def subtract_galaxy_isophote(img, mask, valid):
 
     Если изофоты не сошлись/упали — делаем fallback на гауссово сглаживание в кропе.
     """
-    x0, y0 = guess_center(img, valid & (~mask))
-    print(f"[ISO] use center=({x0:.1f}, {y0:.1f})")  
+    if center is None:
+        print("guessing center of galaxy")
+        x0, y0 = guess_center_fast(
+            img,
+            valid & (~mask),
+            down=4,
+            sigma=3.0,
+            q=99.5,
+            wcs=wcs,
+            log=True,
+        )
+        src = "auto"
+    else:
+        x0, y0 = center
+        src = "fixed"
+    print(f"[ISO] use center=({x0:.1f}, {y0:.1f}) [{src}]")
     # Нашли центр автоматически. При желании x0,y0 можно задать вручную
-    
 
     img_c, valid_c, (x0c, y0c), (x1, x2, y1, y2) = cutout_box(img, valid, x0, y0, half_size=3000)
     mask_c = mask[y1:y2, x1:x2]
@@ -340,6 +409,7 @@ def subtract_galaxy_isophote(img, mask, valid):
     # Быстрый sanity-check
     ok = np.isfinite(data)
     data_ma = np.ma.array(data, mask=~ok)
+    print("sanity-check done.")
     if ok.sum() < 5000:
         print(f"[ISO] слишком мало валидных пикселей в кропе: N={int(ok.sum())} → fallback")
         from astropy.convolution import convolve, Gaussian2DKernel
@@ -349,17 +419,31 @@ def subtract_galaxy_isophote(img, mask, valid):
         model_full[y1:y2, x1:x2] = smooth
         resid_full[y1:y2, x1:x2] = img_c - smooth
         resid_full[mask] = np.nan
+        if return_debug:
+            dbg = {
+                "iso_map_crop": np.full_like(img_c, np.nan, dtype=np.float32),
+                "bounds": (x1, x2, y1, y2),
+            }
+            print("end working function subtract_galaxy_isophote")
+            return resid_full, model_full, dbg
+        print("end working function subtract_galaxy_isophote")
         return resid_full, model_full
 
     # Параметры начальной геометрии (eps и pa грубо, дальше Ellipse должен подстроиться)
     # NOTE: eps = 1 - b/a, pa в радианах
-    geom = EllipseGeometry(x0=x0c, y0=y0c, sma=20.0, eps=0.2, pa=0.0)
+    # Slightly larger starting sma helps the first fit in big galaxies
+    geom = EllipseGeometry(x0=x0c, y0=y0c, sma=50.0, eps=0.2, pa=0.0)
 
 
     try:
         ell = Ellipse(data_ma, geom)
-        maxsma = float(0.48 * min(data.shape))
-        isolist = ell.fit_image(maxsma=maxsma)
+        # Максимальная полуось: до края кропа от стартового центра (с запасом)
+        ny0, nx0 = data.shape
+        maxsma = 0.90 * float(min(x0c, y0c, (nx0 - 1 - x0c), (ny0 - 1 - y0c)))
+        try:
+            isolist = ell.fit_image(maxsma=maxsma, step=10.0, linear=True)
+        except TypeError:
+            isolist = ell.fit_image(maxsma=maxsma)
 
         if isolist is None or len(isolist) < 10:
             raise RuntimeError(f"isolist слишком короткий: {0 if isolist is None else len(isolist)}")
@@ -373,7 +457,60 @@ def subtract_galaxy_isophote(img, mask, valid):
         resid_full[mask] = np.nan
 
         print(f"[ISO] isolist N={len(isolist)}, maxsma≈{float(isolist[-1].sma):.1f} px")
+        # DEBUG: фактический центр/геометрия по изофотам (Ellipse может подстроить центр даже если старт был мимо)
+        try:
+            x0_fit = float(np.nanmedian([iso.x0 for iso in isolist]))
+            y0_fit = float(np.nanmedian([iso.y0 for iso in isolist]))
+            eps_fit = float(np.nanmedian([iso.eps for iso in isolist]))
+            pa_fit = float(np.nanmedian([iso.pa for iso in isolist]))
+            print(f"[ISO] fitted center≈({x0_fit:.1f},{y0_fit:.1f}) in crop, eps≈{eps_fit:.3f}, pa≈{pa_fit:.3f} rad")
+        except Exception:
+            pass
+        # Диагностическая карта изофот в координатах кропа
+        nyc, nxc = data.shape
+        yy, xx = np.indices((nyc, nxc), dtype=float)
+        iso_map = np.zeros((nyc, nxc), dtype=np.float32)
+
+        for iso in isolist:
+            x0i = float(getattr(iso, "x0", np.nan))
+            y0i = float(getattr(iso, "y0", np.nan))
+            sma = float(getattr(iso, "sma", np.nan))
+            eps = float(getattr(iso, "eps", np.nan))
+            pa  = float(getattr(iso, "pa", np.nan))
+
+            if not (np.isfinite(x0i) and np.isfinite(y0i) and np.isfinite(sma)
+                    and np.isfinite(eps) and np.isfinite(pa)):
+                continue
+            if sma <= 0:
+                continue
+
+            q = max(1e-3, 1.0 - eps)  # b/a
+            cosp = np.cos(pa)
+            sinp = np.sin(pa)
+            dx = xx - x0i
+            dy = yy - y0i
+
+            xp =  dx * cosp + dy * sinp
+            yp = -dx * sinp + dy * cosp
+
+            rell = np.sqrt(xp * xp + (yp / q) * (yp / q))
+            line = np.abs(rell - sma) <= 0.6  # толщина линии ~1 px
+            iso_map[line] = 1.0
+
+        iso_map[~ok] = np.nan
+
+
+        if return_debug:
+            dbg = {
+                "iso_map_crop": iso_map,
+                "bounds": (x1, x2, y1, y2),
+            }
+            print("end working function subtract_galaxy_isophote")
+            return resid_full, model_full, dbg
+
+        print("end working function subtract_galaxy_isophote")
         return resid_full, model_full
+    
 
     except Exception as e:
         print(f"[ISO] isophote fit failed: {e} → fallback")
@@ -384,6 +521,14 @@ def subtract_galaxy_isophote(img, mask, valid):
         model_full[y1:y2, x1:x2] = smooth
         resid_full[y1:y2, x1:x2] = img_c - smooth
         resid_full[mask] = np.nan
+        if return_debug:
+            dbg = {
+                "iso_map_crop": np.full_like(img_c, np.nan, dtype=np.float32),
+                "bounds": (x1, x2, y1, y2),
+            }
+            print("end working function subtract_galaxy_isophote")
+            return resid_full, model_full, dbg
+        print("end working function subtract_galaxy_isophote")
         return resid_full, model_full   
 
 
@@ -393,10 +538,11 @@ def subtract_galaxy_isophote(img, mask, valid):
 # -----------------------------------------------------------------------------
 # PSF: получение и нормировка PSF через stpsf
 # -----------------------------------------------------------------------------
-def build_psf_for_file(fits_path, size=129):
+def build_psf_for_file(fits_path, size=129, nlambda=7):
+    print("working function build_psf_for_file")
     # stpsf настраивает симуляцию, читая JWST header (инструмент/фильтр/детектор)
     sim = stpsf.setup_sim_to_match_file(fits_path)
-    psf = sim.calc_psf(nlambda=7, fov_pixels=size)
+    psf = sim.calc_psf(nlambda=nlambda, fov_pixels=size)
 
     # DEBUG: тип PSF-объекта (на случай смены API)
     print("DEBUG psf type:", type(psf))
@@ -424,13 +570,15 @@ def build_psf_for_file(fits_path, size=129):
         raise ValueError(f"PSF из {fits_path} имеет нулевую/невалидную сумму, shape={arr.shape}")
 
     arr /= s
+    print("end working function build_psf_for_file")
     return arr
 
 
 # -----------------------------------------------------------------------------
 # Спектр: оценка P(k) по остаткам и E(k) по PSF
 # -----------------------------------------------------------------------------
-def radial_power(img, mask):
+def radial_power(img, mask, fft_workers=-1):
+    print("working function radial_power")
     # Готовим массив для FFT: замаскированные пиксели = 0, остальное = resid
     data = np.zeros_like(img)
     tmp = np.nan_to_num(img, nan=0.0)
@@ -446,21 +594,24 @@ def radial_power(img, mask):
     data[use] -= mean
 
     # FFT и 2D power
-    F = rfft2(data)
+    with set_workers(fft_workers):
+        F = rfft2(data)
     power2d = np.abs(F)**2
 
     # Прямая дисперсия в пространстве (для нормировки по Parseval)
     var_direct = float(np.nanvar(data[use]))
 
     # Дисперсия из FFT (Parseval) и поправка масштаба под прямую дисперсию
-    var_fft = power2d.sum() / (n_pix**2)
+    # Parseval for numpy FFT (unnormalized forward): sum|x|^2 ~= (1/N) sum|X|^2
+    N = data.size
+    var_fft = power2d.sum() / (N**2)
     if var_fft > 0 and np.isfinite(var_fft):
         scale = var_direct / var_fft
     else:
         scale = 1.0
 
     # Финальная 2D мощность (нормирована на число пикселей области)
-    P2d = power2d * scale / (n_pix**2)
+    P2d = power2d * scale / (N**2)
 
     ny, nx = data.shape
     ky = np.fft.fftfreq(ny)
@@ -484,10 +635,12 @@ def radial_power(img, mask):
             kc[i] = np.nan
 
     m = np.isfinite(P) & (kc > 0)
+    print("end working function radial_power")
     return kc[m], P[m]
 
 
-def radial_power_psf(psf_small, img_shape):
+def radial_power_psf(psf_small, img_shape, fft_workers= -1):
+    print("working function radial_power_psf")
     ny, nx = img_shape
     big = np.zeros((ny, nx), float)
 
@@ -496,14 +649,74 @@ def radial_power_psf(psf_small, img_shape):
     x0 = nx // 2 - px // 2
     big[y0:y0+py, x0:x0+px] = psf_small
 
-    mask_big = np.zeros_like(big, bool)
-    return radial_power(big, mask_big)
+    mask_big = np.zeros_like(big, bool) 
+    print("end working function radial_power_psf")
+    return radial_power(big, mask_big, fft_workers=fft_workers)
 
+
+
+def guess_center_fast(img, valid, down=4, sigma=3.0, q=99.5, wcs=None, log=True):
+    print("working function guess_center_fast")
+    ny, nx = img.shape
+
+    def _log_center(xc, yc, note=""):
+        if not log:
+            return
+        msg = f"[CENTER-FAST] x={xc:.2f}, y={yc:.2f}"
+        if note:
+            msg += f" ({note})"
+        if wcs is not None:
+            try:
+                ra_deg, dec_deg = wcs.pixel_to_world_values(xc, yc)
+                msg += f" | RA={ra_deg:.8f} deg, Dec={dec_deg:.8f} deg"
+            except Exception as e:
+                msg += f" | RA/Dec fail: {e}"
+        print(msg)
+
+    # downsample
+    img_d = img[::down, ::down]
+    val_d = valid[::down, ::down] & np.isfinite(img_d)
+    if not np.any(val_d):
+        xc, yc = nx / 2.0, ny / 2.0
+        _log_center(xc, yc, note="fallback: no valid downsampled pixels")
+        return xc, yc
+
+    data = np.where(val_d, img_d, 0.0).astype(np.float32)
+    w = val_d.astype(np.float32)
+
+    # nan-aware blur via normalized convolution
+    num = gaussian_filter(data, sigma=sigma)
+    den = gaussian_filter(w, sigma=sigma)
+    sm = np.divide(num, den, out=np.full_like(num, np.nan), where=den > 1e-6)
+
+    if not np.isfinite(sm).any():
+        xc, yc = nx / 2.0, ny / 2.0
+        _log_center(xc, yc, note="fallback: sm is all-NaN")
+        return xc, yc
+
+    thr = np.nanpercentile(sm, q)
+    sel = np.isfinite(sm) & (sm >= thr)
+    if sel.sum() < 50:
+        y, x = np.unravel_index(np.nanargmax(sm), sm.shape)
+        xc, yc = float(x * down), float(y * down)
+        _log_center(xc, yc, note="fallback: argmax")
+        return xc, yc
+
+    ys, xs = np.nonzero(sel)
+    ws = sm[sel] - np.nanmin(sm[sel])
+    ws = np.nan_to_num(ws, nan=0.0) + 1e-12
+
+    x0 = float((xs * ws).sum() / ws.sum()) * down
+    y0 = float((ys * ws).sum() / ws.sum()) * down
+    _log_center(x0, y0, note=f"down={down}, sigma={sigma}, q={q}")
+    print("end working function guess_center_fast")
+    return x0, y0
 
 # -----------------------------------------------------------------------------
 # Фит P(k) = P0 * E(k) + P1 (диагностика качества/PSF, не основное m̄)
 # -----------------------------------------------------------------------------
 def fit_P0(Pk, Ek, kmin=0.03, kmax=0.40):
+    print("working function fit_P0")
     """
     Линейный фит P(k) = P0 * E(k) + P1 с проверками адекватности.
 
@@ -569,7 +782,7 @@ def fit_P0(Pk, Ek, kmin=0.03, kmax=0.40):
     if abs(P1) > 5.0 * P0:
         print(f"[FIT] |P1|={abs(P1):.3e} >> P0={P0:.3e} → фит ненадёжен")
         return np.nan, np.nan, (kmin, kmax)
-
+    print("end working function fit_P0")
     return float(P0), float(P1), (kmin, kmax)
 
 
@@ -577,6 +790,7 @@ def fit_P0(Pk, Ek, kmin=0.03, kmax=0.40):
 # SBF: проверки адекватности области и поиск «плато» по радиусам
 # -----------------------------------------------------------------------------
 def check_sbf_region(resid, mask_sbf, label="[SBF]"):
+    print("working function check_sbf_region")
     """
     Проверка адекватности области, в которой меряем SBF:
     - достаточно пикселей
@@ -611,12 +825,13 @@ def check_sbf_region(resid, mask_sbf, label="[SBF]"):
     if std < 1e-7:
         print(f"{label} std={std:.3e} слишком мал → сигнал неотличим от нуля")
     # NOTE: при желании можно сделать это строгим фейлом (return False)
-
+    print("end working function check_sbf_region")
     return True
 
 
 # Поиск «плато» m̄ по результатам скана радиусов
 def pick_mbar_plateau(rows, label_prefix="[PLATEAU]", dm_max=0.4, min_len=3):
+    print("working function pick_mbar_plateau")
     """
     По итогам скана по радиусам выбирает 'плато' m̄:
     - rows: список словарей с полями rin, rout, mbar.
@@ -660,6 +875,7 @@ def pick_mbar_plateau(rows, label_prefix="[PLATEAU]", dm_max=0.4, min_len=3):
 
     if best is None:
         print(f"{label_prefix} плато m̄ с dm<={dm_max:.2f} mag не найдено")
+        print("end working function pick_mbar_plateau")
         return None, None, None, None, None, None
 
     _, i0, j0 = best
@@ -677,10 +893,12 @@ def pick_mbar_plateau(rows, label_prefix="[PLATEAU]", dm_max=0.4, min_len=3):
         f"m̄≈{mbar_mean:.3f} mag, Δm̄={mbar_max - mbar_min:.3f} mag, "
         f"N_rings={n_rings}"
     )
+    print("end working function pick_mbar_plateau")
     return rin_min, rout_max, mbar_mean, mbar_min, mbar_max, n_rings
 
 # Диагностический прогон по радиусам SBF-аннулуса (ищем диапазон, где m̄ стабилен)
 def scan_sbf_annuli(resid, model, mask, area, x0_sbf, y0_sbf, label_prefix="[SCAN]"):
+    print("working function scan_sbf_annuli")
     """
     Диагностический прогон по радиусам SBF-аннулуса.
     Для каждой пары (rin, rout) печатает Imean, std, dyn, var_sbf, Pf, m̄.
@@ -785,35 +1003,101 @@ def scan_sbf_annuli(resid, model, mask, area, x0_sbf, y0_sbf, label_prefix="[SCA
             }
         )
     pick_mbar_plateau(rows, label_prefix=f"{label_prefix} PLATEAU")
+    print("end working function scan_sbf_annuli")
 
 
 # Перевод 1 (MJy/sr) * pixel_area в AB magnitude (нулевая точка для Pf)
 def mjysr_to_ab_zp(pix_area_arcsec2):
+    print("working function mjysr_to_ab_zp")
+
     # m_AB для 1 (MJy/sr) на 1 пиксель
     jy_per_pix = 2.350443e-5 * pix_area_arcsec2  # 1 MJy/sr -> Jy/arcsec^2
     m_ab = -2.5*np.log10(jy_per_pix/3631.0)
+    print("end working function mjysr_to_ab_zp")
     return float(m_ab)
 
+# ----------------------------------------------------------------------------
+# PSF cache: load/save PSF to avoid slow OPD/initialization work in stpsf
+# ----------------------------------------------------------------------------
+def load_or_build_psf(psf_file, cache_path=None, size=129, nlambda=7):
+    print("working function load_or_build_psf")
+    """
+    cache_path:
+      - None: no caching, always compute
+      - path exists: load
+      - path does not exist: compute and save
+    """
+    print("working function load_or_build_psf")
+    if cache_path is not None:
+        cache_path = Path(cache_path)
+        if cache_path.exists():
+            with fits.open(cache_path, memmap=False) as hd:
+                arr = np.array(hd[0].data, dtype=float)
+            if arr.ndim != 2 or arr.size == 0:
+                raise ValueError(f"PSF cache {cache_path} has bad shape {arr.shape}")
+            arr = np.nan_to_num(arr, nan=0.0)
+            s = float(arr.sum())
+            if not np.isfinite(s) or s <= 0:
+                raise ValueError(f"PSF cache {cache_path} has non-positive sum")
+            arr /= s
+            print(f"[PSF] loaded cache → {cache_path} (size={arr.shape[0]}×{arr.shape[1]})")
+            print("end working function load_or_build_psf")
+            return arr
+
+    # compute
+    arr = build_psf_for_file(psf_file, size=size, nlambda=nlambda)
+
+    if cache_path is not None:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        fits.writeto(cache_path, arr.astype(np.float32), overwrite=True)
+        print(f"[PSF] saved cache → {cache_path}")
+    print("end working function load_or_build_psf")
+    return arr
+
+
+def parse_center(s):
+    print("working function parse_center")
+    """Parse center from 'x,y' (floats)."""
+    print("working function parse_center")
+    if s is None:
+        return None
+    try:
+        a, b = s.split(',')
+        print("end working function parse_center")
+        return float(a), float(b)
+    except Exception:
+        raise argparse.ArgumentTypeError("--center must be 'x,y' (floats)")
+
 def main():
+    print("working function main")
     ap = argparse.ArgumentParser()
     ap.add_argument("--f150w", required=True, help="i2d F150W")
     ap.add_argument("--f090w", help="i2d F090W (для цвета), optional")
-    ap.add_argument("--psfref", help="i2d с полным JWST header для расчёта PSF") # Костыль для кропа
-    ap.add_argument("--model", help="0 -radia, более простая, 1 – isophote, более правильная, 2 - both models", type=int, default=0)
+    ap.add_argument("--psfref", help="i2d с полным JWST header для расчёта PSF (если PSF считаем не из того же файла)")
+    ap.add_argument("--psf-cache", default=None, help="путь к кэшу PSF (FITS). Если существует — грузим. Если нет — считаем и сохраняем.")
+    ap.add_argument("--psf-size", type=int, default=129, help="размер PSF в пикселях (квадрат), по умолчанию 129")
+    ap.add_argument("--psf-nlambda", type=int, default=7, help="nlambda для stpsf.calc_psf, по умолчанию 7")
+    ap.add_argument("--center", type=parse_center, default=None, help="фиксированный центр галактики 'x,y' в пикселях (для отладки, если auto-center мажет)")
+    ap.add_argument("--model", help="0 - radial (простая), 1 - isophote (Ellipse), 2 - both (сравнение)", type=int, default=0)
     ap.add_argument("--dry", action="store_true", help="только оценить фон/маску")
+    ap.add_argument("--dump-isophotes", action="store_true", help="сохранить диагностические FITS с изофотами (только для --model 1/2)")
+    ap.add_argument("--fft-workers", type=int, default=-1, help="число workers для scipy.fft, где 1 = без параллелизма, -1 = все ядра(default)")
     args = ap.parse_args()
-
+    print("begin working...")
+    fft_workers = int(args.fft_workers)
+    if fft_workers == 0: # Защита от ввода нуля. Чатик предложил, я добавил, в целом, похуй
+        fft_workers = 1
     img_f150, hdr150, area, valid150 = load_i2d(args.f150w)
-
+    wcs150 = WCS(hdr150)
     # Второй фильтр (для цвета) загружаем только если он задан
     if args.f090w is not None:
         img_f090, hdr090, _, valid090 = load_i2d(args.f090w)
     else:
         img_f090 = None
-
+    print("i2d's loaded, making sigma clipping bkg..")
     bkg = sigma_clipped_bkg(img_f150)
     img = img_f150 - bkg
-
+    print("bkg done. Masking sourses...")
     mask_src = mask_sources(img, nsigma=2.5, npixels=25, do_deblend=not args.dry)
     mask = (~valid150) | mask_src
 
@@ -839,24 +1123,44 @@ def main():
         masked = int(mask.sum())
         print(f"[DRY] shape={img.shape}, finite={finite}/{total} ({100*finite/total:.1f}%)")
         print(f"[DRY] bkg≈{bkg:.6g} (MJy/sr units), mask_coverage={100*masked/total:.2f}%")
+        print("end working function main")
         return
 
     # resid, model = subtract_galaxy(img, mask, valid150)
     # 0 - radial, 1 - isophote, 2 - both (для сравнения)
+    extra_model_r = None
+    extra_resid_r = None
     if args.model == 0:
-        resid, model = subtract_galaxy(img, mask, valid150)
+        iso_dbg_main = None
+        resid, model = subtract_galaxy(img, mask, valid150, center=args.center)
     elif args.model == 1:
-        resid, model = subtract_galaxy_isophote(img, mask, valid150)
+        if args.dump_isophotes:
+            resid, model, iso_dbg = subtract_galaxy_isophote(
+                img, mask, valid150, center=args.center, return_debug=True, wcs=wcs150
+            )
+        else:
+            resid, model = subtract_galaxy_isophote(img, mask, valid150, center=args.center, wcs=wcs150)
+            iso_dbg = None
+        iso_dbg_main = iso_dbg
     elif args.model == 2:
-        resid_r, model_r = subtract_galaxy(img, mask, valid150)
-        resid_i, model_i = subtract_galaxy_isophote(img, mask, valid150)
+        # Считаем обе модели: isophote как основную, radial как дополнительную для сравнения
+        if args.dump_isophotes:
+            resid_i, model_i, iso_dbg = subtract_galaxy_isophote(
+                img, mask, valid150, center=args.center, return_debug=True, wcs=wcs150
+            )
+        else:
+            resid_i, model_i = subtract_galaxy_isophote(img, mask, valid150, center=args.center, wcs=wcs150)
+            iso_dbg = None
 
-        # основная ветка ниже по коду работает с isophote
+        resid_r, model_r = subtract_galaxy(img, mask, valid150, center=args.center)
+
+        # Основной поток анализа оставляем на isophote (как и раньше)
         resid, model = resid_i, model_i
+        iso_dbg_main = iso_dbg
 
-        # сохраним radial отдельно
-        extra_resid_r = resid_r
+        # Сохраним radial отдельно ниже
         extra_model_r = model_r
+        extra_resid_r = resid_r
     else:
         raise ValueError(f"bad --model={args.model}, expected 0/1/2")
 
@@ -868,7 +1172,38 @@ def main():
 
     model_path = out_dir / f"{stem}_sbf_model.fits"
     resid_path = out_dir / f"{stem}_sbf_resid.fits"
-    if args.model == 2:
+    if args.dump_isophotes and (iso_dbg_main is not None):
+        try:
+            iso_map_crop = iso_dbg_main.get("iso_map_crop")
+            x1, x2, y1, y2 = iso_dbg_main.get("bounds")
+
+            iso_crop_path = out_dir / f"{stem}_sbf_isophotes_crop.fits"
+            fits.writeto(iso_crop_path, iso_map_crop.astype(np.float32), hdr150, overwrite=True)
+            print(f"[OUT] isophotes(crop) → {iso_crop_path}")
+
+            iso_full = np.full_like(img, np.nan, dtype=np.float32)
+            iso_full[y1:y2, x1:x2] = iso_map_crop.astype(np.float32)
+            iso_full_path = out_dir / f"{stem}_sbf_isophotes_full.fits"
+            fits.writeto(iso_full_path, iso_full, hdr150, overwrite=True)
+            print(f"[OUT] isophotes(full) → {iso_full_path}")
+
+            overlay = np.array(img, dtype=np.float32, copy=True)
+            good = np.isfinite(overlay)
+            if np.any(good):
+                p99 = np.nanpercentile(overlay[good], 99.0)
+                amp = float(0.2 * p99) if np.isfinite(p99) else 1.0
+            else:
+                amp = 1.0
+            lines = np.isfinite(iso_full) & (iso_full > 0.5)
+            overlay[lines] = np.nan_to_num(overlay[lines], nan=0.0) + amp
+
+            iso_ovl_path = out_dir / f"{stem}_sbf_isophotes_overlay.fits"
+            fits.writeto(iso_ovl_path, overlay.astype(np.float32), hdr150, overwrite=True)
+            print(f"[OUT] isophotes(overlay) → {iso_ovl_path}")
+        except Exception as e:
+            print(f"[ISO-DBG] failed to write isophote debug FITS: {e}")
+
+    if args.model == 2 and (extra_model_r is not None) and (extra_resid_r is not None):
         model_r_path = out_dir / f"{stem}_sbf_model_radial.fits"
         resid_r_path = out_dir / f"{stem}_sbf_resid_radial.fits"
         fits.writeto(model_r_path, extra_model_r, hdr150, overwrite=True)
@@ -916,8 +1251,10 @@ def main():
     # x0_sbf, y0_sbf = 6306.0, 2730.0  # грубый центр галактики в полных координатах
     ny_r, nx_r = resid.shape
     # if not (0 <= x0_sbf < nx_r and 0 <= y0_sbf < ny_r):
-    # на случай кропа используем автоматический центр
-    x0_sbf, y0_sbf = guess_center(model, valid150 & (~mask))
+    # на случай кропа используем автоматический центр, либо фиксированный
+    print("before x0_sbf, y0_sbf = args.center if  ....")
+    x0_sbf, y0_sbf = args.center if args.center is not None else guess_center_fast(img, valid150 & (~mask), down=4, sigma=3.0, q=99.5, wcs=wcs150, log=True)
+    print("After x0_sbf, y0_sbf = args.center if ...")
     yy_r, xx_r = np.ogrid[:ny_r, :nx_r]
     rr_r = np.hypot(yy_r - y0_sbf, xx_r - x0_sbf)
 
@@ -930,13 +1267,24 @@ def main():
         print("[SBF] область для измерения флуктуаций неадекватна, m̄ не считаем")
         # даже если базовый аннулус плохой, всё равно прогоняем скан по радиусам
         scan_sbf_annuli(resid, model, mask, area, x0_sbf, y0_sbf)
+        print("end working function main")
         return
 
     # PSF → E(k) и остатки → P(k)
+    print(f"[PSF] psfref={args.psfref if args.psfref is not None else '(same as f150w)'}")
     psf_file = args.psfref if args.psfref is not None else args.f150w
-    psf = build_psf_for_file(psf_file, size=129)
-    Pk = radial_power(resid, mask_sbf)
-    Ek = radial_power_psf(psf, resid.shape)
+
+    # PSF cache path: default рядом с F150W, если --psf-cache не задан
+    if args.psf_cache is None:
+        psf_cache_path = Path(args.f150w).with_name(f"{Path(args.f150w).stem}_psf_{args.psf_size}.fits")
+    else:
+        psf_cache_path = args.psf_cache
+
+    psf = load_or_build_psf(psf_file, cache_path=psf_cache_path,
+                            size=args.psf_size, nlambda=args.psf_nlambda)
+    print(f"[FFT] workers={fft_workers}")
+    Pk = radial_power(resid, mask_sbf, fft_workers=fft_workers)
+    Ek = radial_power_psf(psf, resid.shape, fft_workers=fft_workers)
 
     # NOTE: нормировка E(k) экспериментальная; m̄ ниже считается через Pf=sigma^2/Imean
     Ek_k, Ek_P = Ek
@@ -955,6 +1303,7 @@ def main():
     vals_sbf = resid[use_sbf_vals]
     if vals_sbf.size == 0:
         print("[SBF] в аннулусе нет валидных пикселей для оценки дисперсии")
+        print("end working function main")
         return
     lo, hi = np.nanpercentile(vals_sbf, [5, 95])  # или ещё жёстче, 10–90
     core = (vals_sbf >= lo) & (vals_sbf <= hi)
@@ -962,6 +1311,7 @@ def main():
 
     if (not np.isfinite(var_sbf)) or (var_sbf <= 0.0):
         print(f"[SBF] некорректная дисперсия в аннулусе: var={var_sbf}")
+        print("end working function main")
         return
 
     # DEBUG: сравнение P0 из фита и var_sbf по пикселям (ожидаемо одного порядка)
@@ -977,11 +1327,13 @@ def main():
     n_I = int(use_I.sum())
     if n_I < 5000:
         print(f"[SBF] слишком мало пикселей для оценки средней яркости галактики: N={n_I}")
+        print("end working function main")
         return
 
     Imean = float(np.nanmean(model[use_I]))
     if (not np.isfinite(Imean)) or (Imean <= 0.0):
         print(f"[SBF] некорректная средняя яркость галактики в аннулусе: Imean={Imean}")
+        print("end working function main")
         return
 
     # Pf в единицах SCI (MJy/sr): Pf = sigma^2 / Imean
@@ -989,6 +1341,7 @@ def main():
 
     if (not np.isfinite(Pf)) or (Pf <= 0.0):
         print(f"[SBF] некорректный Pf после нормировки: Pf={Pf}")
+        print("end working function main")
         return
 
     print(f"[SBF] sigma^2={sigma2:.3e}, Imean={Imean:.3e}, Pf={Pf:.3e}")
@@ -1036,6 +1389,8 @@ def main():
         print("[INFO] Второй фильтр не задан, цвет не считается.")
         # Диагностика: сканируем радиусы и ищем «плато» m̄
         scan_sbf_annuli(resid, model, mask, area, x0_sbf, y0_sbf)
+    print("end working function main")
+    return
 
 if __name__ == "__main__":
     main()
