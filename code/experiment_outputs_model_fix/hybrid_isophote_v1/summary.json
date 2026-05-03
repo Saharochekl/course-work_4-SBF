@@ -1,0 +1,67 @@
+{
+  "timestamp": "2026-05-03 04:11:03",
+  "output_dir": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/experiment_outputs_model_fix/hybrid_isophote_v1",
+  "science_model_name": "model_full",
+  "science_resid_name": "resid_full_clip_3p5sigma",
+  "recommended_sbf": {
+    "kmin": 0.03,
+    "kmax": 0.25,
+    "mbar_inner_raw": 27.37884994771467,
+    "mbar_inner": 27.38750669214853,
+    "sigma_inner": 0.10878715527300163,
+    "Pr_inner": 0.20576753094036107,
+    "Pr_over_P0_inner": 0.00794145497350954,
+    "mbar_outer_raw": 27.21376051743166,
+    "mbar_outer": 27.23303013271396,
+    "sigma_outer": 0.08762141159918073,
+    "Pr_outer": 0.17800249287114703,
+    "Pr_over_P0_outer": 0.017591403932375467,
+    "mbar_weighted_raw": 27.27871879186565,
+    "mbar_weighted": 27.29381252637882,
+    "sigma_weighted_formal": 0.06823940411152088,
+    "annulus_scatter": 0.07723827971728525,
+    "sigma_adopted": 0.07723827971728525,
+    "notes": "inner+outer weighted; no pipeline systematic yet; sigma_inner=max(k-window std, fit covariance); sigma_outer=max(k-window std, fit covariance)",
+    "uses_two_annuli": true
+  },
+  "resid_audit": {
+    "elliptical_chosen": {
+      "region": "elliptical_chosen",
+      "n_use": 126665,
+      "resid_median": -0.059848811477422714,
+      "resid_mean": -0.011022929102182388,
+      "resid_std": 0.9092729687690735,
+      "resid_p01": -1.9529099464416504,
+      "resid_p99": 2.0326242446899414,
+      "model_mean": 17.843801498413086,
+      "science_resid_name": "resid_full_clip_3p5sigma",
+      "science_model_name": "model_full"
+    },
+    "circular_inner_lit": {
+      "region": "circular_inner_lit",
+      "n_use": 649908,
+      "resid_median": -0.06361988186836243,
+      "resid_mean": -0.011909893713891506,
+      "resid_std": 0.8347892165184021,
+      "resid_p01": -1.8552545309066772,
+      "resid_p99": 2.0326242446899414,
+      "model_mean": 14.628067016601562,
+      "science_resid_name": "resid_full_clip_3p5sigma",
+      "science_model_name": "model_full"
+    },
+    "circular_outer_lit": {
+      "region": "circular_outer_lit",
+      "n_use": 2561511,
+      "resid_median": -0.18109376728534698,
+      "resid_mean": -0.11744437366724014,
+      "resid_std": 0.5340633988380432,
+      "resid_p01": -1.1344753503799438,
+      "resid_p99": 1.5264729261398315,
+      "model_mean": 4.906818389892578,
+      "science_resid_name": "resid_full_clip_3p5sigma",
+      "science_model_name": "model_full"
+    }
+  },
+  "annulus_summary_rows": 2,
+  "model_overlap_rows": 15
+}

@@ -1,0 +1,4 @@
+variant,status,mbar_spec,notes
+raw_current_residual,available,27.29381252637882,science residual for circular annuli = sigma-capped resid_full_clip built from data - model_full; unresolved-source correction included via P_fluc = P0 - Pr
+sigma_clipped_or_capped_residual,not_run,,future branch: rerun SBF after clipping/capping residual outliers
+spline_cleaned_residual,not_run,,future branch: rerun SBF after spline-cleaned large-scale residuals
