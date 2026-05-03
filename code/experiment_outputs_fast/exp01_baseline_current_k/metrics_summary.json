@@ -1,0 +1,67 @@
+{
+  "experiment": "exp01_baseline_current_k",
+  "model_variant": "baseline",
+  "main_k": [
+    0.03,
+    0.4
+  ],
+  "region_k_windows": [
+    [
+      0.02,
+      0.35
+    ],
+    [
+      0.03,
+      0.4
+    ]
+  ],
+  "elliptical_corrected_mbar": 27.109940784697276,
+  "circular_inner_corrected_mbar": 27.36431221383074,
+  "circular_outer_corrected_mbar": 27.180399016280155,
+  "weighted_corrected_mbar": 27.316376515552506,
+  "formal_sigma": 0.052639041149759355,
+  "annulus_scatter": 0.09195659877529216,
+  "adopted_sigma": 0.09195659877529216,
+  "recommended_kmin": 0.02,
+  "recommended_kmax": 0.35,
+  "residual_regions": {
+    "elliptical_chosen": {
+      "region": "elliptical_chosen",
+      "n_use": 204253,
+      "resid_median": 0.1021542176604271,
+      "resid_mean": 0.15517693758010864,
+      "resid_std": 0.6537211537361145,
+      "resid_p01": -1.1441991329193115,
+      "resid_p99": 1.963230848312378,
+      "model_mean": 7.933966159820557,
+      "science_resid_name": "resid_full_clip_3p5sigma",
+      "science_model_name": "model_full"
+    },
+    "circular_inner_lit": {
+      "region": "circular_inner_lit",
+      "n_use": 649914,
+      "resid_median": 0.6844455003738403,
+      "resid_mean": 0.7496572732925415,
+      "resid_std": 0.945921778678894,
+      "resid_p01": -1.2935678958892822,
+      "resid_p99": 2.1409521102905273,
+      "model_mean": 13.725858688354492,
+      "science_resid_name": "resid_full_clip_3p5sigma",
+      "science_model_name": "model_full"
+    },
+    "circular_outer_lit": {
+      "region": "circular_outer_lit",
+      "n_use": 2559047,
+      "resid_median": -0.1704317331314087,
+      "resid_mean": -0.09896303713321686,
+      "resid_std": 0.5376681089401245,
+      "resid_p01": -1.0922468900680542,
+      "resid_p99": 1.5788966417312622,
+      "model_mean": 4.892127513885498,
+      "science_resid_name": "resid_full_clip_3p5sigma",
+      "science_model_name": "model_full"
+    }
+  },
+  "zero_cross_circle_px": 587.2595688789738,
+  "zero_cross_ellipse_px": 834.9470774601418
+}
