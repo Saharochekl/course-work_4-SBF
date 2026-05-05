@@ -186,3 +186,51 @@ This file is populated by `code/night_sbf_fast_experiments.py`.
   adopted sigma = `0.1730`
 - Residual diagnostics:
   same residual image as `exp07_hybrid_isophote_v1`
+
+### exp09_continuous_2d_isophote_family
+- Timestamp: 2026-05-03 07:43:08
+- Model variant: `continuous_2d_isophote_family`
+- Main change:
+  measured isophotes are fit out to `sma≈1490 px`, then extended with a smooth synthetic 2D isophote family rendered through the same `build_ellipse_model(...)` path as the fitted model.
+- Coverage:
+  inner circular annulus = `100.00%` model coverage, `100.00%` fitted support
+  outer circular annulus = `88.17%` model coverage, `80.53%` fitted support + `7.63%` continuation
+- Decision: `keep`
+- Why:
+  removes the strong inner/outer sign flip, pushes the fitted-support well beyond the science annuli, and suppresses the old seam between the fitted model and the outer continuation.
+- Science numbers for preferred window `(0.03, 0.25)`:
+  elliptical corrected mbar = `27.2300`
+  circular inner corrected mbar = `27.3782`
+  circular outer corrected mbar = `27.1923`
+  weighted corrected mbar = `27.2662`
+  formal sigma = `0.0660`
+  annulus scatter = `0.0930`
+  adopted sigma = `0.0930`
+- Residual diagnostics for preferred window:
+  elliptical_chosen: median=`-7.3146e-02`, mean=`-1.7409e-02`, sign=`negative`
+  circular_inner_lit: median=`-6.3819e-02`, mean=`-1.0452e-02`, sign=`negative`
+  circular_outer_lit: median=`-3.7596e-02`, mean=`+1.4332e-02`, sign=`near-zero / mixed`
+- zero-cross circle px = `146.7`
+- zero-cross ellipse px = `206.7`
+- Model-overlap diagnostic:
+  inside fitted range, `median(model_full - model_c) = 0.000e+00`
+  `mean(model_full - model_c) = 4.438e-05`
+  `std = 8.577e-04`
+
+### exp10_continuous_2d_isophote_family_literature_lowk
+- Timestamp: 2026-05-03 07:43:08
+- Model variant: `continuous_2d_isophote_family`
+- Main k-window: `(0.01, 0.25)`
+- Decision: `reject`
+- Why:
+  on the improved 2D-family model the lower-`k` window still worsens inner/outer annulus agreement badly, even though the residual image itself is better.
+- Science numbers:
+  elliptical corrected mbar = `27.3215`
+  circular inner corrected mbar = `27.5263`
+  circular outer corrected mbar = `27.0878`
+  weighted corrected mbar = `27.2335`
+  formal sigma = `0.0604`
+  annulus scatter = `0.2193`
+  adopted sigma = `0.2193`
+- Residual diagnostics:
+  same residual image as `exp09_continuous_2d_isophote_family`
