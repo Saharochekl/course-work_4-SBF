@@ -1,0 +1,2 @@
+galaxy,kmin,kmax,sigma_PSF_mag,mbar_detdist,mbar_detsamp,mbar_detdist_inner,mbar_detdist_outer,mbar_detsamp_inner,mbar_detsamp_outer,psf_e_realizations,psf_kbins_n,psf_crop_pad,psf_size,psf_nlambda,opd_path,status
+NGC 4472,0.04,0.25,0.0074212688805914695,27.51071857448032,27.50329730559973,27.597639915420164,27.46038446239255,27.590578170185562,27.452755001791726,64,80,512,129,7,/Users/zuha/data/stpsf-data/MAST_JWST_WSS_OPDs/R2023111002-NRCA3_FP1-1.fits,ok

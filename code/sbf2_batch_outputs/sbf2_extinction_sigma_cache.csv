@@ -1,0 +1,15 @@
+galaxy,sigma_ext_mag,status,ebv,sigma_ebv,af150w_per_ebv,ra_deg,dec_deg,note
+NGC 1380,0.000390770161898,auto_irsa_sigma_ebv_included,0.0144,0.0006,0.651283603163,54.1149583333,-34.9763,TARG_RA/TARG_DEC;ebv_col=ext sandf mean;sigma_col=ext sandf std
+NGC 1399,0.000260513441265,auto_irsa_sigma_ebv_included,0.0109,0.0004,0.651283603163,54.6211791667,-35.4507416667,TARG_RA/TARG_DEC;ebv_col=ext sandf mean;sigma_col=ext sandf std
+NGC 1404,0.000195385080949,auto_irsa_sigma_ebv_included,0.0097,0.0003,0.651283603163,54.7163208333,-35.5943916667,TARG_RA/TARG_DEC;ebv_col=ext sandf mean;sigma_col=ext sandf std
+NGC 1549,0.000260513441265,auto_irsa_sigma_ebv_included,0.0105,0.0004,0.651283603163,63.9384291667,-55.5923611111,TARG_RA/TARG_DEC;ebv_col=ext sandf mean;sigma_col=ext sandf std
+NGC 3379,0.000390770161898,auto_irsa_sigma_ebv_included,0.0213,0.0006,0.651283603163,161.956666667,12.5816305556,TARG_RA/TARG_DEC;ebv_col=ext sandf mean;sigma_col=ext sandf std
+NGC 4374,0.00117231048569,auto_irsa_sigma_ebv_included,0.034,0.0018,0.651283603163,186.265596667,12.8869833333,TARG_RA/TARG_DEC;ebv_col=ext sandf mean;sigma_col=ext sandf std
+NGC 4406,0.000260513441265,auto_irsa_sigma_ebv_included,0.0251,0.0004,0.651283603163,186.549225,12.9459694444,TARG_RA/TARG_DEC;ebv_col=ext sandf mean;sigma_col=ext sandf std
+NGC 4472,0.000130256720633,auto_irsa_sigma_ebv_included,0.0191,0.0002,0.651283603163,187.445,8.00027777778,TARG_RA/TARG_DEC;ebv_col=ext sandf mean;sigma_col=ext sandf std
+NGC 4486,0.000390770161898,auto_irsa_sigma_ebv_included,0.0196,0.0006,0.651283603163,187.705895417,12.3911694444,TARG_RA/TARG_DEC;ebv_col=ext sandf mean;sigma_col=ext sandf std
+NGC 4552,0.000976925404745,auto_irsa_sigma_ebv_included,0.0351,0.0015,0.651283603163,188.91586375,12.5563416667,TARG_RA/TARG_DEC;ebv_col=ext sandf mean;sigma_col=ext sandf std
+NGC 4621,0.000911797044428,auto_irsa_sigma_ebv_included,0.0272,0.0014,0.651283603163,190.50940875,11.6469194444,TARG_RA/TARG_DEC;ebv_col=ext sandf mean;sigma_col=ext sandf std
+NGC 4636,0.000390770161898,auto_irsa_sigma_ebv_included,0.0239,0.0006,0.651283603163,190.70763875,2.68776388889,TARG_RA/TARG_DEC;ebv_col=ext sandf mean;sigma_col=ext sandf std
+NGC 4649,0.000390770161898,auto_irsa_sigma_ebv_included,0.0226,0.0006,0.651283603163,190.916533333,11.5526944444,TARG_RA/TARG_DEC;ebv_col=ext sandf mean;sigma_col=ext sandf std
+NGC 4697,0.00117231048569,auto_irsa_sigma_ebv_included,0.0248,0.0018,0.651283603163,192.149575417,-5.80068888889,TARG_RA/TARG_DEC;ebv_col=ext sandf mean;sigma_col=ext sandf std

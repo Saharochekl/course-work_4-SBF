@@ -1,0 +1,2 @@
+fit_sample,n_fit,color_pivot,Mbar_at_pivot,sigma_Mbar_at_pivot,slope_mag_per_mag,sigma_slope,chi2_red,weighted_residual_mean,weighted_residual_rms,plain_residual_rms
+clean,10,0.4,-3.4570488454935973,0.014208466296823801,1.1765103345284302,0.2206777741815833,2.1599200929560682,-1.5486883871748836e-17,0.05851327579018695,0.06310946147562488

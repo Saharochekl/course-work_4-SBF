@@ -1,0 +1,10 @@
+{
+  "time": "2026-05-09 19:40:18",
+  "target": "NGC 3379",
+  "band": "f150w",
+  "path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 3379/jw03055-o013_t013_nircam_clear-f150w_i2d.fits",
+  "ok": true,
+  "message": "downloaded",
+  "size": 1216252800,
+  "expected_size": 1216252800
+}

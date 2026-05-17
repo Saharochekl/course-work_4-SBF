@@ -1,0 +1,2 @@
+sample,n,weighted_mean_delta_mu,weighted_rms_delta_mu,plain_rms_delta_mu,median_abs_distance_fraction_percent
+clean leave-one-out,10,1.6321221788671314e-16,0.07718284449320757,0.08021170972250039,3.055526009324888
