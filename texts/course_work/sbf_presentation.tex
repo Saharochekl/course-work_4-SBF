@@ -1,0 +1,356 @@
+\documentclass[aspectratio=169, 11pt]{beamer}
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\usetheme{Boadilla}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+\graphicspath{{../../code/paper_figures/}}
+
+\title[Флуктуации поверхностной яркости]{Улучшение точности измерения расстояний в ближней Вселенной по флуктуациям поверхностной яркости галактик}
+\author{И.\,А. Буканов}
+\institute{ФКИ МГУ}
+\date{2026}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}{Задача работы}
+    \begin{block}{Цель}
+        Построить рабочий пайплайн измерения SBF по данным JWST/NIRCam F150W и получить эмпирическую калибровку расстояний.
+    \end{block}
+    \vspace{0.2cm}
+    \begin{itemize}
+        \item измерить $\bar{m}_{150}$ для галактик программы JWST GO-3055;
+        \item оценить бюджет ошибок по схеме, близкой к Jensen et al.;
+        \item откалибровать $\bar{M}_{150}$ через цвет $F090W-F150W$;
+        \item проверить расстояния относительно TRGB и HST/F160W SBF.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Идея метода SBF}
+    \begin{columns}[T]
+        \begin{column}{0.53\textwidth}
+            \begin{itemize}
+                \item Неразрешённая галактика не является идеально гладкой.
+                \item Число ярких звёзд в пикселях флуктуирует.
+                \item После вычитания гладкой модели остаётся статистический сигнал.
+                \item Чем дальше галактика, тем слабее видимые флуктуации.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.43\textwidth}
+            \begin{equation*}
+                \bar{m} = \bar{M} + \mu
+            \end{equation*}
+            \begin{equation*}
+                \mu = \bar{m}_{150} - \bar{M}_{150}(C)
+            \end{equation*}
+            \begin{equation*}
+                C = F090W-F150W
+            \end{equation*}
+        \end{column}
+    \end{columns}
+    \vspace{0.25cm}
+    \begin{block}{Ключевая точка}
+        Мы измеряем видимую SBF-величину $\bar{m}_{150}$, а затем калибруем абсолютную величину $\bar{M}_{150}$ по независимой TRGB-шкале.
+    \end{block}
+\end{frame}
+
+\begin{frame}{Данные}
+    \begin{itemize}
+        \item JWST/NIRCam, программа GO-3055, публичные i2d-продукты MAST.
+        \item Основной фильтр: F150W, в нём измеряется $\bar{m}_{150}$.
+        \item Цвет: $F090W-F150W$ в тех же областях галактики.
+        \item Обработано 14 галактик; основная калибровочная выборка: 12 объектов.
+        \item Литературные расстояния: TRGB-SBF Project IV.
+        \item Внешнее SBF-сравнение: Jensen et al. 2015, HST/WFC3 F160W.
+    \end{itemize}
+    \vspace{0.15cm}
+    \begin{block}{Почему не Cepheid/SN Ia прямо в калибровке}
+        Объекты выборки -- в основном ранние галактики. Для них нет однородной прямой шкалы Cepheid/SN Ia, поэтому такая калибровка добавила бы неоднородную систематику. TRGB используется как единая независимая опорная шкала.
+    \end{block}
+\end{frame}
+
+\begin{frame}{Пайплайн обработки}
+    \begin{enumerate}
+        \item вычитание фона и построение маски компактных источников;
+        \item построение гладкой изофотной модели галактики;
+        \item получение остаточного изображения;
+        \item измерение спектра мощности $P(k)$ в кольцевых областях;
+        \item подгонка $P(k)=P_0E(k)+P_1$;
+        \item поправка за неразрешённые источники: $P_{\rm fluc}=P_0-P_r$;
+        \item перевод $P_{\rm fluc}$ в $\bar{m}_{150}$.
+    \end{enumerate}
+    \vspace{0.15cm}
+    \begin{block}{Контроль качества}
+        Остатки и маски проверялись визуально; реальные проблемные флаги оставлены для NGC 4621 и NGC 4697.
+    \end{block}
+\end{frame}
+
+\begin{frame}{Как строилась модель галактики}
+    \begin{itemize}
+        \item Сначала строилась первичная модель Серсика: она нужна для заполнения NaN и центральной области, а не как финальная SBF-модель.
+        \item Основная гладкая модель строилась по эллиптическим изофотам с плавающим центром, эллиптичностью и позиционным углом.
+        \item Изофоты считались настолько далеко, насколько они устойчиво сходились; дальше модель не принудительно обрезалась.
+        \item Это важно: граница между ``изофотной'' и ``достроенной'' частью не должна проявляться в остатках.
+    \end{itemize}
+    \begin{block}{Что контролировалось глазами}
+        Проверялись модель, остаток image--model и финальный residual в SBF-области. Явные скачки модели или недовычитанные крупномасштабные структуры считались проблемой пайплайна.
+    \end{block}
+\end{frame}
+
+\begin{frame}{Как получался остаток для SBF}
+    \begin{enumerate}
+        \item из F150W-кадра вычиталась гладкая модель галактики;
+        \item компактные источники маскировались до и после построения остатка;
+        \item дополнительно вырезались положительные компактные residual-объекты: шаровые скопления, фоновые галактики, звёзды;
+        \item измерение SBF велось в двух фиксированных кольцах: $8.2$--$16.4''$ и $16.4$--$32.8''$.
+    \end{enumerate}
+    \vspace{0.15cm}
+    \begin{block}{Почему это не ``подгонка картинки под ответ''}
+        Маска убирает компактные источники, но не SBF-сигнал: SBF -- пространственно распределённая статистическая мощность, а не отдельные яркие пятна.
+    \end{block}
+\end{frame}
+
+\begin{frame}{Как фиттился спектр мощности $P(k)$}
+    \begin{columns}[T]
+        \begin{column}{0.50\textwidth}
+            \begin{equation*}
+                P(k)=P_0E(k)+P_1
+            \end{equation*}
+            \begin{itemize}
+                \item $P(k)$ -- спектр мощности остаточного изображения;
+                \item $E(k)$ -- ожидаемая форма SBF-сигнала: PSF, свёрнутая с маской;
+                \item $P_0$ -- амплитуда SBF;
+                \item $P_1$ -- белый шум;
+                \item рабочее окно: $k=0.01$--$0.25$ cycles/pixel.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.46\textwidth}
+            \begin{block}{Почему низкие и высокие частоты ограничены}
+                Слишком малые $k$ чувствительны к остаткам модели галактики, слишком большие $k$ -- к пиксельному шуму и деталям PSF. Окно выбрано после диагностики формы $P(k)$.
+            \end{block}
+            \begin{equation*}
+                P_{\rm fluc}=P_0-P_r
+            \end{equation*}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Бюджет ошибок $\bar{m}_{150}$}
+    \begin{columns}[T]
+        \begin{column}{0.52\textwidth}
+            \begin{equation*}
+                \sigma_{\bar{m}}^2 =
+                \sigma_{P(k)}^2 + \sigma_{\rm bkg}^2 +
+                \sigma_{\rm PSF}^2 + \sigma_{P_r}^2 + \sigma_{\rm ext}^2
+            \end{equation*}
+            \begin{itemize}
+                \item главный вклад обычно даёт $\sigma_{P(k)}$;
+                \item PSF меньше по величине, но важен систематически;
+                \item $P_r$ учитывает слабые шаровые скопления и фоновые галактики;
+                \item $\sigma_{\rm int}$ не входит сюда: это ширина калибровки расстояний.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.45\textwidth}
+            \includegraphics[width=\textwidth]{coursework_error_budget_variance.pdf}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Калибровка $\bar{M}_{150}$}
+    \begin{columns}[T]
+        \begin{column}{0.47\textwidth}
+            \begin{equation*}
+                \bar{M}_{150}=\bar{m}_{150}-\mu_{\rm TRGB}
+            \end{equation*}
+            \begin{equation*}
+                \bar{M}_{150}=(-3.454\pm0.013) +
+                (1.17\pm0.21)(C-0.40)
+            \end{equation*}
+            \begin{itemize}
+                \item $C=F090W-F150W$;
+                \item $0.40$ mag -- только центрирование;
+                \item $\sigma_{\rm int}=0.049$ mag;
+                \item WRMS линейной модели: $0.059$ mag.
+            \end{itemize}
+            \begin{block}{Почему точки не обязаны лежать на линии}
+                Ошибки $\bar{m}_{150}$, TRGB, цветовые ошибки и реальные различия звёздных популяций дают внутренний разброс. Серая полоса показывает $\sigma_{\rm int}$, а не ошибку среднего.
+            \end{block}
+        \end{column}
+        \begin{column}{0.50\textwidth}
+            \includegraphics[width=\textwidth]{coursework_Mbar150_color_calibration.pdf}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Почему цвет важен}
+    \begin{table}
+    \centering
+    \begin{tabular}{lcc}
+    \toprule
+    Модель & WRMS внутри выборки & WRMS leave-one-out \\
+    \midrule
+    постоянная & 0.091 mag & 0.102 mag \\
+    линейная & 0.059 mag & 0.073 mag \\
+    квадратичная & 0.059 mag & 0.084 mag \\
+    \bottomrule
+    \end{tabular}
+    \end{table}
+    \vspace{0.1cm}
+    \begin{itemize}
+        \item Постоянная $\bar{M}_{150}$ хуже описывает выборку.
+        \item Линейная цветовая калибровка улучшает точность расстояний примерно с $4.7\%$ до $3.4\%$.
+        \item Квадратичная модель не даёт устойчивого выигрыша на 12 объектах.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{SBF-расстояния против TRGB}
+    \begin{columns}[T]
+        \begin{column}{0.45\textwidth}
+            \begin{itemize}
+                \item TRGB используется как опорная независимая шкала.
+                \item Среднее смещение:
+                \begin{equation*}
+                    \langle\mu_{150}-\mu_{\rm TRGB}\rangle=0.003\pm0.019~{\rm mag}
+                \end{equation*}
+                \item WRMS остатков: $0.061$ mag.
+                \item В расстояниях: средний сдвиг $0.15\%$, разброс $2.8\%$.
+            \end{itemize}
+            \begin{block}{NGC 1380}
+                Точка ниже равенства: $\Delta\mu=-0.082\pm0.067$ mag, то есть $\sim1.2\sigma$. Это заметный объект на графике, но не статистическая катастрофа и не основание исключать галактику.
+            \end{block}
+        \end{column}
+        \begin{column}{0.52\textwidth}
+            \includegraphics[width=\textwidth]{coursework_mu_sbf_vs_mu_lit.pdf}
+            \vspace{-0.15cm}
+            {\scriptsize Чёрная линия -- равенство с TRGB, а не fit по точкам.}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Проверка leave-one-out}
+    \begin{columns}[T]
+        \begin{column}{0.43\textwidth}
+            \begin{itemize}
+                \item Для каждой галактики калибровка строится без неё.
+                \item Затем расстояние восстанавливается как для новой галактики.
+                \item WRMS остатков: $0.073$ mag.
+                \item Это соответствует примерно $3.4\%$ по расстоянию.
+            \end{itemize}
+            \begin{equation*}
+                \frac{\Delta D}{D}\simeq\frac{\ln 10}{5}\Delta\mu\simeq0.46\Delta\mu
+            \end{equation*}
+        \end{column}
+        \begin{column}{0.54\textwidth}
+            \includegraphics[width=\textwidth]{coursework_leave_one_out_residuals.pdf}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Сравнение с Jensen et al. 2015}
+    \begin{columns}[T]
+        \begin{column}{0.44\textwidth}
+            \begin{itemize}
+                \item Сравниваются две SBF-реализации:
+                JWST/F150W и HST/F160W.
+                \item Общих галактик: 5.
+                \item Среднее смещение:
+                \begin{equation*}
+                    \langle\mu_{150}-\mu_{160}\rangle=-0.063\pm0.067~{\rm mag}
+                \end{equation*}
+                \item Это примерно $-2.9\%$ по расстоянию.
+            \end{itemize}
+            \begin{block}{Почему это допустимо}
+                Сравниваются разные фильтры и разные шкалы: JWST/F150W+TRGB против HST/F160W, связанной со старой SBF/Cepheid-шкалой. TRGB-шкала Virgo/Fornax в Jensen et al. 2025 короче примерно на $3$--$4\%$, поэтому знак и масштаб смещения ожидаемы.
+            \end{block}
+        \end{column}
+        \begin{column}{0.53\textwidth}
+            \includegraphics[width=\textwidth]{coursework_jensen_f160w_comparison.pdf}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Как интерпретировать расхождения}
+    \begin{itemize}
+        \item С TRGB: средний сдвиг практически нулевой, WRMS $0.061$ mag.
+        \item С Jensen/F160W: наши расстояния немного короче, $-0.063\pm0.067$ mag.
+        \item Это согласуется с тем, что TRGB-основанная шкала Virgo/Fornax короче старой Cepheid/optical-SBF шкалы на $3$--$4\%$.
+        \item NGC 1380: $\Delta\mu_{150-\rm TRGB}=-0.082$ mag, но это всего около $1.2\sigma$.
+        \item NGC 1399: формально пайплайн прошёл, но ошибка $\bar{m}_{150}$ велика: $0.098$ mag; объект имеет малый вес.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Диагностика систематик}
+    \begin{columns}[T]
+        \begin{column}{0.35\textwidth}
+            \begin{itemize}
+                \item Проверены остатки против цвета, расстояния, $\sigma_{P(k)}$, PSF и $P_r/P_0$.
+                \item На 12 объектах это не строгая статистика.
+                \item Цель -- увидеть явный провал пайплайна.
+                \item Очевидного одного доминирующего тренда нет.
+            \end{itemize}
+            \begin{block}{NGC 1399}
+                Пайплайн формально прошёл, но ошибка велика: $\bar{m}_{150}=28.125\pm0.098$ mag. Это центральная массивная галактика со сложной структурой, поэтому она имеет малый вес и не определяет калибровку.
+            \end{block}
+        \end{column}
+        \begin{column}{0.62\textwidth}
+            \includegraphics[width=\textwidth]{coursework_residual_diagnostics_grid.pdf}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Итоги}
+    \begin{itemize}
+        \item Измерены $\bar{m}_{150}$ для 14 галактик JWST GO-3055.
+        \item Получена F150W SBF-калибровка по TRGB-шкале:
+        \begin{equation*}
+            \bar{M}_{150}=(-3.454\pm0.013)+(1.17\pm0.21)(C-0.40).
+        \end{equation*}
+        \item Цвет уменьшает leave-one-out разброс с $0.102$ до $0.073$ mag.
+        \item Относительно TRGB среднее смещение равно $0.003\pm0.019$ mag.
+        \item Относительно Jensen/F160W найдено смещение $-0.063\pm0.067$ mag, согласованное по знаку и величине с известным отличием шкал.
+    \end{itemize}
+\end{frame}
+
+\appendix
+
+\begin{frame}{Backup: почему точки не лежат строго на прямой}
+    \begin{itemize}
+        \item Чёрная линия на графике расстояний -- не fit, а равенство $\mu_{\rm SBF}=\mu_{\rm TRGB}$.
+        \item Идеального совпадения быть не должно: есть ошибка $\bar{m}_{150}$, ошибка TRGB, $\sigma_{\rm int}$ калибровки и реальные различия звёздных популяций.
+        \item Наблюдаемый WRMS $0.061$ mag соответствует всего $2.8\%$ по расстоянию.
+        \item Главный вывод: нет значимого среднего смещения, $0.003\pm0.019$ mag.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Backup: NGC 1380 и NGC 1399}
+    \begin{block}{NGC 1380}
+        $\mu_{150}-\mu_{\rm TRGB}=-0.082$ mag, $\sigma=0.067$ mag: это $\sim1.2\sigma$, не катастрофа. В сравнении с Jensen/F160W объект тоже отличается, но в пределах объединённых ошибок.
+    \end{block}
+    \begin{block}{NGC 1399}
+        Формально прошла, но имеет большую ошибку $\bar{m}_{150}=28.125\pm0.098$ mag и большой разброс между внутренней и внешней областями. Это центральная массивная галактика с более сложной крупномасштабной структурой, поэтому она получает малый вес.
+    \end{block}
+\end{frame}
+
+\begin{frame}{Backup: почему нет Cepheid/SN Ia}
+    \begin{itemize}
+        \item Выборка состоит в основном из ранних галактик: это плохая среда для прямой цефеидной шкалы.
+        \item Однородной SN Ia шкалы для всех этих же объектов нет.
+        \item Смешивание разных внешних источников добавило бы систематику вместо проверки.
+        \item Поэтому основная опора -- TRGB из того же проекта, а внешняя SBF-проверка -- Jensen/F160W.
+    \end{itemize}
+\end{frame}
+
+\end{document}
