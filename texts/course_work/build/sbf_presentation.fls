@@ -362,6 +362,7 @@ INPUT build/sbf_presentation.nav
 INPUT /Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/lass0600.tfm
 INPUT /Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/lass1440.tfm
 INPUT /Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/lass0800.tfm
+INPUT /Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/lass1000.tfm
 INPUT /Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/lass0500.tfm
 INPUT /usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t2a.enc
@@ -414,7 +415,6 @@ INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam7
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm7.tfm
-INPUT /Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/lass1000.tfm
 INPUT /Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/lass0700.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/sansmathaccent/mathkerncmssi12.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/sansmathaccent/mathkerncmssi10.tfm
@@ -443,6 +443,7 @@ INPUT ../../code/paper_figures/coursework_residual_diagnostics_grid.pdf
 INPUT ../../code/paper_figures/coursework_residual_diagnostics_grid.pdf
 INPUT ../../code/paper_figures/coursework_residual_diagnostics_grid.pdf
 INPUT ../../code/paper_figures/coursework_residual_diagnostics_grid.pdf
+INPUT /Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/lass2488.tfm
 OUTPUT build/sbf_presentation.nav
 OUTPUT build/sbf_presentation.toc
 OUTPUT build/sbf_presentation.snm
@@ -466,3 +467,4 @@ INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfss1000.pf
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfss1095.pfb
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfss1200.pfb
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfss1440.pfb
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfss2488.pfb

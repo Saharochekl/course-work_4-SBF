@@ -168,9 +168,7 @@ INPUT /Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/labx1728.tf
 INPUT /usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t2a.enc
 INPUT /Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/larm1728.tfm
-INPUT build/курсач_5.toc
-INPUT build/курсач_5.toc
-INPUT build/курсач_5.toc
+INPUT /Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/lati1200.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmr8.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmr6.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmmi12.tfm
@@ -194,8 +192,10 @@ INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/amsfonts/umsb.fd
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm7.tfm
+INPUT build/курсач_5.toc
+INPUT build/курсач_5.toc
+INPUT build/курсач_5.toc
 OUTPUT build/курсач_5.toc
-INPUT /Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/lati1200.tfm
 INPUT /Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/larm1095.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmr10.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmmi10.tfm

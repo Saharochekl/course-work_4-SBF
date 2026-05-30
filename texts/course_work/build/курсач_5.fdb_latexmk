@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1779759636.27786 "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/texts/course_work/курсач_5.tex" "build/курсач_5.pdf" "курсач_5" 1779759639.14945 0
+["pdflatex"] 1779882689.98649 "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/texts/course_work/курсач_5.tex" "build/курсач_5.pdf" "курсач_5" 1779882690.83826 0
   "../../code/paper_figures/coursework_Mbar150_color_calibration.pdf" 1779590077.1399 32536 1974a18d2e67447ec324e926d8d8c383 ""
   "../../code/paper_figures/coursework_error_budget_variance.pdf" 1779590078.70219 24286 3b86f6544b7feb382a4f4f822745f74a ""
   "../../code/paper_figures/coursework_jensen_f160w_comparison.pdf" 1779636308.41986 23517 63ef3acf84627ecee34f6c5703d00cad ""
@@ -7,7 +7,7 @@
   "../../code/paper_figures/coursework_mu_sbf_vs_mu_lit.pdf" 1779590077.46634 21338 c3a9ce3de1f2e3f948659793602bb781 ""
   "../../code/paper_figures/coursework_residual_diagnostics_grid.pdf" 1779590078.21322 33959 015b701e55533ce9e9c40969659b7684 ""
   "../../code/sbf2_batch_outputs/coursework_distance_comparison_table.tex" 1779657604.88218 2537 abb8975b5a9ef5a66af93840e8756952 ""
-  "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/texts/course_work/курсач_5.tex" 1779759633.35294 66597 3d85c2a3fc59b61e5e2f2167d8a3e501 ""
+  "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/texts/course_work/курсач_5.tex" 1779882689.71228 71600 0dfcf39d4c7125acdd0d9d841c100d81 ""
   "/Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/labx1200.tfm" 1748385537.0196 3308 eee81981029f67083258db36df06e523 ""
   "/Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/labx1440.tfm" 1748383375.79491 3304 6a543c07045572737981351171e0505e ""
   "/Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/labx1728.tfm" 1748385540.11143 3312 d199be9bd555944e2403193d58a0256a ""
@@ -134,11 +134,11 @@
   "/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1748372261 5467155 19efa205003f9ecad95fbbaa6ff24da1 ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1748372131 3345732 aabcaff7470c5d83b70fd5840d3a83d5 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
-  "build/курсач_5.aux" 1779759638.71795 9842 993a07537319b6c35577464b7a1e61dd "pdflatex"
-  "build/курсач_5.out" 1779759638.71936 3414 930d98931a457a7d0d7e5c5ad70d2d86 "pdflatex"
-  "build/курсач_5.toc" 1779759638.71961 1578 d4a54b39c70350e855265e886c0e61b2 "pdflatex"
+  "build/курсач_5.aux" 1779882690.71239 9842 993a07537319b6c35577464b7a1e61dd "pdflatex"
+  "build/курсач_5.out" 1779882690.71406 3414 930d98931a457a7d0d7e5c5ad70d2d86 "pdflatex"
+  "build/курсач_5.toc" 1779882690.71457 1578 d4a54b39c70350e855265e886c0e61b2 "pdflatex"
   "msu.jpg" 1778990022.42022 15784 933fe6f25ce2a5f1a706f0543dcca1b5 ""
-  "курсач_5.tex" 1779759633.35294 66597 3d85c2a3fc59b61e5e2f2167d8a3e501 ""
+  "курсач_5.tex" 1779882689.71228 71600 0dfcf39d4c7125acdd0d9d841c100d81 ""
   (generated)
   "build/курсач_5.aux"
   "build/курсач_5.log"
