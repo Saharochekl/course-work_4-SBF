@@ -1,0 +1,1079 @@
+Draft version September 5, 2024
+Typeset using LATEX twocolumn style in AASTeX631
+
+The TRGB−SBF Project. I.
+A Tip of the Red Giant Branch Distance to the Fornax Cluster with JWST
+Gagandeep S. Anand,1 R. Brent Tully,2 Yotam Cohen,1 Dmitry I. Makarov,3 Lidia N. Makarova,3
+Joseph B. Jensen,4 John P. Blakeslee,5 Michele Cantiello,6 Ehsan Kourkchi,2, 4 and Gabriella Raimondo6
+1 Space Telescope Science Institute, 3700 San Martin Drive, Baltimore, MD 21218, USA
+
+arXiv:2405.03743v3 [astro-ph.CO] 3 Sep 2024
+
+2 Institute for Astronomy, University of Hawaii, 2680 Woodlawn Drive, Honolulu, HI 96822, USA
+3 Special Astrophysical Observatory of the Russian Academy of Sciences, Nizhnij Arkhyz, Karachay-Cherkessia 369167, Russia
+4 Department of Physics, Utah Valley University, 800 W. University Parkway, Orem, UT 84058, USA
+5 NSF’s NOIRLab, 950 N Cherry Ave, Tucson, AZ 85719, USA
+6 INAF – Astronomical Observatory of Abruzzo, Via Maggini, 64100, Teramo, Italy
+
+ABSTRACT
+Differences between the local value of the Hubble constant measured via the distance ladder versus
+the value inferred from the cosmic microwave background with the assumption of the standard ΛCDM
+model have reached over 5σ significance. To determine if this discrepancy is due to new physics or
+more mundane systematic errors, it is essential to remove as many sources of systematic uncertainty as
+possible by developing high-precision distance ladders that are independent of the traditional Cepheid
+and Type Ia supernovae route. Here we present JWST observations of three early-type Fornax Cluster
+galaxies, the first of fourteen observations from a Cycle 2 JWST program. Our modest integration
+times allow us to measure highly precise tip of the red giant branch (TRGB) distances, and will also be
+used to perform measurements of Surface Brightness Fluctuations (SBF). From these three galaxies, we
+determine an average TRGB distance modulus to the Fornax Cluster of µ = 31.424 ± 0.077 mag, or D
+= 19.3 ± 0.7 Mpc. With eleven more scheduled observations in nearby elliptical galaxies, our program
+will allow us set the zero point of the SBF scale to better than 2% for more distant measurements,
+charting a path towards a high-precision measurement of H0 that is independent of the traditional
+Cepheid-SN Ia distance ladder.
+
+Keywords: Distance indicators; Elliptical galaxies; Galaxy distances; Red giant tip; Stellar distance
+1. INTRODUCTION
+
+For at least a half a century, the Virgo Cluster has
+played an important role in the establishment of the extragalactic distance scale (Sandage & Tammann 1976).
+However, the depth of the virializing region of this cluster, about ±10% of its distance, is an appreciated hindrance (increasing the scatter in the mean distance to
+the cluster), made more difficult by the ongoing accretion of new members (Tully & Shaya 1984; Cantiello
+et al. 2024). The Fornax Cluster has played a more limited role, but it is more compact with a depth about
+±5% of its distance and little evidence of recent accretion. Fornax is only slightly more distant than Virgo;
+surface brightness fluctuation (SBF) measurements for
+43 galaxies in Fornax and 91 galaxies in the Virgo vicinity using the Advanced Camera for Surveys (ACS) on
+Hubble Space Telescope (HST), imply a Fornax/Virgo
+
+distance ratio dF /dV = 1.21 ± 0.02 (Blakeslee et al.
+2009).
+In the most recent compilation of Cosmicflows-4 distances (Tully et al. 2023b), distances are given for 52
+galaxies associated with the Fornax Cluster, including
+4 hosts of Type Ia supernovae (NGC 1365, NGC 1316,
+NGC 1404, and NGC 1380). The first three of these also
+have distance measurements via the tip of the red giant branch (TRGB) method. Two Fornax galaxies have
+a distance determination from Cepheid variable stars
+(NGC 1326A and NGC 1365), the latter of which is a
+SN Ia host galaxy. The TRGB and Cepheid distance
+moduli for NGC 1365 agree within 0.02 mag, or 1% in
+distance. The five TRGB and Cepheid distances to four
+Fornax galaxies on the Cosmicflows-4 zero point scale
+have an average distance of 18.0 ± 1.3 Mpc. The scatter
+of 7% is comparable to the depth of the cluster.
+
+2
+
+NGC 1380
+
+NGC 1399
+
+couple lie just beyond 10 Mpc in the Leo Group but
+already required multiple HST orbit observations for
+sufficient signal). As a consequence, TRGB distances
+have played only a minor role in establishing the SBF
+scale (Blakeslee et al. 2021b). With JWST, the very
+high point-source signal/noise (S/N) acquired with moderate exposures for galaxies within 20 Mpc provide an
+abundance of candidates to establish a TRGB-SBF linkage. Here we provide TRGB measurements to the three
+Fornax Cluster galaxies from our program and a first
+look at SBF measurements with JWST.
+2. DATA
+
+NGC 1404
+
+JWST/NIRCam
+Figure 1. Footprints of our JWST/NIRCam visits in the
+Fornax Cluster, overlaid on a one square degree image from
+the Digitized Sky Survey.
+
+TRGB and Cepheid observations are a challenge at
+the distance of the Fornax Cluster with HST, requiring
+many HST orbits (Hatt et al. 2018; Hoyt et al. 2021;
+Riess et al. 2022). However, as will be demonstrated
+here, TRGB measurements can be made with high accuracy with much shorter integrations with JWST at the
+distance of this cluster. In this paper we report on observations of three galaxies in the cluster: NGC 1404 with
+a prior HST TRGB measurement and host to two Type
+Ia supernovae (Hoyt et al. 2021; Anand et al. 2022),
+NGC 1380 that hosted a single Type Ia supernova (Kirshner et al. 1993), and NGC 1399, the central dominant
+galaxy in the cluster.
+Of equal interest to our program is the establishment of a robust zero-point calibration for the SBF
+methodology. The SBF technique with JWST holds
+great promise in measuring distances out into the Hubble flow (Blakeslee et al. 2021a; Cantiello & Blakeslee
+2023), allowing for an alternative to Type Ia supernovae
+as the final rung on the distance ladder (Riess et al.
+2022), and a means to confirm or deny the >5σ Hubble
+Tension between existing local distance ladder and cosmic microwave background derived measurements (Di
+Valentino et al. 2021). The old, gas-poor systems appropriate for SBF measurements do not contain significant numbers of Cepheids, requiring calibration, instead, with the TRGB. Aside from the peculiar galaxy
+Centaurus A and the obscured Maffei I, there are no giant elliptical galaxies within the 10 Mpc limit available for single orbit TRGB measurements with HST (a
+
+The three galaxies presented in this work are the first
+of 14 targets of Cycle 2 JWST program GO-3055 (Tully
+et al. 2023a) to link the TRGB and SBF scales through
+simultaneous observations tailored to each method. The
+split fields of the JWST NIRCam detector (Gardner
+et al. 2023; Rieke et al. 2023) are ideal for the experiment. One field covers the high surface brightness core
+of a galaxy for the SBF measurement, while the other
+field extends to the galactic halo where the TRGB measurement can be made with minimal confusion from
+crowding. SBF can also be measured in the peripheral
+fields, providing a direct overlap with TRGB. The primary observations are made in the F 090W and F 150W
+filters. F 090W is optimal for TRGB and SBF because
+of the minimal variance of RGB magnitudes at lower
+metallicities (Anand et al. 2024). F 150W is another
+good choice for SBF because the fluctuation signal is
+very bright at this wavelength for the old, metal-rich
+populations of elliptical galaxies, making SBF measurable to distances beyond 100 Mpc (Jensen et al. 2015).
+Simultaneous long-wavelength observations are made in
+both F 277W and F 356W , although we do not make
+use of these filters in this work. The integration times
+are set by the requirements of the TRGB observations.
+The SBF signal is abundantly strong in the same exposure time. The deep multi-wavelength imaging of the
+selected galaxies is also useful for many other ancillary
+science cases.
+Table 1 provides a summary of the data we use in this
+paper. All the data was reduced with context versions1
+1140.pmap or 1147.pmap (with no meaningful changes
+for NIRCam imaging between the two), and contain all
+reference file updates as of January 2024, including the
+latest updates to the photometric zeropoints, provided
+in 1126.pmap. The observational setup with NIRCam
+1 See https://jwst-crds.stsci.edu/display all contexts/ for more in-
+
+formation on each version.
+
+3
+
+NGC 1380
+
+B4
+
+A1
+
+Figure 2. Color images of the B4 and A1 chips from our NGC 1380 observations, generated from F 090W /F 150W /F 356W
+imaging. The elongated spatial coverage of NIRCam allows us to capture a large dynamic range of surface brightnesses within
+a single visit, facilitating simultaneous measurements of Surface Brightness Fluctuations and the Tip of the Red Giant Branch.
+Date
+
+Target
+
+Obs. ID
+
+Filter
+
+Time [s]
+
+2023-10-12
+2023-10-12
+2023-11-09
+2023-11-09
+2023-11-14
+2023-11-14
+
+NGC 1399
+NGC 1399
+NGC 1380
+NGC 1380
+NGC 1404
+NGC 1404
+
+o002 t002
+o002 t002
+o001 t001
+o001 t001
+o003 t003
+o003 t003
+
+F090W
+F150W
+F090W
+F150W
+F090W
+F150W
+
+7730.474
+1932.619
+7730.474
+1932.619
+7730.474
+1932.619
+
+Table 1. Observation log for the data used in this paper. All the images were processed with jwst 1140.pmap
+or jwst 1147.pmap context versions, which include the NIRCam flat-field and flux calibration updates introduced in
+The
+jwst 1125.pmap and jwst 1126.pmap, respectively.
+name of all observation IDs start with “jw03055-” and end
+with “ nircam clear-f090w” or “ nircam clear-f150w”. The
+times given are the actual measurement times (TMEASURE),
+and not the total exposure times (EFFEXPTM), which include
+some overhead.
+
+was identical for each of the three galaxies presented in
+this paper. For each F 090W observation, we used a
+MEDIUM8 readout pattern with 7 groups/integration, 3
+integrations/exposure, and four subpixel dithers. For
+each F 150W observation, we used a SHALLOW4 readout pattern, with 10 groups/integration, 1 integration/exposure, and four subpixel dithers.
+
+Footprints of our NIRCam observations are shown in
+Fig. 1, overlaid on a one square degree image from the
+Digitized Sky Survey. From this figure, the extended
+spatial NIRCam coverage is clear. To further highlight
+the dynamic range probed by NIRCam in a single pointing, we show color (F 090W + F 150W + F 356W ) images
+of individual chips from the NGC 1380 visit in Fig. 2.
+The core of this galaxy is centered on the B4 chip; a
+small dust lane in the center is readily apparent. While
+individual stars cannot be resolved in the inner regions
+due to crowding, a few globular clusters are visible scattered throughout as marginally resolved sources. Some
+background galaxies can also be seen. The two chips
+furthest from the core of the galaxy are A1 and A2, and
+we show a color image from the former. There are thousands of giant branch stars which populate this frame.
+Importantly, they can be easily separated from one another, due to the significantly lower surface brightness at
+this radius. A diverse population of background galaxies
+is also visible.
+3. DATA REDUCTION
+
+Our JWST resolved star photometry procedure generally follows that as outlined in other recent works (Riess
+et al. 2023, 2024; Anand et al. 2024). We utilize the
+DOLPHOT PSF photometry package (Dolphin 2000,
+2016)– specifically, we use the NIRCam module, which
+has been developed as part of the JWST Resolved Stellar Populations Early Release Science Program (Weisz
+
+4
+
+Figure 3. Color-magnitude diagrams (uncorrected for foreground extinction) for three Fornax Cluster galaxies in our program.
+We only show stars from the two furthest of the eight SW chips (A1+A2). The TRGB feature is visible at approximately
+m = 27 mag, or D = 19 Mpc for each galaxy. For NGC 1399, we only show the left-most quarter of each chip. The number of
+stars in each CMD is displayed in the upper-left for each target.
+
+et al. 2023, 2024). We use the latest major version of
+the software (and associated PSFs) available at the time
+of writing this paper, which is the update provided on
+February 4th, 2024.
+For our photometry, we use the recommended parameters provided in the recent work of Weisz et al. (2024).
+We perform our PSF photometry directly on the Stage
+2 cal images, while using a Stage 3 i2d image from
+the JWST pipeline as the “reference frame” for mutual
+image alignment. We choose F 090W for the reference
+frame, as it has the highest angular resolution, and our
+observations are also the deepest in that filter. We filter
+our final object list based on the quality criteria presented in Anand et al. (2024), which are based on the
+recommendations provided by the ERS program team
+in Warfield et al. (2023). We only include sources which
+meet the following DOLPHOT criteria in both filters in
+our final object list (except for type, which is not a filter
+specific output): (1) Crowding < 0.5; (2) (Sharpness)2
+≤ 0.01; (3) Object Type ≤ 2; (4) S/N ≥ 5; (5) Error
+Flag ≤ 2. All of our PSF photometry is transformed to
+the Vega system (and not the Sirius–Vega variant2 ).
+2 By default, DOLPHOT uses the Sirius–Vega system. This can be
+
+switched to the Vega system by switching the filters vega.dat
+→ filters.dat in DOLPHOT’s NIRCam installation folder.
+The difference between the two photometric systems is ∼0.04
+mag in F 090W , and ∼0.02 mag in F 150W .
+
+We opt to utilize the “–etctime” option in the
+DOLPHOT/NIRCam module, which rectifies the effective exposure time provided in the JWST image headers
+(EFFEXPTM) to use the appropriate measurement time
+(TMEASURE) for derivation of the underlying S/N. The
+use of this option does not significantly affect the flux
+measurements themselves (due to the underlying image units of surface brightness); instead it aims to provide more realistic S/N estimates for each individual
+source (Weisz et al. 2024).
+We also performed artificial star experiments with
+DOLPHOT. One at a time, 100,000 artificial stars (per
+chip) of known magnitude and position are inserted and
+recovered. The spatial distribution of these artificial
+stars was set to match the distribution of genuine stars
+found in the image. The same quality filtering is applied to the artificial stars, allowing us to quantify the
+effects of photometric bias and incompleteness that may
+be present in our data.
+Color-magnitude diagrams (CMDs) for each target
+can be seen in Fig. 3. These CMDs are limited to the two
+SW NIRCam chips that are furthest from the galaxy’s
+core (A1+A2). For NGC 1399, we further restrict the
+points to just those that are in the furthest quarter of
+each chip, for visual clarity. In each CMD, the vast majority of resolved stars are those on the red-giant branch
+(RGB), with the TRGB visible at mF 090W ≃ 27 mag
+(D = 19 Mpc) for each target. The magnitude limit of
+
+5
+the CMD for NGC 1399 is ∼ 0.3 mag brighter than for
+the other two targets, likely due to crowding effects at
+the faint end (NGC 1399 is the cD galaxy in the Fornax Cluster, and thus more extended). It can also be
+seen that the RGB contains stars of a vast range of
+metallicities; for our TRGB work, we will only use the
+lower metallicity stars, which have little-to-no variation
+in their magnitude when observed in F 090W (see the
+discussion in §2 of Anand et al. 2024). A further description of the underlying stellar populations can be
+found in §4.6.
+On a broader note, the CMDs from our current program also highlight the great promise of performing
+TRGB measurements and general resolved stellar population science with JWST for galaxies well past 20 Mpc.
+It is widely accepted that 1 magnitude below the TRGB
+is needed for rigorous TRGB measurements (Madore &
+Freedman 1995; Makarov et al. 2006; Madore et al. 2009;
+Anand et al. 2021). This requirement of having the
+TRGB be one magnitude brighter than the S/N = 5
+photometric limit means that our current program design would allow a secure measurement of the TRGB out
+to mF 090W = 28 mag, µ = 32.4 mag, or D = 30 Mpc
+without any further increase in exposure time (total visit
+times of ∼ 4.5 hours). It can also be seen from Fig. 3
+that the current incompleteness “wedge” is driven by
+the limited amount of exposure time in F 150W , and
+not F 090W (see Table 1 for our exposure times). A
+modest amount of increased exposure time (∼1–2 hours)
+devoted to additional F 150W observations would allow
+us to reach mTRGB = 28.8 mag, µ = 33.2 mag, or
+D = 44 Mpc (with total visit times of ∼6 hours). We
+note that our measured S/N values are considerably better than expected, when compared to the JWST Exposure Time Calculator (v3.0). This likely has to do with
+the ETC’s underlying assumption of aperture photometry; PSF photometry can often provide much higher S/N
+photometry than aperture photometry, especially in the
+faint regime. As of the writing of this paper, there is no
+option for the ETC to provide S/N estimates assuming
+PSF photometry, limiting its application in cases like
+ours.
+
+4. TRGB MEASUREMENTS
+
+We now walk through the process of measuring TRGB
+distances to our three Fornax Cluster galaxies. We
+use two main techniques for measuring the TRGB;
+the first involves the use of an edge-detection algorithm (Lee et al. 1993; Beaton et al. 2019), while the
+second method requires fitting a model luminosity function to the observed data (Méndez et al. 2002), and di-
+
+Field
+
+Sobel TRGB
+
+ML TRGB
+
+NGC 1380−A1
+NGC 1380−A2
+NGC 1399−A1
+NGC 1399−A2
+NGC 1404−A1
+NGC 1404−A2
+
+27.06 ± 0.01
+27.08 ± 0.02
+27.11 ± 0.02
+27.12 ± 0.04
+27.03 ± 0.03
+27.00 ± 0.02
+
+27.061 ± 0.017
+27.081 ± 0.018
+27.169 ± 0.023
+27.190 ± 0.023
+27.035 ± 0.020
+27.026 ± 0.019
+
+Table 2. A summary of our TRGB measurements
+from both the Sobel edge-detection method and the
+maximum-likelihood model fits. The edge-detection
+results are only given to two decimal points, as the
+underlying luminosity function is binned at the 0.01
+mag level.
+
+rectly takes into account the results of artificial star experiments (Makarov et al. 2006).
+For each target, we perform our measurements on each
+of the two chips that are furthest from the galaxy’s core.
+Due to the observational setup for our program, these
+are the A1 and A2 chips for all three targets. We analyze
+the data for both chips separately, reducing any concerns
+regarding the chip-to-chip zeropoint offsets. We note
+that for most standard stars, these offsets are at the
+level of 0.00–0.03 mag3 . For NGC 1399, we also limit
+our analysis to the least crowded quarter of each of the
+two chips (via a simple spatial cut on the x-axis) in an
+attempt to mitigate the effects of the (modest) crowding
+present (which is more of an issue for the edge-detection
+routine, as it does not employ the use of artificial stars).
+With both of our chosen measurement techniques, we
+also restrict our analysis to the color range of 0.5 ≤
+F 090W − F 150W ≤ 1.75 mag. The red end of the color
+range is chosen to limit the analysis before the TRGB
+becomes fainter with metal-rich stars, as recommended
+by Anand et al. (2024). The precise blue color is less
+important, as this end is typically chosen to eliminate
+young stars, such as main-sequence stars or yellow supergiants (or very low metallicity red giants, which we
+do not find in our observations). The lack of these stellar populations in our massive, early-type galaxies allows
+us to choose a relatively broad blue color, allowing for
+greater sampling of the RGB beneath the tip.
+
+3 See
+
+the
+details
+provided
+at
+https://jwst-docs.
+stsci.edu/jwst-data-calibration-considerations/
+jwst-calibration-uncertainties for more information regarding calibration uncertainties.
+
+6
+
+Figure 4. Color-magnitude diagrams and edge-detection measurements for each of our six fields in three galaxies. The
+maximum-likelihood TRGB results are also plotted for comparison, but are nearly indistinguishable from the edge-detection
+results except for the NGC 1399 fields (which suffer from a modest amount of photometric bias). The grey-shaded region
+indicates the color range used for the TRGB measurements.
+
+7
+Field
+
+mT RGB
+
+AF 090W
+
+µ
+
+NGC 1380−A1
+NGC 1380−A2
+NGC 1399−A1
+NGC 1399−A2
+NGC 1404−A1
+NGC 1404−A2
+
+27.061 ± 0.017
+27.081 ± 0.018
+27.169 ± 0.023
+27.190 ± 0.023
+27.035 ± 0.020
+27.026 ± 0.019
+
+0.021
+0.021
+0.016
+0.016
+0.014
+0.014
+
+31.387 ± 0.066
+31.407 ± 0.066
+31.500 ± 0.068
+31.521 ± 0.068
+31.368 ± 0.067
+31.359 ± 0.067
+
+Table 3. TRGB distances derived to each field, as determined
+from the maximum likelihood results.
+
+4.1. Edge-Detection
+To perform our baseline edge-detection measurements,
+we use the method outlined by Anand et al. (2024),
+which is largely based on techniques first introduced by
+Lee et al. (1993); Sakai et al. (1996) and further developed by the Carnegie Chicago Hubble Program (CCHP;
+Beaton et al. 2016; Freedman et al. 2019). To briefly
+summarize, we first restrict the analysis to the selected
+color range, and then marginalize over this color axis to
+generate a binned luminosity function with a bin-width
+of 0.01 mag. We then apply a GLOESS smoothing kernel with a smoothing scale of σs = 0.10 mag, similar to
+what is typically adopted in the literature4 (Freedman
+et al. 2019). To detect the location of the TRGB, we employ a Sobel edge detection algorithm with a kernel of
+[−1, 0, 1] (akin to a first derivative). We then assign the
+first prominent response as the brightness of the TRGB.
+The measurements are shown in Fig. 4. The uncertainties are obtained via 1000 bootstrap resampling
+with replacement trials. We find good agreement between measurements from the two distinct chips for
+each galaxy, with the differences ranging from 0.01 mag
+(NGC 1399) to 0.03 mag (NGC 1404). These modest
+offsets are of the order of both (1) the potential current
+chip-to-chip offsets and (2) the uncertainties for each
+measurement, so it is difficult to ascertain their underlying nature at present. At this point, we do not combine
+photometry from the separate chips to avoid potentially
+skewing the results – given that the brightest RGB stars
+will define the tip, outstanding zeropoint offsets would
+skew the measurements towards brighter values.
+4.2. Model LF Fitting
+
+Figure 5. Top: F 090W photometric bias curve for
+NGC 1399–A1, as a function of observed magnitude. The
+red vertical line denotes the TRGB, and the blue vertical
+lines indicate the magnitude range (±1 mag) used for the
+TRGB measurement procedure. The differences between
+the edge-detection and maximum-likelihood results for this
+galaxy seen in Fig. 4 are likely a result of the edge-detection
+method not accounting for photometric bias in this modestly
+crowded field. Bottom: Maximum-likelihood TRGB fit for
+NGC 1399−A1. A binned version of the underlying luminosity function is shown as a histogram (the procedure itself
+does not require binning). The best-fit luminosity function
+is shown as the red line, after accounting for the measured
+photometric bias, completeness, and errors as determined
+from the artificial star experiments. The intrinsic underlying luminosity function with distinct RGB and AGB slopes
+is shown as the cyan line. For illustrative purposes, an edgedetection measurement is shown as the dotted line.
+
+For our model luminosity function TRGB measurements, we use the maximum likelihood TRGBTOOL described in Makarov et al. (2006). To briefly summarize,
+we adopt a theoretical luminosity function (LF) of the
+form:
+
+10 a(m−mTRGB )+b , if m ≥ m
+TRGB
+ψ=
+(1)
+10 c(m−mTRGB ) ,
+if m < m
+,
+TRGB
+
+4 The effects of varying the smoothing kernel are typically at the
+
+level of ∼0-2% in distance, however we do not further explore
+these systematics in this work due to our eventual adoption of
+the maximum-likelihood derived measurements.
+
+where mTRGB is the magnitude of the TRGB, b denotes
+the strength of the RGB jump, and a and c are the
+slopes of the luminosity function on, respectively, the
+RGB and AGB sides of the jump. This theoretical LF
+
+8
+is used to fit the observed data, while taking into account
+the photometric bias, completeness, and errors derived
+from our artificial star experiments. An initial estimate
+of the TRGB is provided via the results of the edgedetection analysis, and the fitting procedure is repeated
+until convergence.
+An example maximum-likelihood measurement is
+shown in Fig. 5 for NGC 1399−A1. The binned histogram corresponds to the underlying luminosity function, although the procedure itself does not involve binning. The red line shows the best-fit model luminosity
+function to the observed data, including photometric effects derived via our artificial star experiments. The
+intrinsic underlying luminosity function (i.e. if the data
+were free from bias, errors, and incompleteness) is shown
+as the dashed cyan line. It can be seen from the mismatch between the cyan and red lines that the photometry for this target suffers from a modest amount of
+incompleteness at fainter magnitudes, likely due to the
+fact that this is the most crowded of our three galaxies. An edge-detection result is shown in the black
+dotted line, for comparison only. For all three of our
+galaxies, the maximum-likelihood results agree to within
+0.02 mag for the two distinct chips. The results from the
+maximum-likelihood routine are given in Table 2 and
+Fig. 4.
+4.3. Methodological Comparisons
+There is very good agreement for the TRGB measurements of NGC 1380 (∆ = 0.00 mag) and NGC 1404
+(∆ = 0.02 mag) with the Sobel and maximum-likelihood
+techniques. However, there is a larger difference for
+NGC 1399 (∆ = 0.07 mag), which suffers from a moderate amount of crowding and hence photometric bias. In
+this case, it is likely that the edge-detection results are
+being biased brightwards by a selection of blended RGB
+stars, whereas the maximum-likelihood measurements
+take the observed bias into account. Indeed, Fig. 5
+shows that differences between input and output magnitudes for artificial stars at the maximum-likelihood derived magnitude of the TRGB is ∼0.05 mag, similar
+to the level of offset between the two methods for this
+case. Given that some of our data suffers from a moderate amount of photometric bias, we proceed with the
+maximum-likelihood results (which account for these effects) for our final reported distances. We recommend
+that others who wish to perform accurate TRGB distance measurements go through similar checks of photometric bias if they wish to proceed with measurements
+from routines which do not take into account artificial
+star results.
+4.4. Distances
+
+Galaxy
+NGC 1316
+NGC 1326A
+NGC 1365
+NGC 1380
+NGC 1399
+NGC 1404
+Average
+
+JWST TRGB
+
+HST TRGB
+
+HST Cepheid
+
+31.35 ± .10
+
+31.397 ± .066
+31.511 ± .068
+31.364 ± .067
+31.424 ± .077
+
+31.40 ± .09
+
+31.009 ± .100
+31.378 ± .056
+
+31.27 ± .10
+31.34 ± .07
+
+31.194 ± .260
+
+Table 4. A comparison of distances to Fornax Cluster galaxies,
+from TRGB and Cepheid measurements.
+
+To provide an absolute scaling for our TRGB measurements, we utilize the JWST/NIRCam TRGB calibration provided by Anand et al. (2024). They use
+data taken in the outer regions of the megamaser host
+NGC 4258 to provide a direct calibration in our filter
+of interest (F 090W ). The baseline absolute calibraF 090W
+tion they provide is MTRGB
+= −4.362 ± 0.033 (stat)
+±0.045 (sys) mag. They also note that this baseline calibration may be further tailored to individual measureF 090W
+= −4.347 mag is
+ment techniques: a value of MTRGB
+more appropriate for techniques which employ the use
+of LF fitting with artificial stars (e.g. Makarov et al.
+2006) and take into account photometric bias, errors,
+and incompleteness. It has been shown that the modelLF fitting techniques can provide measurements that
+are up to ∼0.05 magnitudes fainter than their edgedetection counterparts (Anand et al. 2022), consistent
+with the 0.03 mag offset in their absolute JWST calibration (Anand et al. 2024). We also note that several modest changes in the recommended DOLPHOT parameters may result in minor offsets in the final photometry,
+though Weisz et al. (2024) note that the performance is
+comparable.5 . To account for any potential mismatches,
+we choose to include an additional 0.03 mag contribution
+to the overall systematic error term. The magnitude of
+this term is also provided by Anand et al. (2024), who
+obtain this value from several other works in the literature which examine the systematic effects of changing DOLPHOT parameters on the output photometry
+(Jang et al. 2021; Jang 2023). Our adopted absolute calF 090W
+ibration now becomes MTRGB
+= −4.347 ± 0.033 (stat)
+5 An
+
+updated NIRCam TRGB calibration with the new
+DOLPHOT parameters and PSF models, along with a NIRISS
+TRGB calibration will be provided in a future, separate work
+(Anand et al. in prep). Preliminary results from that work show
+that the net effect is insignificant (<0.01 mag)
+
+9
+V LG
+
+±0.054 (sys) mag (see Table 3 in Anand et al. 2024 for
+all of the included error terms).
+
+4.5. Comparison with Previous Distances
+There are distances for 52 galaxies in the Fornax Cluster in the Cosmicflows-4 compilation of distances (Tully
+et al. 2023b). The largest contribution (43 SBF distances) originate from the HST ACS Fornax Cluster
+Survey (Blakeslee et al. 2009). There are 18 (overlapping) Fundamental Plane entries, 8 Tully-Fisher distances, 4 Type Ia SNe, 3 TRGB measurements (from
+HST observations), and 2 Cepheid contributions. The
+Cosmicflows-4 ensemble averaged distance to the Fornax
+Cluster is 19.62±0.12 Mpc with most of the weight of the
+result coming from the large SBF sample with low internal uncertainties (although Blakeslee et al. 2009 state a
+systematic uncertainty of 1.4 Mpc from their HST/ACS
+SBF data).
+Given the significance of the statistics of the different
+distance measurement techniques, differing results depend sensitively on systematic errors arising from their
+absolute calibrations. Table 4 reports distance modulus measurements from TRGB and Cepheid PeriodLuminosity studies. The averaged distances for the
+three columns are 19.3 ± 0.7 Mpc (3 JWST TRGB),
+18.5 ± 0.6 Mpc (3 HST TRGB), and 17.3 ± 2.2 Mpc
+(2 HST Cepheid). The HST TRGB and Cepheid re-
+
+1200
+
+M B (mag)
+1600
+
+15
+
+13
+
+11
+
+9
+
+-34
+
+NGC1380
+NGC1399
+
+Dec. (deg)
+
+Until now, we have not included the minor contribution from foreground extinction in our analysis. To tabulate AF 090W for each target, we take E(B − V ) from
+Schlafly & Finkbeiner (2011) and adopt AF 090W /E(B −
+V ) = 1.4156 (Riess et al. 2023). The corresponding extinction values are AF 090W = 0.021 mag for
+NGC 1380, AF 090W = 0.016 mag for NGC 1399, and
+AF 090W = 0.014 mag for NGC 1404. After correcting
+the observed magnitudes for foreground extinction, we
+tabulate µ = m − M for each field separately, and note
+the results in Table 3. The uncertainties on the individual distance moduli are tabulated from the quadrature sum of the uncertainty in the observed magnitude
+of the tip and the uncertainty in the absolute magnitude calibration of ±0.063 mag. The former term is
+itself the quadrature sum of the uncertainty in the underlying TRGB measurement, and a conservative onehalf the value of the foreground extinction. For our final distance moduli, we take the average of each of the
+two individual fields (without further averaging down
+of the errors), to find µ = 31.397 ± 0.066 mag for
+NGC 1380, µ = 31.511 ± 0.068 mag for NGC 1399, and
+µ = 31.364 ± 0.067 mag for NGC 1404 (Table 4).
+
+800
+
+NGC1404
+
+-36
+
+NGC1365
+NGC1326A
+
+NGC1316
+
+-38
+
+TRGB JWST
+TRGB HST
+Cepheids
+SN Ia
+
+55
+
+53
+
+51
+
+R.A. (deg)
+
+Figure 6. Distribution of galaxies in the vicinity of the
+Fornax Cluster. Galaxies are colored according to their redshift in the Local Group reference frame. Big and small circles indicate objects with JWST and HST TRGB distances,
+respectively; squares mark two galaxies with Cepheid distances; and x-crosses stand for the four galaxies that hosted
+SN Ia.
+
+sults in Table 4 are on the absolute scale established
+in the Cosmicflows-4 study. The JWST TRGB results
+presented here are those based on the scale set by the
+distance to the megamaser host galaxy NGC 4258, for
+which a geometrical distance good to 1.5% has been
+measured (Reid et al. 2019). The positions of galaxies
+in and around the Fornax Cluster are plotted in Fig. 6.
+Those with TRGB and Cepheid distances, and those
+that have hosted SN Ia, are highlighted.
+We note that the Cepheid distances to NGC 1326A
+(Freedman et al. 2001) and NGC 1365 (Riess et al. 2022)
+differ by nearly 20%, significantly greater than the depth
+of the Fornax cluster. An initial HST Key project value
+of µ = 31.36±0.21 mag for NGC 1326A was provided by
+Prosser et al. (1999), which greatly differs from the final
+measurements provided by the Key Project (Freedman
+et al. 2001) of µ = 31.01±0.10 mag. A modern reduction
+of the underlying data might provide further insight into
+the apparent discrepancies.
+As a particularly relevant example, we compare the
+color-magnitude diagrams down to S/N = 5 from HST
+and JWST observations in NGC 1404 in Fig. 7. The
+(crowding-limited) HST data was taken over 34 orbits (51 hours) as part of the Carnegie-Chicago Hub-
+
+10
+
+Figure 7. Comparison of two CMDs (down to S/N = 5) for NGC 1404 used to measure the TRGB distance to this galaxy. The
+left panel shows the reduction of the 34 orbit (crowding-limited) HST dataset, whereas the right panel shows the reduction of
+the 4.74 hour JWST dataset. The y-axes of the two panels are set to match at the measured levels of the TRGB (denoted with
+dashed red lines). Insets show the respective observing footprints overlaid on 12′′ ×12′′ DSS imaging, with the colored regions
+denoting the regions shown in the CMDs and used for the TRGB measurements.
+
+ble Program (Freedman 2018; Hoyt et al. 2021), and
+the photometry is taken from the Extragalactic Distance
+Database’s CMDs/TRGB catalog (Anand et al. 2021).
+The JWST data is from the A1 and A2 chips as earlier
+presented in this work, and taken with 4.74 hours of total charged time. The incredible efficiency of our JWST
+observations is clear.
+4.6. Stellar Populations
+In this section we briefly consider the resolved stellar populations of the fields under study. Figure 8
+shows color-magnitude diagrams of these galaxies with
+PARSEC isochrones (Bressan et al. 2012; Marigo et al.
+2013) of various ages and metallicities overplotted. The
+CMDs demonstrate the full A1+A2 fields, corresponding to outer regions of each galaxy ∼20 kpc from their
+centers. The central galaxy of the Fornax cluster is
+the giant elliptical NGC 1399. Spectral observations of
+NGC 1399 made with MUSE (Vaughan et al. 2018) revealed a smooth decrease of the metallicity [Fe/H] from
+the center to the periphery, reaching a value slightly
+less than solar at the effective radius (re ). To better
+understand the ages and metallicities of the resolved
+stars of NGC 1399, we take the PARSEC isochrones
+in the JWST/NIRCam system, using the distances derived in this work (Table 4). In general, the CMDs
+agree best with stellar population models with metallicity Z=0.008, somewhat less than solar metallicity
+
+(Z⊙ =0.015). Blue isochrones correspond to the E-AGB
+and TP-AGB evolutionary stages of 1 Gyr old stars.
+Thus, even in the outer regions of this galaxy, we can expect a number of stars with relatively young ages (about
+1–2 Gyrs). Older RGB and AGB stars, up to the oldest
+at 13.7 Gyr, appear to form the bulk of the population.
+A fairly well populated “tail” stretching to the right and
+downwards is clearly visible, showing the presence of red
+giants and AGB stars of solar metallicity and higher.
+Although the CMDs of all three galaxies are similar,
+the lenticular galaxy NGC 1380 shows fewer stars in its
+outer regions. While features similar to NGC 1399 can
+be seen, the range of colors of the resolved stellar populations and the size of the high metallicity “tail” appear
+smaller. We see that the metallicity of the bulk of the resolved stars is somewhat less than solar, while there are
+a smaller number of older and more metal rich stars (up
+to around solar metallicity) than in the larger elliptical
+galaxies. The CMD of the elliptical galaxy NGC 1404
+is intermediate between NGC 1380 and NGC 1399 and
+exhibits essentially the same trends as the other two
+galaxies.
+5. THE NEXT STEP: CALIBRATING THE SBF
+
+DISTANCE SCALE
+The simultaneous observation of both high and low
+surface brightness regions of the Fornax giant elliptical galaxies provides the data required to calibrate the
+
+11
+
+Figure 8. Color-magnitude diagrams of our selected NGC 1380, NGC 1399 and NGC 1404 fields, with the PARSEC stellar
+library isochrones overlaid. The isochrones were shifted according to the distances measured in this paper and Galactic extinction
+from Schlafly & Finkbeiner (2011).
+
+SBF distance scale in multiple filters independent of
+any reliance on Cepheid variable stars or associations
+with spiral galaxies and young stellar populations, as
+has commonly been done for past SBF calibrations (e.g.
+Blakeslee et al. 2009, Jensen et al. 2015). The TRGB
+distances presented here, based on a geometric calibration of NGC 4258, provide the basis for a new SBF zero
+point calibration using old, Population II stars.
+The SBF technique (Tonry & Schneider 1988) is a statistical measurement of the spatial fluctuations in surface brightness of a population of stars, which is dominated by the luminous RGB stars in an old smooth elliptical galaxy. Nearer galaxies show a mottled appearance
+that fades into smoothness for more distant galaxies.
+Unlike the TRGB, SBF measurements do not require
+resolution of individual RGB stars, and can be measured
+much further away, to distances beyond 100 Mpc with
+HST (Blakeslee et al. 2021a), and potentially much further with JWST (Cantiello & Blakeslee 2023). The typical internal SBF distance errors (not including systematic uncertainty) with HST are less than 5% per galaxy,
+putting SBF on the same statistical level as type Ia supernovae, and capable of reaching well into the Hubble flow. It is therefore advantageous to have a dual
+measurement of SBF and TRGB for the same galaxies using the same filters and cameras to calibrate SBF,
+eliminating as many sources of systematic uncertainty as
+possible. This will allow us to directly address the persistent conflict between local distance ladder measurements of the Hubble constant H0 and the value inferred
+from ΛCDM cosmological models (Planck Collaboration
+
+et al. 2020), sometimes referred to as the Hubble tension (Di Valentino et al. 2021). This paper outlines the
+first steps towards our goal of establishing a distance
+ladder with no reliance on Cepheids or supernovae, with
+the ultimate goal of reaching a distance precision approaching 1%.
+The spatial variations in surface brightness in a galaxy
+arise from the Poisson statistics of the discrete stars
+in the stellar population. The pixel-to-pixel variation
+in the number of stars provides the primary SBF signal, which is convolved with the point-spread function
+of the observatory and normalized by the mean galaxy
+brightness. Additional contributions to the SBF signal
+are the white-noise floor from the detector readout and
+additional bumpiness from undetected globular clusters
+and background galaxies. In distant galaxies, the latter
+contributions are carefully measured and subtracted; in
+these relatively nearby JWST observations of Fornax
+galaxies we can easily identify and remove resolved clusters and galaxies.
+The SBF calibration also depends on properties of the
+stellar population (Tonry et al. 1997; Blakeslee et al.
+2009). Optical colors like g−z are used to calibrate SBF
+absolute magnitudes. With these NIRCam observations,
+we can also use the SBF signal in multiple filters, particularly those at longer wavelengths, to better understand
+the homogeneity of the population and the contribution
+from AGB stars. A full understanding of the dependence
+of the JWST SBF on stellar population will require a
+larger range in galaxy properties than we have in these
+first three galaxies, so we do not present a calibration of
+
+12
+SBF at the present time. We can, however, demonstrate
+the effectiveness of our SBF procedures using these images in multiple fields and filters.
+To measure the SBF signal, we first combine the images using integer pixel offsets to eliminate correlations
+in the noise between pixels. We then determine the
+background and model the smooth galaxy luminosity
+profile (Fig. 9). The background brightness and galaxy
+model can be constructed for the different detectors individually and then compared for consistency. We compute the Fourier spatial power spectrum of the residual
+image with the galaxy model and background subtracted
+and extraneous sources like globular cluster masked,
+and then fit the power spectrum with a scaled power
+spectrum of the point-spread function. We constructed
+model PSFs using the WebbPSF software for each NIRCam detector and filter individually, and then convolved
+the PSFs with Gaussians of various widths in the neighborhood of one pixel for the purpose of “softening” the
+theoretical PSF to match our empirical data, which were
+combined with integer pixel offsets. An example of the
+PSF fit to the galaxy power spectrum for NGC 1399 is
+shown in Fig. 9. The SBF signal-to-noise ratio in this
+observation is ∼250. For these observations at 19 Mpc,
+the fluctuations are detectable in seconds; detecting the
+TRGB requires much longer exposures. These SBF measurements are excellent and will provide a high-precision
+calibration zero point that will be used in the future to
+measure galaxies to 300 Mpc and beyond with JWST.
+6. SUMMARY AND FUTURE OUTLOOK
+
+In this work, we have presented an analysis of JWST
+observations of three early-type Fornax Cluster galaxies. With the amazing depth of our data, we are able
+to perform high-precision measurements of the TRGB
+in the galaxy halos, allowing us to derive accurate relative distances to these targets, modulo a final setting
+of the absolute zero-point. Simultaneously, SBF measurements are made in the cores of these galaxies with
+extremely high precision.
+In the near future, we look forward to observations
+of 11 more early-type galaxy observations from the current program JWST GO–3055, including several massive elliptical galaxies in the Virgo cluster, NGC 1549
+in the Dorado group, and NGC 3379 in Leo. With a
+sample of 14 galaxies, we will create a direct linkage
+between the TRGB and SBF distance scales with better than 2% accuracy. Previous TRGB measurements
+did not resolve stars faint enough to clearly detect the
+TRGB in massive galaxies where SBF can be measured,
+and the SBF distance scale was calibrated using an indirect linkage to Cepheid variable stars in spiral galaxies.
+
+Figure 9. Spatial power spectra for NGC 1399 for the center
+of the galaxy (B3) in the F 150W band and near the peak
+of the SBF luminosity. The power spectra shows a fit to
+the PSF power spectrum scaled to match the data and fit
+in two dimensions, and the constant noise floor (shown with
+red dotted lines). The blue line shows the excellent fit to the
+power spectrum over a large range in wavenumber k (x-axis).
+
+This new TRGB dataset will place future SBF measurements on the secure footing of a geometrical distance
+zero point with no reliance on different stellar populations or galaxy types.
+Following completion of this project, the next step
+in building a new, Population II distance ladder will
+come from SBF observations of a large sample of ∼40
+elliptical galaxies in the Coma Cluster, a JWST program
+scheduled for Cycle 3 (Jensen et al. 2024). With a robust
+calibration of the SBF zero point from TRGB and a
+broad sampling of the SBF consistency across galaxies
+of different masses, ages, metallicities, and colors, all at
+the common distance of the Coma Cluster, SBF will be
+well calibrated for application at distances of 300 Mpc
+and beyond with JWST.
+
+13
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+
+This work is based on observations made with the
+NASA/ESA/CSA JWST. The data were obtained from
+the Mikulski Archive for Space Telescopes at the Space
+Telescope Science Institute, which is operated by the
+Association of Universities for Research in Astronomy,
+Inc., under NASA contract NAS 5-03127 for JWST.
+These observations are associated with program #3055.
+The specific observations analyzed can be accessed via
+10.17909/c25f-g512.
+G.S.A. thanks Rachael Beaton and Adam Riess for
+useful discussions. G.S.A., Y.C., and J.B.J. acknowledge financial support from JWST GO–3055. D.I.M.
+and L.N.M. are supported by the grant № 075–15–2022–
+262 (13.MNPMU.21.0003) of the Ministry of Science and
+Higher Education of the Russian Federation.
+This research made use of the NASA Astrophysics
+Data System. This research also used the NASA/IPAC
+Extragalactic Database (NED), which is funded by the
+National Aeronautics and Space Administration and operated by the California Institute of Technology.
+The Digitized Sky Surveys were produced at the
+Space Telescope Science Institute under U.S. Government grant NAG W-2166. The images of these surveys are based on photographic data obtained using the
+Oschin Schmidt Telescope on Palomar Mountain and the
+UK Schmidt Telescope. The plates were processed into
+the present compressed digital form with the permission
+of these institutions.
+
+REFERENCES
+Anand, G. S., Tully, R. B., Rizzi, L., Riess, A. G., & Yuan,
+W. 2022, ApJ, 932, 15, doi: 10.3847/1538-4357/ac68df
+Anand, G. S., Rizzi, L., Tully, R. B., et al. 2021, AJ, 162,
+80, doi: 10.3847/1538-3881/ac0440
+Anand, G. S., Riess, A. G., Yuan, W., et al. 2024, ApJ,
+966, 89, doi: 10.3847/1538-4357/ad2e0a
+Beaton, R. L., Freedman, W. L., Madore, B. F., et al. 2016,
+ApJ, 832, 210, doi: 10.3847/0004-637X/832/2/210
+Beaton, R. L., Seibert, M., Hatt, D., et al. 2019, ApJ, 885,
+141, doi: 10.3847/1538-4357/ab4263
+Blakeslee, J. P., Jensen, J. B., Ma, C.-P., Milne, P. A., &
+Greene, J. E. 2021a, ApJ, 911, 65,
+doi: 10.3847/1538-4357/abe86a
+—. 2021b, ApJ, 911, 65, doi: 10.3847/1538-4357/abe86a
+Blakeslee, J. P., Jordán, A., Mei, S., et al. 2009, ApJ, 694,
+556, doi: 10.1088/0004-637X/694/1/556
+Bressan, A., Marigo, P., Girardi, L., et al. 2012, MNRAS,
+427, 127, doi: 10.1111/j.1365-2966.2012.21948.x
+
+Cantiello, M., & Blakeslee, J. P. 2023, arXiv e-prints,
+arXiv:2307.03116, doi: 10.48550/arXiv.2307.03116
+Cantiello, M., Blakeslee, J. P., Côté, P., et al. 2024, arXiv
+e-prints, arXiv:2403.16235,
+doi: 10.48550/arXiv.2403.16235
+Di Valentino, E., Mena, O., Pan, S., et al. 2021, arXiv
+e-prints, arXiv:2103.01183.
+https://arxiv.org/abs/2103.01183
+Dolphin, A. 2016, DOLPHOT: Stellar photometry.
+http://ascl.net/1608.013
+Dolphin, A. E. 2000, PASP, 112, 1383
+Freedman, W. L. 2018, An Independent Determination of
+the Hubble Constant, HST Proposal. Cycle 26, ID.
+#15642
+Freedman, W. L., Madore, B. F., Gibson, B. K., et al. 2001,
+ApJ, 553, 47, doi: 10.1086/320638
+Freedman, W. L., Madore, B. F., Hatt, D., et al. 2019, ApJ,
+882, 34, doi: 10.3847/1538-4357/ab2f73
+
+14
+Gardner, J. P., Mather, J. C., Abbott, R., et al. 2023,
+PASP, 135, 068001, doi: 10.1088/1538-3873/acd1b5
+Hatt, D., Freedman, W. L., Madore, B. F., et al. 2018, ApJ,
+866, 145, doi: 10.3847/1538-4357/aadfe8
+Hoyt, T. J., Beaton, R. L., Freedman, W. L., et al. 2021,
+ApJ, 915, 34, doi: 10.3847/1538-4357/abfe5a
+Jang, I. S. 2023, MNRAS, 521, 1532,
+doi: 10.1093/mnras/stad619
+Jang, I. S., Hoyt, T. J., Beaton, R. L., et al. 2021, ApJ,
+906, 125, doi: 10.3847/1538-4357/abc8e9
+Jensen, J., Anand, G. S., Blakeslee, J. P., et al. 2024, The
+JWST SBF Coma Cluster Survey: Building an
+Alternative Precision Distance Ladder for Cosmology,
+JWST Proposal. Cycle 3, ID. #5989
+Jensen, J. B., Blakeslee, J. P., Gibson, Z., et al. 2015, ApJ,
+808, 91, doi: 10.1088/0004-637X/808/1/91
+Kirshner, R. P., Jeffery, D. J., Leibundgut, B., et al. 1993,
+ApJ, 415, 589, doi: 10.1086/173188
+Lee, M. G., Freedman, W. L., & Madore, B. F. 1993, ApJ,
+417, 553, doi: 10.1086/173334
+Madore, B. F., & Freedman, W. L. 1995, AJ, 109, 1645,
+doi: 10.1086/117391
+Madore, B. F., Mager, V., & Freedman, W. L. 2009, ApJ,
+690, 389, doi: 10.1088/0004-637X/690/1/389
+Makarov, D., Makarova, L., Rizzi, L., et al. 2006, AJ, 132,
+2729, doi: 10.1086/508925
+Marigo, P., Bressan, A., Nanni, A., Girardi, L., & Pumo,
+M. L. 2013, MNRAS, 434, 488,
+doi: 10.1093/mnras/stt1034
+Méndez, B., Davis, M., Moustakas, J., et al. 2002, AJ, 124,
+213, doi: 10.1086/341168
+Planck Collaboration, Aghanim, N., Akrami, Y., et al.
+2020, A&A, 641, A6, doi: 10.1051/0004-6361/201833910
+Prosser, C. F., Kennicutt, Robert C., J., Bresolin, F., et al.
+1999, ApJ, 525, 80, doi: 10.1086/307899
+Reid, M. J., Pesce, D. W., & Riess, A. G. 2019, ApJL, 886,
+L27, doi: 10.3847/2041-8213/ab552d
+
+Rieke, M. J., Kelly, D. M., Misselt, K., et al. 2023, PASP,
+135, 028001, doi: 10.1088/1538-3873/acac53
+Riess, A. G., Yuan, W., Macri, L. M., et al. 2022, ApJL,
+934, L7, doi: 10.3847/2041-8213/ac5c5b
+Riess, A. G., Anand, G. S., Yuan, W., et al. 2023, ApJL,
+956, L18, doi: 10.3847/2041-8213/acf769
+—. 2024, ApJL, 962, L17, doi: 10.3847/2041-8213/ad1ddd
+Sakai, S., Madore, B. F., & Freedman, W. L. 1996, ApJ,
+461, 713, doi: 10.1086/177096
+Sandage, A., & Tammann, G. A. 1976, ApJ, 210, 7,
+doi: 10.1086/154798
+Schlafly, E. F., & Finkbeiner, D. P. 2011, ApJ, 737, 103,
+doi: 10.1088/0004-637X/737/2/103
+Tonry, J., & Schneider, D. P. 1988, AJ, 96, 807,
+doi: 10.1086/114847
+Tonry, J. L., Blakeslee, J. P., Ajhar, E. A., & Dressler, A.
+1997, ApJ, 475, 399, doi: 10.1086/303576
+Tully, R. B., Anand, G. S., Blakeslee, J. P., et al. 2023a, A
+TRGB calibration of Surface Brightness Fluctuations,
+JWST Proposal. Cycle 2, ID. #3055
+Tully, R. B., & Shaya, E. J. 1984, ApJ, 281, 31,
+doi: 10.1086/162073
+Tully, R. B., Kourkchi, E., Courtois, H. M., et al. 2023b,
+ApJ, 944, 94, doi: 10.3847/1538-4357/ac94d8
+Vaughan, S. P., Davies, R. L., Zieleniewski, S., &
+Houghton, R. C. W. 2018, MNRAS, 479, 2443,
+doi: 10.1093/mnras/sty1434
+Warfield, J. T., Richstein, H., Kallivayalil, N., et al. 2023,
+Research Notes of the American Astronomical Society, 7,
+23, doi: 10.3847/2515-5172/acbb72
+Weisz, D. R., McQuinn, K. B. W., Savino, A., et al. 2023,
+arXiv e-prints, arXiv:2301.04659,
+doi: 10.48550/arXiv.2301.04659
+Weisz, D. R., Dolphin, A. E., Savino, A., et al. 2024, ApJS,
+271, 47, doi: 10.3847/1538-4365/ad2600
+
+

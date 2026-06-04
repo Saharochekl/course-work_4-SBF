@@ -1,0 +1,992 @@
+Draft version July 4, 2025
+Typeset using LATEX twocolumn style in AASTeX631
+
+The TRGB−SBF Project. III. Refining the HST Surface Brightness Fluctuation
+Distance Scale Calibration with JWST
+Joseph B. Jensen ,1 John P. Blakeslee ,2 Michele Cantiello ,3 Mikaela Cowles ,1
+Gagandeep S. Anand ,4 R. Brent Tully ,5 Ehsan Kourkchi ,5, 6 and Gabriella Raimondo
+
+3
+
+1 Utah Valley University, Orem, Utah 84058, USA
+
+arXiv:2502.15935v2 [astro-ph.CO] 14 Jun 2025
+
+2 NSF’s NOIRLab, 950 N Cherry Ave, Tucson, AZ 85719, USA
+3 INAF – Astronomical Observatory of Abruzzo, Via Maggini, 64100, Teramo, Italy
+4 Space Telescope Science Institute, 3700 San Martin Drive, Baltimore, MD 21218, USA
+5 Institute for Astronomy, University of Hawaii, 2680 Woodlawn Drive, Honolulu, HI 96822, USA
+6 Utah Valley University, 800 W. University Parkway, Orem, UT 84058, USA
+
+(Accepted June 1, 2025)
+
+Submitted to ApJ
+ABSTRACT
+The TRGB−SBF Project team is developing an independent distance ladder using a geometrical
+calibration of the tip of the red giant branch (TRGB) method in elliptical galaxies that can in turn be
+used to set the surface brightness fluctuation (SBF) distance scale independent of Cepheid variables
+and Type Ia supernovae (SNe Ia). The purpose of this project is to measure the local expansion rate of
+the universe independently of the methods that are most at odds with the theoretically-predicted value
+of the Hubble-Lemaı̂tre constant H0 , and therefore isolate the influence of potential systematic observational errors. In this paper, we use JWST TRGB distances calibrated using the megamaser galaxy
+NGC 4258 to determine a new Cepheid-independent SBF zero point for HST. This new calibration,
+along with improved optical color measurements from PanSTARRS and DECam, gives an updated
+value of H0 = 73.8 ± 0.7 (statistical) ±2.3 (systematic) km s−1 Mpc−1 that is virtually identical to the
+SBF Hubble constant measured by Blakeslee et al. (2021).
+
+Keywords: Distance indicators (394) — Galaxy distances (590) — Hubble-Lemaı̂tre constant (758)
+1. INTRODUCTION
+
+The current disagreement between the measured expansion rate of the universe and that inferred from the
+best fit version of the ΛCDM cosmological model derived
+from the cosmic microwave background fluctuations is
+now greater than 5-σ (Planck Collaboration et al. 2020;
+Riess et al. 2022). Resolving this discrepancy (often referred to as the “Hubble tension”) is one of the most
+pressing issues in cosmology today. It is not yet clear if
+the explanation is an accumulation of various systematic
+errors in local distance measurements or if modifications
+to the ΛCDM model are required (e.g., Di Valentino
+et al. 2021, 2025).
+Most measurements of H0 in the relatively nearby
+universe favor values around 73 km s−1 Mpc−1 (see
+the recent compilation by Di Valentino et al. 2025).
+The SH0ES team has achieved the highest precision to date using four geometrical methods to an-
+
+chor the Cepheid+SNe Ia distance ladder (Riess et al.
+2022, 2024a). The Carnegie Chicago Hubble Program
+(CCHP) Team, in contrast, measured values of H0 that
+are closer to the CMB+ΛCDM values (Freedman et al.
+2024; Hoyt et al. 2025). The discrepancy between these
+two groups, using many of the same targets and similar methods, is most likely due to choices in the sample
+selection (Riess et al. 2024b) and not the geometrical anchors themselves. One of the primary purposes of this
+project is to test that conclusion by providing a measurement of H0 that is completely independent of the
+Cepheid and SNe Ia techniques, and therefore to distinguish between systematic errors in the zero point calibrations and sample selection or analysis differences.
+If the Hubble tension between measurements from the
+CMB and H0 measured locally persists with multiple independent techniques, then the possibility of additional
+physics beyond ΛCDM must be taken seriously.
+
+2
+
+Jensen et al.
+
+The TRGB−SBF Project seeks to reduce or even eliminate some sources of systematic uncertainty in the first
+rungs of the distance ladder by developing a new and
+independent distance scale based on a geometrical calibration of the old, metal-rich RGB population in massive elliptical galaxies. The new distance scale is completely independent of the Cepheid and SNe Ia distance
+measurements, and therefore avoids the systematic uncertainties associated with them. To do this, we are calibrating SBF distances measured in 14 nearby elliptical
+galaxies using TRGB distance measurements from the
+James Webb Space Telescope (Tully et al. 2023). The
+TRGB−SBF Project will eventually link geometricallycalibrated TRGB distances at 15–20 Mpc with SBF distances reaching out to perhaps 300 Mpc or more using
+the same telescope (JWST), camera (NIRCam), and filters to minimize systematic uncertainties for each rung
+of the ladder.
+SBF distances have already been measured in more
+than 370 galaxies out to about 100 Mpc using the Hubble Space Telescope (HST), including more than 220 in
+F110W using the WFC3/IR camera. In this paper, we
+use the TRGB distances to eight individual galaxies calibrated using the geometrical distance to the megamaser
+galaxy NGC 4258 (Reid et al. 2019; Anand et al. 2024a)
+to calibrate the HST SBF distances via TRGB. In the
+future, the Gaia satellite (Gaia Collaboration et al. 2017,
+2018) will add additional geometrical anchors to the
+TRGB distance scale to further reduce the systematic
+calibration uncertainty. This study is the third paper
+in a series to establish an independent distance ladder
+based on Population II stars. The first two papers determined TRGB distances to multiple galaxies in the Fornax and Virgo clusters (Anand et al. 2024b, 2025). This
+paper presents the first step towards an SBF calibration that is independent of the Cepheid distance scale
+and connects JWST TRGB to the existing HST SBF
+distance measurements out to 100 Mpc.
+2. INFRARED SURFACE BRIGHTNESS
+
+FLUCTUATIONS WITH HST
+The SBF technique is a well-established high-precision
+(≲5% per galaxy) distance indicator that results from
+the spatial fluctuations in luminosity of a galaxy arising
+from the discrete number of stars per resolution element
+(Tonry & Schneider 1988; Blakeslee et al. 2009; Jensen
+et al. 2015, 2021; Cantiello et al. 2024). While theoretical calibrations of SBF are possible based on stellar population models that predict the absolute luminosities of RGB and AGB stars (Raimondo et al. 2005;
+Raimondo 2009), the precision of such models cannot
+currently compete with empirical calibrations based on
+
+other reliable distance techniques, including Cepheids
+and TRGB.
+Almost all optical and infrared (IR) HST SBF measurements published in the last decade are based on
+the calibrations published by Blakeslee et al. (2009),
+Blakeslee et al. (2010), and Jensen et al. (2015, 2021).
+The foundation of SBF measurements used in these
+studies are the HST Cepheid distances to seven galaxies
+with ground-based SBF distances measured by Tonry
+et al. (2001) and Blakeslee et al. (2002), combined with
+a large number of overlapping ground-based and HST
+SBF measurements in the Virgo and Fornax galaxy clusters (see Blakeslee et al. 2010, for direct comparisons).
+These large surveys provided the statistical foundation
+for SBF and showed that the intrinsic scatter in the absolute fluctuation magnitudes (and therefore the SBF
+distance moduli) is ∼ 0.06 mag (optical) to ∼ 0.1 mag
+(near-IR), after correction for stellar population variations using optical colors (Blakeslee et al. 2009; Jensen
+et al. 2015). The current project seeks to replace the
+Cepheid calibration with TRGB for the purpose of isolating systematic uncertainties in the various distance
+measurement techniques.
+Fluctuations are more prominent at near-IR wavelengths than in the optical, and are measurable to
+≳80 Mpc in a single HST orbit. The SBF method is
+much more efficient than Cepheids or SNe Ia for measuring distances out to 100 Mpc because only one imaging
+observation is required, and SBF achieves comparable
+precision in much less observing time. The majority of
+the SBF distances beyond 40 Mpc useful for measuring
+H0 were made using NICMOS (Jensen et al. 2001) and
+WFC3/IR (Cantiello et al. 2018; Blakeslee et al. 2021).
+The most recent WFC3/IR F110W SBF calibration was
+determined using 11 galaxies in the Fornax and Virgo
+galaxy clusters, and was corrected for stellar population
+variations using ACS (g475 −z850 ) colors (Jensen et al.
+2015). Updates to the Jensen et al. (2015) calibration
+to include better Galactic foreground extinction corrections and an improved distance to the LMC were made
+as described by Cantiello et al. (2018) and Jensen et al.
+(2021).
+The majority of the HST IR SBF observations published between 2015 and 2021 were part of HST programs GO-14219 (PI J. Blakeslee), GO-14654 (PI
+P. Milne), and GO-15625 (PI J. Blakeslee). Jensen et al.
+(2021) published SBF distances to 63 galaxies from these
+programs, including 25 SNe Ia host galaxies. Three more
+HST programs have recently been completed. GO-16262
+(PI R. Tully), GO-17436 (PI J. Jensen), and GO-17446
+(PI P. Milne) have already observed ≳164 more galaxies
+out to ≳85 Mpc, a sample that more than doubles the
+
+Refining the HST SBF Calibration
+number of SNe Ia host galaxies with high-quality SBF
+distances (now 51). To make the most of these new
+datasets, in this paper we update the HST SBF calibration using the new JWST TRGB distances.
+The SBF distances published by Jensen et al. (2021)
+were used by Blakeslee et al. (2021) to measure a value
+of the Hubble constant of H0 = 73.3 ± 0.7 (statistical)
+±2.4 (systematic) km s−1 Mpc−1 . The subsample of
+25 early-type SNe Ia host galaxies with HST SBF distances provided an alternative calibration of SNe Ia in
+the Hubble flow: Garnavich et al. (2023) measured a
+value of H0 = 74.6 ± 0.9 (statistical) ±2.7 (systematic) km s−1 Mpc−1 using SBF distances as an intermediate step between Cepheids and SNe Ia. Garnavich
+et al. (2023) used the Pantheon+ (Scolnic et al. 2022)
+light curves to make the SNe Ia distance measurements.
+When the light curve fitting parameters were corrected
+to better match the fast-declining SNe Ia preferentially
+found in the early-type galaxies, the value of H0 became
+73.3 ± 1.0 ± 2.7 km s−1 Mpc−1 .
+The uncertainties in most of the previous SBF H0
+measurements are dominated by the random uncertainties associated with the intrinsic scatter among the limited number of calibrator galaxies (seven), which becomes a systematic uncertainty when applied to the next
+rung on the distance ladder (SBF in this case). The
+calibrator galaxies are those in which both Cepheids
+and SBF have been measured; Cepheids are most commonly detected in spiral galaxies, while SBF can only be
+measured in early-type S0 and elliptical galaxies. The
+systematic SBF distance uncertainty from the Cepheid
+calibration reported by Blakeslee et al. (2021) included
+0.028 mag from the Cepheid zero point (calibrated using the LMC), 0.08 mag from linking Cepheids in spiral
+galaxies to SBF measurements in the bulges of those
+galaxies, and 0.03 mag from connecting the optical ACS
+and WFC3/IR SBF, for a total of 0.09 mag (4.2% in
+distance or 3.1 km s−1 Mpc−1 in H0 ). Even when combined with HST TRGB measurements, the systematic
+uncertainty of 2.7 km s−1 Mpc−1 was 3× the statistical uncertainty for the sample of 63 galaxies (Blakeslee
+et al. 2021).
+
+3
+
+SBF measurements will take time, and may never reach
+the quantities already observed with HST over the last
+30 years (more than 370 galaxies, including SBF distances from NICMOS, ACS, and WFC3/IR). To leverage the full potential of the HST database, we need to
+connect the new JWST TRGB distances to the existing
+HST SBF dataset. Three of the JWST TRGB target
+galaxies in the Fornax cluster and five in the Virgo cluster have also been observed with WFC3/IR, as shown
+in Table 1. The new JWST TRGB measurements of
+these galaxies (Anand et al. 2024b, 2025) provide us
+with an opportunity to reduce systematic uncertainties
+in SBF distances originating from the Cepheid calibration. Using a direct geometrical calibration of TRGB
+from NGC 4258 (Reid et al. 2019; Anand et al. 2024a)
+and SBF measurements in the same galaxies, using the
+same telescope, camera, and filters, we can eliminate
+some sources of uncertainty (e.g., Cepheid metallicity
+corrections in different galaxy types and positional offsets between spirals and ellipticals in the calibration
+clusters).
+3.1. Updated Calibration
+In this paper we re-calibrated the HST IR SBF distance scale by replacing the Cepheid-based optical SBF
+distances from Jensen et al. (2015) with the new JWSTbased TRGB distances to the eight galaxies in common
+between the HST and JWST SBF calibration data sets.
+The SBF calibration of the absolute fluctuation magnitude in the F110W filter, denoted with the symbol M 110 ,
+depends on the distance scale zero point and a slope with
+galaxy color, which corrects M 110 for variations in stellar population age and metallicity (e.g., Jensen et al.
+2003). Jensen et al. (2015) found that the rms scatter
+among the calibration galaxies was 25% smaller when
+using the average distance to the cluster instead of individual optical SBF distances.1 We can do the same here,
+and by using the mean cluster distances from the JWST
+TRGB measurements we include four more galaxies in
+the Fornax cluster and two more in the Virgo cluster,
+for a total of 14 galaxies in our new calibration (see Table 1).
+
+3. RE-CALIBRATING THE HST WFC3/IR SBF
+
+DISTANCE SCALE USING TRGB
+JWST observations of the TRGB in 14 nearby elliptical galaxies (GO-3055; Tully et al. 2023) provide a new
+and direct calibration of IR SBF based on the geometrical megamaser distance to NGC 4258 (Anand et al.
+2024a; Reid et al. 2019). We will eventually use JWST
+to determine H0 directly by measuring SBF distances
+out to ∼ 300 Mpc, but building a database of distant
+
+1 Whether or not the individual optical SBF distances will give a
+
+better calibration depends on the magnitude of the uncertainties relative to the cluster depth. When individual observational
+uncertainties are larger than the cluster depth, averaging first
+produces a lower rms in the calibration scatter; when they are
+smaller than the cluster depth, then using the individual distances will result in a lower scatter. In the case of the ACS SBF
+measurements in Virgo and Fornax, the individual uncertainties
+and the cluster depth were comparable (see Jensen et al. 2015 for
+details).
+
+4
+
+Jensen et al.
+Table 1. SBF Calibration Data
+Galaxy
+
+IC 2006
+NGC 1344
+NGC 1374
+NGC 1375
+NGC 1380
+NGC 1399
+NGC 1404
+NGC 4458
+NGC 4472 (M49)
+NGC 4489
+NGC 4552 (M89)
+NGC 4636
+NGC 4649 (M60)
+NGC 4697
+
+(m−M )TRGB
+
+TRGB σtot
+
+(m−M )clust
+
+m110,0
+
+DECam (g−z)0
+
+PS (g−z)0
+
+HST
+
+(mag)
+
+(mag)
+
+(mag)
+
+(AB mag)
+
+(AB mag)
+
+(AB mag)
+
+Program
+
+(1)
+
+(2)
+
+(3)
+
+(4)
+
+(4, 5)
+
+(4)
+
+(6)
+
+···
+···
+···
+···
+31.397 ± 0.034
+31.511 ± 0.036
+31.364 ± 0.034
+···
+31.091 ± 0.032
+···
+30.933 ± 0.041
+31.120 ± 0.035
+31.061 ± 0.034
+30.330 ± 0.036
+
+···
+···
+···
+···
+0.072
+0.073
+0.072
+···
+0.071
+···
+0.075
+0.072
+0.072
+0.073
+
+31.424 ± 0.057
+31.424 ± 0.057
+31.424 ± 0.057
+31.424 ± 0.057
+31.424 ± 0.057
+31.424 ± 0.057
+31.424 ± 0.057
+31.055 ± 0.086
+31.055 ± 0.086
+31.055 ± 0.086
+31.055 ± 0.086
+31.055 ± 0.086
+31.055 ± 0.086
+30.330 ± 0.073
+
+28.65 ± 0.021
+28.46 ± 0.019
+28.58 ± 0.025
+28.26 ± 0.021
+28.60 ± 0.022
+28.84 ± 0.023
+28.73 ± 0.024
+28.05 ± 0.023
+28.43 ± 0.021
+27.87 ± 0.019
+28.31 ± 0.022
+28.36 ± 0.021
+28.52 ± 0.021
+27.52 ± 0.021
+
+1.274 ± 0.014
+1.201 ± 0.012
+1.226 ± 0.012
+1.075 ± 0.012
+1.283 ± 0.012
+1.363 ± 0.012
+1.325 ± 0.012
+1.149 ± 0.012
+1.383 ± 0.012
+1.126 ± 0.013
+1.349 ± 0.013
+1.332 ± 0.013
+1.426 ± 0.013
+1.271 ± 0.013
+
+···
+···
+···
+···
+···
+···
+···
+1.170 ± 0.023
+1.380 ± 0.011
+1.109 ± 0.024
+1.366 ± 0.012
+1.330 ± 0.013
+1.423 ± 0.011
+1.271 ± 0.011
+
+11712
+11712
+11712
+11712
+11712
+11712
+11712
+11712
+11712
+11712
+15082
+17446
+11712
+15226
+
+(1) JWST TRGB distances from Anand et al. (2024b) and Anand et al. (2025). JWST data are available through MAST,
+10.17909/z9ch-wk24.
+
+DOI:
+
+(2) Total uncertainty for the TRGB distance including systematic uncertainty.
+(3) Average cluster TRGB distance moduli for Virgo (including NGC 4636) and Fornax, except for NGC 4697, which is in the foreground
+(Anand et al. 2024b, 2025). The uncertainties are the cluster depths from the ACS Virgo and Fornax Cluster surveys (Blakeslee et al.
+2009), 0.085 and 0.053 mag respectively, added in quadrature with the uncertainty in the cluster averages of the TRGB distances (0.02 mag
+for the three TRGB galaxies in Fornax and 0.013 mag for the seven Virgo).
+(4) SBF magnitudes and optical colors have been corrected for Galactic extinction using Schlafly & Finkbeiner (2011) and the NED
+extinction calculator DOI: 10.26132/NED5. Extinction corrected values are indicated with a subscript 0. All fluctuation magnitudes
+and colors were measured in two annular region around each galaxy from 8.2 to 16.4 arcsec and 16.4 to 32.8 arcsec in radius. The values
+shown are the weighted averages of the two measurements.
+(5) DECam (g−z)0 colors have been transformed to the PanSTARRS photometric system using Equation 1 (Dey et al. 2019) to simplify
+comparison.
+(6) WFC3/IR data for these galaxies are available through MAST, DOI: 10.17909/303n-6g35.
+
+The direct overlap between JWST (TRGB) and HST
+(Cepheid) calibration samples includes three galaxies in
+the Fornax cluster and five in the Virgo cluster (including NGC 4636 and NGC 4697 in peripheral in-falling
+regions). Using the combined average TRGB distance
+modulus to the Virgo cluster of 31.043 ± 0.034 (statsitical) ±0.063 (systematic) mag (Anand et al. 2024b,
+2025) and the Cepheid-based ACSVCS survey average
+distance modulus of 31.092 ± 0.013 mag (Mei et al.
+2007; Blakeslee et al. 2009), which was used to calibrate the previous IR SBF measurements (Jensen et al.
+2021), the weighted mean difference is ∆µTRGB−Ceph =
+−0.067±0.031 mag (Anand et al. 2025). For Fornax, the
+difference between the mean ACS SBF distance modulus
+of 31.51 mag (Blakeslee et al. 2009) used for the Jensen
+et al. (2015) IR SBF calibration and the mean distance
+
+from three JWST TRGB measurements gives a difference of ∆µ = −0.086±0.077 mag, where the uncertainty
+is the result of the scatter among the three galaxies.
+In both the Virgo and Fornax clusters, the TRGBbased distances appear to be 3 to 4% shorter, with ∼ 1 to
+2σ significance, than the Cepheid-based SBF distances
+used for calibrating the IR SBF distance scale (Jensen
+et al. 2015). While we do not yet know the reason for
+the marginally-significant difference between the TRGB
+and Cepheid distances to the Virgo and Fornax clusters,
+the implications for the Hubble constant measured using
+the new TRGB zero point calibration alone is that H0
+would be larger than the values published by Blakeslee
+et al. (2021) and Garnavich et al. (2023), which both
+use the Jensen et al. (2021) SBF calibration.
+The SBF measurements were updated since the original calibration published by Jensen et al. (2015), and
+
+5
+
+Refining the HST SBF Calibration
+for this study we have included three additional calibration galaxies (NGC 4552, NGC 4636, and NGC 4649).
+The new apparent SBF magnitude m110 measurements
+for the calibrators are consistent with the procedures
+we used to measure m110 in the sample from which we
+derived H0 (Jensen et al. 2021; Blakeslee et al. 2021).
+The average difference between the SBF magnitudes
+m110 from the Jensen et al. (2015) calibration paper
+and the present values for the five calibrator galaxies
+in common is 0.072 mag with a standard deviation of
+0.03 mag. Jensen et al. (2021) introduced a number of
+improvements to the SBF analysis (e.g., improvements
+to the PSF normalization, modernization of the LMC
+zero point calibration for Cepheids, and improvements
+to the procedure to remove SBF signal resulting from
+undetected globular clusters) that were previously applied to the sample used to determine H0 (Blakeslee
+et al. 2021), and those have been applied to these new
+measurements. We previously identified an offset of
+0.05 ± 0.02 mag to the 2015 calibration values due to
+the PSF normalization (Cantiello et al. 2018). Given
+the small sample size in this study, the 0.072 mag offset
+is considered to be statistically consistent with the previously measured 0.05 mag offset. Further assessment
+of the reliability of the m110 measurements will require
+additional overlap between calibration samples.
+Optical galaxy colors are critical for the SBF method
+as they are necessary to correct SBF amplitudes for intrinsic variations in the ages and metallicities of the stellar populations in elliptical galaxies (Jensen et al. 2003;
+Blakeslee et al. 2009; Jensen et al. 2015). The original
+IR SBF calibration was based on the ACS (g475 −z850 )
+colors, which are not generally available for the vast
+majority of the WFC3/IR observations in the HST
+archive. Jensen et al. (2021) transformed PanSTARRS
+(PS) (g−z) colors (Chambers et al. 2019) to the ACS
+photometric frame for computing distances. For this
+study, we remeasured all the PanSTARRS (g−z) colors
+and determined the SBF calibration directly in that system. We found that for galaxies with significant color
+gradients, the PanSTARRS (g−z) colors used by Jensen
+et al. (2021) for computing SBF distances—measured
+in the high-S/N ratio central regions—did not always
+match the colors in the regions where the SBF was measured. For typical massive galaxies with slightly redder
+cores and bluer halos, correcting the colors to match the
+SBF regions leads to larger distances, by as much as 5%
+in some cases, and hence this revision tends to reduce
+the value of H0 . For the 61 galaxies in the Jensen et al.
+(2021) dataset with PanSTARRS photometry, which are
+used again in this paper to recompute H0 , the color shift
+was measured to be −0.023±0.019 mag (bluer). The av-
+
+erage photometric uncertainty in (g−z) is 0.02 mag for
+PanSTARRS, which includes the uncertainty in the extinction correction (Schlafly & Finkbeiner 2011) added
+in quadrature. Given that the historical slope of the relationship between SBF M 110 and (g−z) is ∼ 2 (Jensen
+et al. 2015), the expected shift in distance modulus is
+approximately 0.05 mag or 2.3% in distance, counteracting in part the increase in H0 expected from the new
+TRGB zero point.
+The original SBF calibration of Jensen et al. (2015) included equal numbers of Fornax and Virgo cluster galaxies, which were calibrated using ACS optical photometry. The JWST TRGB sample includes three galaxies in the Fornax cluster. The PanSTARRS-1 survey
+does not reach far enough south to include Fornax, so
+the current TRGB calibration is limited to five galaxies in the Virgo cluster. Surveys using DECam on the
+Blanco Telescope at CTIO provide a high-S/N alternative to PanSTARRS for both the Fornax and Virgo clusters. A number of imaging surveys (e.g., DESI and DECaLS) using DECam are now publicly available as part
+of the Legacy Surveys (Dey et al. 2019).2 We retrieved
+data in the Legacy Survey DR10 release3 through the
+server at the National Energy Research Scientific Computing Center (NESRC). We combined the archival images (“bricks”) for 23 target galaxies in the Jensen et al.
+(2021) sample and measured their (g−z) colors. Uncertainties were determined by similarly combining variance frames. The DECam Legacy Survey photometric
+uncertainties are 0.0073 mag for g and z, which were
+combined in quadrature with each other and with the
+uncertainty in the foreground extinction correction from
+Schlafly & Finkbeiner (2011). The mean uncertainty in
+(g−z) is 0.011 mag.
+Dey et al. (2019) provide a transformation between
+PanSTARRS and DECam (g−z) values as follows:
+(g−z)PS = (g−z)DECam + 0.02521 − 0.11294(g−i)+
++0.01796(g−i)2 − 0.00285(g−i)3
+(1)
+where (g−i) is the same in both photometric systems.
+For the seven galaxies with (g−z) colors in both systems,
+the predicted vs. computed values of (g−z) differ by
+0.002 ± 0.013 mag (Fig. 1).
+Since DECam (g−z) colors were measured for both
+the Fornax and Virgo cluster samples, we used the DECam colors for the calibration, but transposed to the
+PanSTARRS photometric system because PanSTARRS
+2 https://datalab.noirlab.edu/sia.php
+3 https://www.legacysurvey.org/dr10/description/
+
+6
+
+Jensen et al.
+
+3.2
+
+1.4
+
+3.1
+3.0
+
+1.3
+
+M110
+
+DECam converted to PS (g z)0
+
+3.3
+
+1.2
+
+2.9
+2.8
+2.7
+2.6
+
+1.1
+
+2.5
+1.1
+
+1.2
+
+1.3
+
+PanSTARRS (g z)0
+
+1.4
+
+Figure 1.
+Comparison of the extinction-corrected
+PanSTARRS (g−z)0 colors with those transformed from the
+DECam colors to PanSTARRS using Dey et al. (2019) for
+the seven calibrator galaxies with color data in both surveys.
+The black line denotes the one-to-one relation and is not a
+fit to the data.
+
+was used for the published galaxy sample used to measure H0 (Jensen et al. 2021; Blakeslee et al. 2021). The
+values listed in Table 1 are in the PanSTARRS photometric system and have an additional uncertainty of
+0.013 mag added in quadrature to account for the observed scatter in the transformation.
+The eight galaxies for which JWST TRGB distances
+were individually measured (black points in the right
+half of Figure 2) provide a zero point with an accuracy
+of 0.018 mag but a relatively weak constraint on the
+slope due to the limited range in color covered by the
+JWST sample (the slope is 1.7 ± 0.3 in the PanSTARRS
+(g−z) photometric system). To determine a more robust
+measurement of the slope, we adopted the mean cluster
+TRGB distance for the Virgo and Fornax clusters, and
+used those distances to compute M 110 for a larger sample of HST Virgo and Fornax calibrators from Jensen
+et al. (2015) that include a wider range of galaxy color.
+When we include six additional galaxies and calculate
+M 110 using mean TRGB cluster distances (see Table 1)
+we get a tighter value for the slope of 1.86 ± 0.16 with
+a reduced χ2ν = 0.74 per degree of freedom. The fact
+that the reduced χ2ν is less than one suggests that the
+uncertainties in the absolute magnitude may be slightly
+overestimated, but there is still a 30% probability of
+measuring this value of χ2ν for the number of degrees of
+freedom in our sample, indicating general consistency.
+
+2.4
+
+Cluster TRGB distances (DECam)
+Individual distances (DECam)
+Individual distances (PanSTARRS)
+
+1.1
+
+1.2
+
+1.3
+
+(g z)0
+
+1.4
+
+Figure 2. Absolute fluctuation magnitude M 110 as a
+function of the extinction-corrected DECam galaxy color
+(g−z)0 converted to the PanSTARRS photometric system
+for the eight galaxies with TRGB distances (Anand et al.
+2024b, 2025) plus six additional galaxies in the Fornax and
+Virgo clusters previously used to calibrate F110W SBF (blue
+points). The fit shown was performed using the “emcee”
+package in Python (Foreman-Mackey et al. 2013) that we
+used to iteratively account for uncertainties in both axes.
+The blue line is the best fit to the blue points; the blue
+envelopes mark the 1-σ and 2-σ uncertainties in slope and
+intercept. The absolute magnitudes calculated using the
+individual TRGB distance moduli are also plotted for five
+of the galaxies with PanSTARRS colors (green points) and
+eight galaxies with DECam colors (black points) to show that
+slopes derived from the individual and cluster distances are
+consistent.
+
+Regardless of which TRGB distances (and slope) are
+used, the zero point at a color of (g−z) = 1.30 is consistently −2.76 with an uncertainty below 0.02 mag.
+The calibration calculated using the mean TRGB cluster distances (Fig. 2) is:
+M 110 = (1.86 ± 0.16)[(g−z)PS −1.30] + (−2.760±0.016)
+(2)
+where the color is measured in the PanSTARRS (g−z)
+photometric system. The calibration in the original DECam (g−z) system is:
+M 110 = (1.75 ± 0.14)[(g−z)DC −1.40] + (−2.728±0.017).
+(3)
+3.2. Updated SBF Distances and H0
+To assess the impact of the new calibration on the
+IR SBF distance scale, we applied the new TRGB cal-
+
+Refining the HST SBF Calibration
+ibration and PanSTARRS colors to the published fluctuation magnitudes for 61 galaxies from Jensen et al.
+(2021) and Blakeslee et al. (2021), and recomputed their
+distances. We also measured DECam (g−z) colors for
+23 galaxies in the distant sample (the rest were too far
+north to be included in the DECam Legacy Surveys).
+The new TRGB zero point and updated colors have opposing effects on the measured distances, and the new
+calibration implies almost no change in the SBF distances from Jensen et al. (2021) or the resulting values
+of H0 from Blakeslee et al. (2021) or Garnavich et al.
+(2023).
+Overall, the new calibration results in an average offset in the distance modulus of 0.011 ± 0.005 mag with
+RMS scatter of 0.04 mag. This implies a change in the
+distance scale of a factor of 0.995 ± 0.002 relative to
+the 2021 distances, meaning that our new distances are
+on average 0.5% ± 0.2% closer, and, consequently, the
+value of H0 would be 0.5% larger. We obtain very similar results if we choose to use only the eight calibrators
+for which direct TRGB distances are available (distance
+scale factor of 1.000 ± 0.003) or the five Virgo calibrators with PanSTARRS colors (scale factor 1.007±0.002),
+even though the slope of the M 110 –color relation is not
+as well constrained. The result is robust to the selection of galaxy colors (DECam or PanSTARRS) and to
+the choice of individual or cluster TRGB distances. For
+example, if we use only DECam colors with no translation to PanSTARRS, and only use the subset of 23
+galaxies in the H0 sample with DECam colors, we get a
+mean distance modulus offset of 0.002 ± 0.013 mag, or
+a distance scale factor of 0.999 ± 0.006.
+To determine the updated value of H0 , we combined the revised SBF distances described above with
+the CMB-frame group/cluster velocities published by
+Jensen et al. (2021) without refitting for H0 . Specifically, we took the mean change in distance computed
+from 61 galaxies, using the new TRGB zero point and
+including the updated (g−z) colors, and applied it to the
+value of H0 from Blakeslee et al. (2021). The resulting
+value of H0 using the updated zero point and the published calibration slope gives 73.81 ± 0.7 km s−1 Mpc−1
+instead of 73.44 ± 0.7 km s−1 Mpc−1 . Since we are only
+changing the calibration and not the input m110 fluctuation magnitudes or velocities, the statistical error in
+the value of H0 is unchanged. The updated Hubble diagram is shown in Fig. 3. The Hubble velocities used
+to compute this value of H0 and for Figure 3 are in the
+CMB frame and assigned to groups or clusters by Tully
+(2015).
+A similar 0.5% increase would result for the other values of H0 calculated from IR SBF distances or veloci-
+
+7
+
+Figure 3. Hubble diagram using distances derived from the
+updated SBF zero point calibration from the TRGB measurements and improved optical color measurements. Velocities and SBF apparent magnitudes are from Jensen et al.
+(2021). The solid symbols are those for which there is no evidence of dust or other sprial structure in the SBF analysis
+region. This plot is directly comparable to the left panel of
+Fig. 1 from Blakeslee et al. (2021).
+
+ties (Blakeslee et al. 2021; Garnavich et al. 2023). For
+example, Blakeslee et al. (2021) calculated a value of
+H0 = 73.8 km s−1 Mpc−1 using the 2M++ redshifts and
+peculiar velocity field derived from the density model
+calculated by Carrick et al. (2015); the 2M++ value of
+H0 using the new zero point is 74.2 km s−1 Mpc−1 .
+The reassessment of the calibration was completed independently without reference to the resulting distances
+to avoid any confirmation bias in the value of H0 .
+3.3. Systematic Uncertainties
+The SBF distance scale is primarily limited by systematic uncertainties. The Cepheid calibration of SBF
+injected a 0.09 mag systematic uncertainty (Blakeslee
+et al. 2021) that we remove here and replace with that
+of the NGC 4258 megamaser and JWST TRGB calibration. The systematic uncertainty associated with the
+maser distance to NGC 4258 is 1.48% (0.032 mag, Reid
+et al. 2019). The TRGB measurement uncertainty of
+0.033 mag for NGC 4258 from Anand et al. (2024a) acts
+as an additional systematic error in the TRGB distances
+of other galaxies that are tied to it. This source of sys-
+
+8
+
+Jensen et al.
+
+tematic error cannot be reduced further without observations of additional fields around NGC 4258 or other
+geometrical anchors besides NGC 4258. The link from
+TRGB to SBF contains the zero point uncertainty of
+0.016 mag from Equation 2 above. Combined in quadrature, these add up to 0.049 mag. The intrinsic scatter
+in the properties of the TRGB feature (and how it is
+measured) has not been fully quantified. Anand et al.
+(2024a) estimated a scatter of 0.02 mag in their study,
+and estimates from Riess et al. (2024b) for a sample of
+spiral galaxies observed in multiple filters with JWST
+suggest larger values from 0.01 to 0.08 mag. The elliptical galaxies we observed span a smaller range in age
+and metallicity and should have modest intrinsic scatter; we conservatively include another 0.04 mag in our
+error budget.
+Taken together, these terms give a total systematic
+uncertainty on the TRGB calibration of HST SBF of
+0.063 mag, or 2.9% in distance. Combining this with
+the estimated 1% uncertainty in the overall velocity
+flow of the volume covered by our sample (see Blakeslee
+et al. 2021), the total systematic uncertainty in H0 becomes 3.1%, or 2.3 km s−1 Mpc−1 in H0 . While this
+is only slightly better than the systematic uncertainty
+reported by Blakeslee et al. (2021), it provides strong
+confirmation that systematic errors in the SBF distance
+scale zero point are accurately measured, given that the
+sources of systematic uncertainty in the two measurements are very different (i.e., Cepheids vs. TRGB). The
+new TRGB-SBF distance calibration will improve further with additional geometrical anchors tied to TRGB
+with Gaia and with more links between JWST TRGB
+and HST SBF.
+4. DISTANCE TO THE COMA CLUSTER
+
+The Coma Cluster is an important benchmark for
+studies of the distance scale. Said et al. (2024) used
+the Jensen et al. (2021) distance to a single galaxy in
+this cluster (NGC 4874, d = 99.1 ± 5.8 Mpc) to calibrate Fundamental Plane (FP) distances derived using
+spectroscopic and imaging data for thousands of galaxies from the DESI survey. With this calibration, they
+determined a value of H0 = 76.05 ± 0.35 (statistical)
+±0.49 (systematic from FP)±4.86 (statistical from the
+calibration) km s−1 Mpc−1 . Since only one galaxy was
+used, the average distance offset from the previous section is not appropriate for estimating the impact of our
+new calibration on the FP value of H0 . The newly
+measured distance to NGC 4874, using the updated
+TRGB zero point and revised optical color estimate, is
+d = 101.2 ± 6.4 Mpc, which is 2% larger than the 2021
+measurement, corresponding to a slightly lower value of
+
+H0 = 74.5 km s−1 Mpc−1 for the DESI FP distances.
+Scolnic et al. (2025) compared the DESI FP results to
+several other distance measurements to the Coma cluster, including SNe Ia, to conclude that the DESI results
+are inconsistent with the Planck CMB + ΛCDM model
+at 3σ. The revised SBF distance to Coma is still far too
+small to be consistent with the valued of H0 predicted
+by the early-universe measurements. In the near future
+we will have a sample of over 50 galaxies with JWSTbased SBF distances in the Coma cluster (Jensen et al.
+2024) to better constrain its distance.
+5. CONCLUSIONS
+
+The re-calibration of the WFC3/IR F110W SBF distances (Jensen et al. 2021; Blakeslee et al. 2021) using
+the new JWST-based TRGB zero point results in a value
+of H0 = 73.8 ± 0.7 ± 2.3 km s−1 Mpc−1 that is entirely
+independent of Cepheid and SNe Ia distances. Our measurement agrees closely with the previous SBF-based
+values of H0 calibrated using Cepheids from Blakeslee
+et al. (2021) and Garnavich et al. (2023); it is also consistent with the SH0ES distance ladder based on Cepheids
+and SNe Ia (Riess et al. 2022). It is 2.6σ discrepant with
+the value of H0 from Planck for the ΛCDM cosmology
+(Planck Collaboration et al. 2020) and therefore provides independent evidence for the Hubble tension. The
+purpose of this study has been to explore the impact of
+the new JWST TRGB distances on the IR SBF distance
+scale using published HST SBF data; a future study will
+include the many new HST SBF measurements acquired
+since Jensen et al. (2021) and Blakeslee et al. (2021) were
+published.
+This updated calibration is a first step in establishing
+a new distance ladder with JWST that will be independent of the traditional rungs that use the LMC distance,
+Cepheids and SNe Ia. We are optimistic that additional
+galaxies will be observed by both JWST and HST, increasing the overlap between the two telescopes both
+for TRGB and SBF measurements, and further reducing systematic uncertainties.
+JWST imaging observations of 39 targets in the Coma
+cluster (likely including ∼ 50 or more elliptical galaxies)
+have been scheduled for Cycle 3 (GO-5989; Jensen et al.
+2024) and will provide a robust determination of the calibration slope in a cluster that is foundational to the distance scale. Additional geometrical anchors securing the
+absolute magnitude of the TRGB will further enhance
+the precision of the SBF method. The combination of
+HST and JWST SBF measurements will create a new
+distance ladder based solely on old, metal-rich populations in early-type galaxies and free from many of the
+uncertainties in the Cepheid+ SNe Ia distance ladder the
+
+Refining the HST SBF Calibration
+most important ones of which are crowding (e.g., Riess
+et al. 2023), Cepheid metallicity effects (e.g., Madore &
+Freedman 2025; Bhardwaj et al. 2024), and the effects
+of dust extinction on both SNe Ia and Cepheids (e.g.,
+Brout & Riess 2023).
+Reducing the systematic uncertainty in the TRGBSBF distance scale will require additional geometrical anchors besides NGC 4258, particularly using Gaia
+(Anand et al. 2025; Gaia Collaboration et al. 2016) to
+precisely measure RGB, Horizontal Branch, and RR
+Lyrae stellar distances where the TRGB can also be
+measured. Improvements from an expanded SBF sample are also forthcoming. Three HST programs have
+recently been completed and add more than 150 new IR
+SBF measurements. JWST observations of the Coma
+cluster (Jensen et al. 2024) will soon establish a foundation for the SBF calibration that will extend to much
+larger distances than is possible with HST, and 11 additional TRGB targets have been approved for the next
+cycle (Tully et al. 2025). The updated SBF calibration
+will be applied to JWST observations of galaxies reaching 250 Mpc in cycle 4 (GO-7113). These projects will
+further reduce the random and systematic uncertainties on H0 measured using the extensive HST WFC3/IR
+SBF dataset and new observations with JWST.
+Acknowledgments. This research is based on observations made
+with the NASA/ESA Hubble Space Telescope obtained from the
+Space Telescope Science Institute, which is operated by the Association of Universities for Research in Astronomy, Inc., under
+NASA contract NAS 5–26555. The results presented here used
+data associated with HST programs GO-11711, 11712, 12450,
+14219, 14654, 15265, 14771, 14804, and 15329. J. Jensen and
+M. Cowles acknowledge partial support from STScI under grants
+HST-GO-16262 and JWST-GO-03055. This work also used observations made with the NASA/ESA/CSA James Webb Space
+Telescope program GO-3055. J. Blakeslee is supported by NOIRLab, which is managed by the Association of Universities for
+Research in Astronomy (AURA) under a cooperative agreement
+with the U.S. National Science Foundation. M. Cowles acknowledges support from The Barry Goldwater Scholarship and Excellence in Education Foundation and the National Science Foundation. M. Cantiello acknowledges support from the ASI-INAF
+agreement “Scientific Activity for the Euclid Mission” (n.2024-10HH.0; WP8420) and from the INAF “Astrofisica Fondamentale”
+GO/GTO-grant 2024 (P.I. M. Cantiello). G. S. Anand acknowledges financial support from JWST GO–3055.
+
+9
+
+This project used data obtained with the Dark Energy Camera (DECam), which was constructed by the Dark Energy Survey
+(DES) collaboration. Funding for the DES Projects has been provided by the DOE and NSF (USA), MISE (Spain), STFC (UK),
+HEFCE (UK), NCSA (UIUC), KICP (U. Chicago), CCAPP (Ohio
+State), MIFPA (Texas A&M), CNPQ, FAPERJ, FINEP (Brazil),
+MINECO (Spain), DFG (Germany) and the Collaborating Institutions in the Dark Energy Survey, which are Argonne Lab, UC
+Santa Cruz, University of Cambridge, CIEMAT-Madrid, University of Chicago, University College London, DES-Brazil Consortium, University of Edinburgh, ETH Zürich, Fermilab, University
+of Illinois, ICE (IEEC-CSIC), IFAE Barcelona, Lawrence Berkeley
+Lab, LMU München and the associated Excellence Cluster Universe, University of Michigan, NSF NOIRLab, University of Nottingham, Ohio State University, OzDES Membership Consortium,
+University of Pennsylvania, University of Portsmouth, SLAC National Lab, Stanford University, University of Sussex, and Texas
+A&M University.
+This research uses services or data provided by the Astro Data
+Lab, which is part of the Community Science and Data Center
+(CSDC) Program of NSF NOIRLab. NOIRLab is operated by the
+Association of Universities for Research in Astronomy (AURA),
+Inc. under a cooperative agreement with the U.S. National Science
+Foundation.
+The Pan-STARRS1 Surveys (PS1) and the PS1 public science
+archive have been made possible through contributions by the Institute for Astronomy, the University of Hawaii, the Pan-STARRS
+Project Office, the Max-Planck Society and its participating institutes, the Max Planck Institute for Astronomy, Heidelberg and
+the Max Planck Institute for Extraterrestrial Physics, Garching,
+The Johns Hopkins University, Durham University, the University of Edinburgh, the Queen’s University Belfast, the HarvardSmithsonian Center for Astrophysics, the Las Cumbres Observatory Global Telescope Network Incorporated, the National Central University of Taiwan, the Space Telescope Science Institute,
+the National Aeronautics and Space Administration under Grant
+No. NNX08AR22G issued through the Planetary Science Division
+of the NASA Science Mission Directorate, the National Science
+Foundation Grant No. AST-1238877, the University of Maryland,
+Eotvos Lorand University (ELTE), the Los Alamos National Laboratory, and the Gordon and Betty Moore Foundation.
+This research used the NASA/IPAC Extragalactic Database
+(NED), which is operated by the Jet Propulsion Laboratory, California Institute of Technology, under contract with the National
+Aeronautics and Space Administration.
+This research made use of Montage, which is funded by the
+National Science Foundation under Grant Number ACI-1440620,
+and was previously funded by the National Aeronautics and
+Space Administration’s Earth Science Technology Office, Computation Technologies Project, under Cooperative Agreement Number NCC5-626 between NASA and the California Institute of
+Technology.
+
+Facilities: HST (WFC3, ACS), JWST (NIRCam),
+PS1, Blanco (DECam)
+
+REFERENCES
+Anand, G. S., Riess, A. G., Yuan, W., et al. 2024a, ApJ,
+966, 89, doi: 10.3847/1538-4357/ad2e0a
+Anand, G. S., Tully, R. B., Cohen, Y., et al. 2024b, ApJ,
+973, 83, doi: 10.3847/1538-4357/ad64c7
+—. 2025, arXiv e-prints, arXiv:2408.16810,
+doi: 10.48550/arXiv.2408.16810
+
+Bhardwaj, A., Ripepi, V., Testa, V., et al. 2024, A&A, 683,
+A234, doi: 10.1051/0004-6361/202348140
+Blakeslee, J. P., Jensen, J. B., Ma, C.-P., Milne, P. A., &
+Greene, J. E. 2021, ApJ, 911, 65,
+doi: 10.3847/1538-4357/abe86a
+
+10
+
+Jensen et al.
+
+Blakeslee, J. P., Lucey, J. R., Tonry, J. L., et al. 2002,
+MNRAS, 330, 443, doi: 10.1046/j.1365-8711.2002.05080.x
+Blakeslee, J. P., Jordán, A., Mei, S., et al. 2009, ApJ, 694,
+556, doi: 10.1088/0004-637X/694/1/556
+Blakeslee, J. P., Cantiello, M., Mei, S., et al. 2010, ApJ,
+724, 657, doi: 10.1088/0004-637X/724/1/657
+Brout, D., & Riess, A. 2023, arXiv e-prints,
+arXiv:2311.08253, doi: 10.48550/arXiv.2311.08253
+Cantiello, M., Jensen, J. B., Blakeslee, J. P., et al. 2018,
+ApJL, 854, L31, doi: 10.3847/2041-8213/aaad64
+Cantiello, M., Blakeslee, J. P., Ferrarese, L., et al. 2024,
+ApJ, 966, 145, doi: 10.3847/1538-4357/ad3453
+Carrick, J., Turnbull, S. J., Lavaux, G., & Hudson, M. J.
+2015, MNRAS, 450, 317, doi: 10.1093/mnras/stv547
+Chambers, K. C., Magnier, E. A., Metcalfe, N., et al. 2019,
+The Pan-STARRS1 Surveys.
+https://arxiv.org/abs/1612.05560
+Dey, A., Schlegel, D. J., Lang, D., et al. 2019, AJ, 157, 168,
+doi: 10.3847/1538-3881/ab089d
+Di Valentino, E., Mena, O., Pan, S., et al. 2021, Classical
+and Quantum Gravity, 38, 153001,
+doi: 10.1088/1361-6382/ac086d
+Di Valentino, E., Levi Said, J., Riess, A., et al. 2025, arXiv
+e-prints, arXiv:2504.01669,
+doi: 10.48550/arXiv.2504.01669
+Foreman-Mackey, D., Hogg, D. W., Lang, D., & Goodman,
+J. 2013, PASP, 125, 306, doi: 10.1086/670067
+Freedman, W. L., Madore, B. F., Jang, I. S., et al. 2024,
+arXiv e-prints, arXiv:2408.06153,
+doi: 10.48550/arXiv.2408.06153
+Gaia Collaboration, Prusti, T., de Bruijne, J. H. J., et al.
+2016, A&A, 595, A1, doi: 10.1051/0004-6361/201629272
+Gaia Collaboration, Clementini, G., Eyer, L., et al. 2017,
+A&A, 605, A79, doi: 10.1051/0004-6361/201629925
+Gaia Collaboration, Brown, A. G. A., Vallenari, A., et al.
+2018, A&A, 616, A1, doi: 10.1051/0004-6361/201833051
+Garnavich, P., Wood, C. M., Milne, P., et al. 2023, ApJ,
+953, 35, doi: 10.3847/1538-4357/ace04b
+Hoyt, T. J., Jang, I. S., Freedman, W. L., et al. 2025, arXiv
+e-prints, arXiv:2503.11769,
+doi: 10.48550/arXiv.2503.11769
+Jensen, J., Anand, G. S., Blakeslee, J. P., et al. 2024, The
+JWST SBF Coma Cluster Survey: Building an
+Alternative Precision Distance Ladder for Cosmology,
+JWST Proposal. Cycle 3, ID. #5989
+Jensen, J. B., Blakeslee, J. P., Gibson, Z., et al. 2015, ApJ,
+808, 91, doi: 10.1088/0004-637X/808/1/91
+
+Jensen, J. B., Tonry, J. L., Barris, B. J., et al. 2003, ApJ,
+583, 712, doi: 10.1086/345430
+Jensen, J. B., Tonry, J. L., Thompson, R. I., et al. 2001,
+ApJ, 550, 503, doi: 10.1086/319819
+Jensen, J. B., Blakeslee, J. P., Ma, C.-P., et al. 2021, ApJS,
+255, 21, doi: 10.3847/1538-4365/ac01e7
+Madore, B. F., & Freedman, W. L. 2025, The Astrophysical
+Journal, 983, 161, doi: 10.3847/1538-4357/adbd3d
+Mei, S., Blakeslee, J. P., Côté, P., et al. 2007, ApJ, 655,
+144, doi: 10.1086/509598
+Planck Collaboration, Aghanim, N., Akrami, Y., et al.
+2020, A&A, 641, A6, doi: 10.1051/0004-6361/201833910
+Raimondo, G. 2009, ApJ, 700, 1247,
+doi: 10.1088/0004-637X/700/2/1247
+Raimondo, G., Brocato, E., Cantiello, M., & Capaccioli, M.
+2005, AJ, 130, 2625, doi: 10.1086/497591
+Reid, M. J., Pesce, D. W., & Riess, A. G. 2019, ApJL, 886,
+L27, doi: 10.3847/2041-8213/ab552d
+Riess, A. G., Yuan, W., Macri, L. M., et al. 2022, ApJL,
+934, L7, doi: 10.3847/2041-8213/ac5c5b
+Riess, A. G., Anand, G. S., Yuan, W., et al. 2023, ApJL,
+956, L18, doi: 10.3847/2041-8213/acf769
+—. 2024a, ApJL, 962, L17, doi: 10.3847/2041-8213/ad1ddd
+Riess, A. G., Scolnic, D., Anand, G. S., et al. 2024b, ApJ,
+977, 120, doi: 10.3847/1538-4357/ad8c21
+Said, K., Howlett, C., Davis, T., et al. 2024, arXiv e-prints,
+arXiv:2408.13842, doi: 10.48550/arXiv.2408.13842
+Schlafly, E. F., & Finkbeiner, D. P. 2011, ApJ, 737, 103,
+doi: 10.1088/0004-637X/737/2/103
+Scolnic, D., Brout, D., Carr, A., et al. 2022, ApJ, 938, 113,
+doi: 10.3847/1538-4357/ac8b7a
+Scolnic, D., Riess, A. G., Murakami, Y. S., et al. 2025,
+ApJL, 979, L9, doi: 10.3847/2041-8213/ada0bd
+Tonry, J., & Schneider, D. P. 1988, AJ, 96, 807,
+doi: 10.1086/114847
+Tonry, J. L., Dressler, A., Blakeslee, J. P., et al. 2001, ApJ,
+546, 681, doi: 10.1086/318301
+Tully, R. B. 2015, AJ, 149, 171,
+doi: 10.1088/0004-6256/149/5/171
+Tully, R. B., Anand, G. S., Blakeslee, J. P., et al. 2023, A
+TRGB calibration of Surface Brightness Fluctuations,
+JWST Proposal. Cycle 2, ID. #3055
+—. 2025, Distance Scale Linkages between JWST Tip of
+the Red Giant Branch and JWST/HST Surface
+Brightness Fluctuations (and SNIa in E Hosts), JWST
+Proposal. Cycle 4, ID. #7034
+
+
