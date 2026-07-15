@@ -1,0 +1,38 @@
+{
+  "baseline_commit": "5ea77b9",
+  "target_count": 14,
+  "clean_target_count": 12,
+  "fit": {
+    "pivot_color": 0.4,
+    "intercept": -3.454182900637549,
+    "slope": 1.1654137953175123,
+    "sigma_int": 0.04876708384559587,
+    "in_sample_wrms": 0.05947068081925062,
+    "leave_one_out_wrms": 0.07346139380766567
+  },
+  "model_comparison": {
+    "constant": {
+      "in_sample_wrms": 0.09077718149820174,
+      "leave_one_out_wrms": 0.10225000549107414
+    },
+    "linear": {
+      "in_sample_wrms": 0.05947068081925062,
+      "leave_one_out_wrms": 0.07247746074734532
+    },
+    "quadratic": {
+      "in_sample_wrms": 0.059455979543208054,
+      "leave_one_out_wrms": 0.08406893076301765
+    }
+  },
+  "tolerances": {
+    "target_magnitude_abs": 0.005,
+    "target_sigma_abs": 0.005,
+    "target_color_abs": 0.005,
+    "k_window_abs": 1e-12,
+    "fit_intercept_abs": 0.005,
+    "fit_slope_abs": 0.03,
+    "fit_scatter_abs": 0.003,
+    "model_wrms_abs": 0.003
+  }
+}
+

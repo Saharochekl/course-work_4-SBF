@@ -1,0 +1,14 @@
+baseline_commit=5ea77b9
+created_from_existing_outputs=true
+python=3.13.2
+platform=macOS-15.7.3-arm64-arm-64bit-Mach-O
+numpy=2.3.5
+pandas=2.3.3
+scipy=1.16.3
+astropy=7.2.0
+photutils=2.3.0
+skimage=0.26.0
+matplotlib=3.10.8
+run_sbf2_batch.py.sha256=9fdab2e8dd956251fe1ba32e923ceebfe239b4344537f6a941c16baee0e3cbd4
+sbf-2.ipynb.sha256=250845389bdf8005182827584f46563b3f6c6497070af19d0bd19e95b009a650
+
