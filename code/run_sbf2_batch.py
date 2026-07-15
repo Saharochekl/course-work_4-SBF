@@ -3,7 +3,9 @@ import argparse
 import builtins
 import csv
 import gc
+import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -26,6 +28,8 @@ MAST_DOWNLOAD_PREFIX = "https://mast.stsci.edu/api/v0.1/Download/file?uri="
 DEFAULT_SIGNAL_FILTER = "F150W"
 DEFAULT_COLOR_FILTER = "F090W"
 CURRENT_NOTEBOOK_FILTER_PAIR = (DEFAULT_SIGNAL_FILTER, DEFAULT_COLOR_FILTER)
+SBF2_NOTEBOOK_FAMILY = "sbf2"
+SBF3_NOTEBOOK_FAMILY = "sbf3"
 
 
 TARGETS = [
@@ -245,8 +249,195 @@ def is_input_ready(path, expected_size=None):
     return readable
 
 
-def final_result_for(target, batch_root):
-    path = Path(batch_root) / f"{slug(target['name'])}_result.json"
+def sha256_file(path):
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def notebook_family(template_path):
+    """Identify a known SBF notebook from its metadata or stable content."""
+    try:
+        notebook = json.loads(Path(template_path).read_text())
+    except (OSError, json.JSONDecodeError, TypeError):
+        return None
+
+    metadata = notebook.get("metadata") or {}
+    declared = metadata.get("sbf_pipeline_family")
+    pipeline_metadata = metadata.get("sbf_pipeline")
+    if declared is None and isinstance(pipeline_metadata, dict):
+        declared = pipeline_metadata.get("family")
+    if declared is not None:
+        normalized = str(declared).strip().lower().replace("_", "-")
+        if normalized in {"sbf2", "sbf-2", "2"}:
+            return SBF2_NOTEBOOK_FAMILY
+        if normalized in {"sbf3", "sbf-3", "3"}:
+            return SBF3_NOTEBOOK_FAMILY
+
+    code_sources = []
+    for cell in notebook.get("cells", []):
+        source = "".join(cell.get("source", []))
+        if cell.get("cell_type") == "markdown":
+            for line in source.splitlines():
+                heading = line.strip().lower()
+                if heading.startswith("# sbf-2"):
+                    return SBF2_NOTEBOOK_FAMILY
+                if heading.startswith("# sbf-3"):
+                    return SBF3_NOTEBOOK_FAMILY
+        elif cell.get("cell_type") == "code":
+            code_sources.append(source)
+
+    code = "\n".join(code_sources)
+    if 'output_header["SBFVER"] = ("sbf-3"' in code:
+        return SBF3_NOTEBOOK_FAMILY
+    if "f150w_path = Path" in code and "f090w_path = Path" in code:
+        return SBF2_NOTEBOOK_FAMILY
+    return None
+
+
+def input_fingerprint(path):
+    """Return a cheap local identity without reading a potentially huge FITS."""
+    if path is None:
+        return {
+            "resolved_path": None,
+            "size": None,
+            "mtime_ns": None,
+            "device": None,
+            "inode": None,
+        }
+    resolved = Path(path).resolve()
+    try:
+        stat = resolved.stat()
+    except FileNotFoundError:
+        return {
+            "resolved_path": str(resolved),
+            "size": None,
+            "mtime_ns": None,
+            "device": None,
+            "inode": None,
+        }
+    return {
+        "resolved_path": str(resolved),
+        "size": int(stat.st_size),
+        "mtime_ns": int(stat.st_mtime_ns),
+        "device": int(stat.st_dev),
+        "inode": int(stat.st_ino),
+    }
+
+
+def input_pair_key(
+    signal_path,
+    color_path,
+    signal_fingerprint=None,
+    color_fingerprint=None,
+):
+    signal_fingerprint = signal_fingerprint or input_fingerprint(signal_path)
+    color_fingerprint = color_fingerprint or input_fingerprint(color_path)
+    payload = json.dumps(
+        {
+            "signal": signal_fingerprint,
+            "color": color_fingerprint,
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:12]
+
+
+def target_output_dir(
+    galaxy,
+    signal_path,
+    color_path=None,
+    products_root=None,
+    signal_filter=None,
+    color_filter=None,
+    signal_fingerprint=None,
+    color_fingerprint=None,
+):
+    if products_root is None:
+        return Path(signal_path).resolve().parent
+    pair_label = f"{signal_filter or 'signal'}__{color_filter or 'color'}"
+    pair_key = input_pair_key(
+        signal_path,
+        color_path,
+        signal_fingerprint=signal_fingerprint,
+        color_fingerprint=color_fingerprint,
+    )
+    return (
+        Path(products_root).resolve()
+        / slug(galaxy)
+        / slug(pair_label)
+        / pair_key
+    )
+
+
+def result_json_path(batch_root, galaxy, identity=None):
+    if identity and identity.get("template_family") == SBF3_NOTEBOOK_FAMILY:
+        run_label = "__".join(
+            [
+                slug(galaxy),
+                slug(identity["signal_filter"]),
+                slug(identity["color_filter"]),
+                identity["input_pair_key"],
+            ]
+        )
+        return Path(batch_root) / f"{run_label}_result.json"
+    return Path(batch_root) / f"{slug(galaxy)}_result.json"
+
+
+def expected_run_identity(
+    template_path,
+    target,
+    signal_path,
+    color_path,
+    products_root=None,
+):
+    template_path = Path(template_path).resolve()
+    signal_path = Path(signal_path).resolve()
+    color_path = Path(color_path).resolve()
+    signal_fingerprint = input_fingerprint(signal_path)
+    color_fingerprint = input_fingerprint(color_path)
+    pair_key = input_pair_key(
+        signal_path,
+        color_path,
+        signal_fingerprint=signal_fingerprint,
+        color_fingerprint=color_fingerprint,
+    )
+    return {
+        "template_name": template_path.name,
+        "template_path": str(template_path),
+        "template_sha256": sha256_file(template_path),
+        "template_family": notebook_family(template_path),
+        "signal_filter": target["signal_filter"],
+        "color_filter": target["color_filter"],
+        "signal_path": str(signal_path),
+        "color_path": str(color_path),
+        "signal_fingerprint": signal_fingerprint,
+        "color_fingerprint": color_fingerprint,
+        "input_pair_key": pair_key,
+        "out_dir": str(
+            target_output_dir(
+                target["name"],
+                signal_path,
+                color_path,
+                products_root=products_root,
+                signal_filter=target["signal_filter"],
+                color_filter=target["color_filter"],
+                signal_fingerprint=signal_fingerprint,
+                color_fingerprint=color_fingerprint,
+            )
+        ),
+    }
+
+
+def result_matches_identity(result, identity):
+    return all(result.get(key) == value for key, value in identity.items())
+
+
+def final_result_for(target, batch_root, identity=None, allow_legacy=False):
+    path = result_json_path(batch_root, target["name"], identity=identity)
     if not path.exists():
         return None
     try:
@@ -255,6 +446,11 @@ def final_result_for(target, batch_root):
         return None
     if result.get("status") != "ok":
         return None
+    if identity is not None and not result_matches_identity(result, identity):
+        if not allow_legacy:
+            return None
+        if result.get("template_sha256") is not None:
+            return None
     return result
 
 
@@ -317,15 +513,31 @@ def normalize_target(target):
     return item
 
 
-def validate_notebook_filter_pair(signal_filter, color_filter):
+def validate_notebook_filter_pair(template_path, signal_filter, color_filter):
     pair = (signal_filter.strip().upper(), color_filter.strip().upper())
-    if pair != CURRENT_NOTEBOOK_FILTER_PAIR:
+    family = notebook_family(template_path)
+    if family == SBF2_NOTEBOOK_FAMILY and pair != CURRENT_NOTEBOOK_FILTER_PAIR:
         expected = "/".join(CURRENT_NOTEBOOK_FILTER_PAIR)
         actual = "/".join(pair)
         raise ValueError(
-            f"sbf-2.ipynb is still validated only for {expected}; got {actual}. "
-            "The generic manifest is ready, but the numerical notebook must be "
-            "made filter-aware before this pair can be processed."
+            f"{Path(template_path).name} is an sbf-2 notebook and is still "
+            f"validated only for {expected}; got {actual}. "
+            "Use the filter-aware sbf-3.ipynb for other pairs."
+        )
+
+
+def validate_run_layout(template_path, batch_root, products_root):
+    if notebook_family(template_path) != SBF3_NOTEBOOK_FAMILY:
+        return
+    if products_root is None:
+        raise ValueError(
+            "sbf-3.ipynb requires --products-root so it cannot overwrite "
+            "the frozen sbf-2 products"
+        )
+    if Path(batch_root).resolve() == DEFAULT_BATCH_ROOT.resolve():
+        raise ValueError(
+            "sbf-3.ipynb requires a separate --batch-root; refusing to mix "
+            "sbf-2 and sbf-3 result JSON files"
         )
 
 
@@ -406,15 +618,18 @@ def merge_known_targets(targets):
     for target in targets:
         item = normalize_target(target)
         if item["name"] in known:
-            for key, value in known[item["name"]].items():
+            known_item = known[item["name"]]
+            for key, value in known_item.items():
                 if item.get(key) in (None, ""):
                     item[key] = value
-            item["signal_size"] = known[item["name"]].get(
-                "signal_size", item.get("signal_size")
-            )
-            item["color_size"] = known[item["name"]].get(
-                "color_size", item.get("color_size")
-            )
+            for role in ("signal", "color"):
+                size_key = f"{role}_size"
+                product_key = f"{role}_product"
+                if (
+                    item.get(size_key) in (None, "")
+                    or item.get(product_key) == known_item.get(product_key)
+                ):
+                    item[size_key] = known_item.get(size_key, item.get(size_key))
         merged.append(item)
     return merged
 
@@ -460,6 +675,7 @@ def override_target_namespace(
     color_path,
     signal_filter=DEFAULT_SIGNAL_FILTER,
     color_filter=DEFAULT_COLOR_FILTER,
+    out_dir=None,
 ):
     signal_path = Path(signal_path).resolve()
     color_path = Path(color_path).resolve()
@@ -472,12 +688,14 @@ def override_target_namespace(
     # are filter-agnostic even though these two variable names are historical.
     namespace["f150w_path"] = signal_path
     namespace["f090w_path"] = color_path
-    namespace["out_dir"] = signal_path.parent
+    namespace["out_dir"] = (
+        Path(out_dir).resolve() if out_dir is not None else signal_path.parent
+    )
     namespace["stem"] = signal_path.stem
     namespace["out_dir"].mkdir(parents=True, exist_ok=True)
 
 
-def result_paths(out_dir, stem):
+def result_paths(out_dir, stem, pipeline_label="sbf2"):
     out_dir = Path(out_dir)
     return {
         "model_full_fits": out_dir / f"{stem}_sbf_model_full.fits",
@@ -487,8 +705,9 @@ def result_paths(out_dir, stem):
         / f"{stem}_sbf_resid_science_circular_inner_lit_usable.fits",
         "outer_usable_residual_fits": out_dir
         / f"{stem}_sbf_resid_science_circular_outer_lit_usable.fits",
-        "df_sbf_csv": out_dir / f"{stem}_sbf2_df_sbf.csv",
-        "annulus_summary_csv": out_dir / f"{stem}_sbf2_annulus_summary.csv",
+        "df_sbf_csv": out_dir / f"{stem}_{pipeline_label}_df_sbf.csv",
+        "annulus_summary_csv": out_dir
+        / f"{stem}_{pipeline_label}_annulus_summary.csv",
     }
 
 
@@ -500,22 +719,44 @@ def execute_template_for_target(
     batch_root,
     signal_filter=DEFAULT_SIGNAL_FILTER,
     color_filter=DEFAULT_COLOR_FILTER,
+    output_dir=None,
 ):
+    template_path = Path(template_path).resolve()
+    pipeline_label = template_path.stem.replace("-", "").replace("_", "")
+    signal_fingerprint = input_fingerprint(signal_path)
+    color_fingerprint = input_fingerprint(color_path)
+    pair_key = input_pair_key(
+        signal_path,
+        color_path,
+        signal_fingerprint=signal_fingerprint,
+        color_fingerprint=color_fingerprint,
+    )
     namespace = {
-        "__name__": "__sbf2_notebook_exec__",
+        "__name__": "__sbf_notebook_exec__",
         "__file__": str(template_path),
     }
+    override_target_namespace(
+        namespace,
+        galaxy,
+        signal_path,
+        color_path,
+        signal_filter=signal_filter,
+        color_filter=color_filter,
+        out_dir=output_dir,
+    )
     namespace["display"] = make_display(namespace)
     code_cells = notebook_code_cells(template_path)
 
     for cell_no, source in code_cells:
-        print(f"[{timestamp()}] executing sbf-2 cell {cell_no}")
+        print(f"[{timestamp()}] executing {template_path.name} cell {cell_no}")
         try:
             exec(compile(source, f"{template_path}:cell-{cell_no}", "exec"), namespace)
         except Exception:
-            print(f"[{timestamp()}] failed in sbf-2 cell {cell_no}")
+            print(f"[{timestamp()}] failed in {template_path.name} cell {cell_no}")
             raise
 
+        # The frozen sbf-2 parameter cell overwrites injected values. Reapply
+        # them only for that legacy cell; sbf-3 preserves preseeded globals.
         if "f150w_path = Path" in source and "f090w_path = Path" in source:
             override_target_namespace(
                 namespace,
@@ -524,6 +765,7 @@ def execute_template_for_target(
                 color_path,
                 signal_filter=signal_filter,
                 color_filter=color_filter,
+                out_dir=output_dir,
             )
             namespace["display"] = make_display(namespace)
             print(f"[{timestamp()}] target override: {galaxy}")
@@ -532,11 +774,11 @@ def execute_template_for_target(
 
     recommended = namespace.get("recommended_sbf")
     if not recommended:
-        raise RuntimeError("sbf-2 finished without recommended_sbf")
+        raise RuntimeError(f"{template_path.name} finished without recommended_sbf")
 
     out_dir = Path(namespace["out_dir"])
     stem = namespace["stem"]
-    paths = result_paths(out_dir, stem)
+    paths = result_paths(out_dir, stem, pipeline_label=pipeline_label)
 
     df_sbf = namespace.get("df_sbf")
     if df_sbf is not None:
@@ -549,13 +791,38 @@ def execute_template_for_target(
     result = {
         "galaxy": galaxy,
         "status": "ok",
+        "template_name": template_path.name,
+        "template_path": str(template_path),
+        "template_sha256": sha256_file(template_path),
+        "template_family": notebook_family(template_path),
         "signal_filter": signal_filter,
         "color_filter": color_filter,
+        "color_name": f"{color_filter}-{signal_filter}",
         "signal_path": str(Path(signal_path).resolve()),
         "color_path": str(Path(color_path).resolve()),
+        "signal_fingerprint": signal_fingerprint,
+        "color_fingerprint": color_fingerprint,
+        "input_pair_key": pair_key,
         "out_dir": str(out_dir.resolve()),
         "stem": stem,
     }
+    namespace_metadata = {
+        "input_family": "INPUT_FAMILY",
+        "signal_bunit": "signal_bunit",
+        "color_bunit": "color_bunit",
+        "color_sampling_mode": "color_sampling_mode",
+        "color_grid_aligned": "color_grid_aligned",
+        "color_grid_max_offset_px": "color_grid_max_offset_px",
+        "signal_background_scalar": "bg_scalar",
+        "color_background_scalar": "color_bg_scalar",
+        "science_pixel_scale_arcsec": "science_pixel_scale_arcsec",
+        "psf_pixel_scale_arcsec": "psf_pixel_scale_arcsec",
+        "psf_scale_rel_error": "psf_scale_rel_error",
+        "opd_delta_days": "opd_delta_days",
+    }
+    for result_key, namespace_key in namespace_metadata.items():
+        if namespace_key in namespace:
+            result[result_key] = as_builtin(namespace[namespace_key])
     if signal_filter == "F150W" and color_filter == "F090W":
         result["f150w_path"] = result["signal_path"]
         result["f090w_path"] = result["color_path"]
@@ -569,27 +836,58 @@ def execute_template_for_target(
     if color_summary is not None and len(color_summary) > 0:
         try:
             row0 = color_summary.iloc[0].to_dict()
-            color_value = as_builtin(row0.get("color_F090W_F150W"))
+            color_value = as_builtin(
+                row0.get("color_index", row0.get("color_F090W_F150W"))
+            )
             result["color_index"] = color_value
-            result["color_name"] = f"{color_filter}-{signal_filter}"
+            result["color_name"] = row0.get("color_name", result["color_name"])
             result[f"color_{color_filter}_{signal_filter}"] = color_value
             result["color_sigma_proxy"] = as_builtin(row0.get("sigma_proxy"))
         except Exception:
             pass
 
     batch_root.mkdir(parents=True, exist_ok=True)
-    result_json = batch_root / f"{slug(galaxy)}_result.json"
+    result_json = result_json_path(batch_root, galaxy, identity=result)
     result_json.write_text(json.dumps(as_builtin(result), ensure_ascii=False, indent=2))
     print(f"[{timestamp()}] wrote result {result_json}")
     return result
 
 
 def run_worker(args):
+    template_path = Path(args.template).resolve()
     batch_root = Path(args.batch_root).resolve()
     batch_root.mkdir(parents=True, exist_ok=True)
-    log_path = batch_root / f"{slug(args.galaxy)}.log"
+    runtime_cache = batch_root / ".runtime_cache"
+    runtime_cache.mkdir(parents=True, exist_ok=True)
+    os.environ.setdefault("MPLCONFIGDIR", str(runtime_cache / "matplotlib"))
+    os.environ.setdefault("XDG_CACHE_HOME", str(runtime_cache / "xdg"))
     signal_filter = args.signal_filter.strip().upper()
     color_filter = args.color_filter.strip().upper()
+    worker_target = {
+        "name": args.galaxy,
+        "signal_filter": signal_filter,
+        "color_filter": color_filter,
+    }
+    worker_identity = expected_run_identity(
+        template_path,
+        worker_target,
+        args.signal,
+        args.color,
+        products_root=args.products_root,
+    )
+    log_path = result_json_path(
+        batch_root, args.galaxy, identity=worker_identity
+    ).with_suffix(".log")
+    output_dir = target_output_dir(
+        args.galaxy,
+        args.signal,
+        args.color,
+        products_root=args.products_root,
+        signal_filter=signal_filter,
+        color_filter=color_filter,
+        signal_fingerprint=worker_identity["signal_fingerprint"],
+        color_fingerprint=worker_identity["color_fingerprint"],
+    )
 
     with log_path.open("a") as log_file:
         tee_out = Tee(sys.stdout, log_file)
@@ -597,15 +895,21 @@ def run_worker(args):
         with redirect_stdout(tee_out), redirect_stderr(tee_err):
             print(f"[{timestamp()}] worker start: {args.galaxy}")
             try:
-                validate_notebook_filter_pair(signal_filter, color_filter)
+                validate_run_layout(
+                    template_path, batch_root, args.products_root
+                )
+                validate_notebook_filter_pair(
+                    template_path, signal_filter, color_filter
+                )
                 result = execute_template_for_target(
-                    Path(args.template).resolve(),
+                    template_path,
                     args.galaxy,
                     Path(args.signal).resolve(),
                     Path(args.color).resolve(),
                     batch_root,
                     signal_filter=signal_filter,
                     color_filter=color_filter,
+                    output_dir=output_dir,
                 )
                 print(
                     f"[{timestamp()}] worker done: {args.galaxy} "
@@ -617,10 +921,13 @@ def run_worker(args):
                 err = {
                     "galaxy": args.galaxy,
                     "status": "failed",
+                    **worker_identity,
                     "error": repr(exc),
                     "traceback": traceback.format_exc(),
                 }
-                err_path = batch_root / f"{slug(args.galaxy)}_result.json"
+                err_path = result_json_path(
+                    batch_root, args.galaxy, identity=err
+                )
                 err_path.write_text(json.dumps(err, ensure_ascii=False, indent=2))
                 print(err["traceback"])
                 print(f"[{timestamp()}] worker failed: {args.galaxy}")
@@ -862,6 +1169,11 @@ def run_parent(args):
     template = Path(args.template).resolve()
     data_root = Path(args.data_root).resolve()
     batch_root = Path(args.batch_root).resolve()
+    products_root = (
+        Path(args.products_root).resolve() if args.products_root else None
+    )
+    validate_run_layout(template, batch_root, products_root)
+    template_family = notebook_family(template)
     batch_root.mkdir(parents=True, exist_ok=True)
 
     if args.target_csv:
@@ -876,15 +1188,48 @@ def run_parent(args):
 
     completed_results = []
     results = []
+    identities = {}
     for target in targets:
-        existing = final_result_for(target, batch_root)
+        signal_path, color_path = target_paths(target, data_root)
+        identities[target["name"]] = expected_run_identity(
+            template,
+            target,
+            signal_path,
+            color_path,
+            products_root=products_root,
+        )
+        allow_legacy = (
+            template_family == SBF2_NOTEBOOK_FAMILY and products_root is None
+        )
+        existing = final_result_for(
+            target,
+            batch_root,
+            identity=identities[target["name"]],
+            allow_legacy=allow_legacy,
+        )
         if existing is not None:
             completed_results.append(existing)
             results.append(existing)
             print(f"[{timestamp()}] reusing completed result for {target['name']}")
     download_proc = start_download_manager(args, targets, completed_results)
     for target in targets:
-        existing = final_result_for(target, batch_root)
+        signal_path, color_path = target_paths(target, data_root)
+        identities[target["name"]] = expected_run_identity(
+            template,
+            target,
+            signal_path,
+            color_path,
+            products_root=products_root,
+        )
+        allow_legacy = (
+            template_family == SBF2_NOTEBOOK_FAMILY and products_root is None
+        )
+        existing = final_result_for(
+            target,
+            batch_root,
+            identity=identities[target["name"]],
+            allow_legacy=allow_legacy,
+        )
         if existing is not None:
             if not any(r.get("galaxy") == existing.get("galaxy") for r in results):
                 results.append(existing)
@@ -892,7 +1237,6 @@ def run_parent(args):
             link_residuals(results, batch_root)
             continue
 
-        signal_path, color_path = target_paths(target, data_root)
         log_resources(f"before-wait {target['name']}", data_root)
         wait_for_input(
             signal_path,
@@ -905,6 +1249,15 @@ def run_parent(args):
             expected_size=target.get("color_size"),
             poll_seconds=args.poll_seconds,
             timeout_seconds=args.timeout_seconds,
+        )
+        # Files may have been downloaded after the initial cache check. Capture
+        # their real local fingerprints before choosing output/result paths.
+        identities[target["name"]] = expected_run_identity(
+            template,
+            target,
+            signal_path,
+            color_path,
+            products_root=products_root,
         )
 
         while True:
@@ -938,11 +1291,17 @@ def run_parent(args):
             "--batch-root",
             str(batch_root),
         ]
+        if products_root is not None:
+            cmd.extend(["--products-root", str(products_root)])
         print(f"[{timestamp()}] starting worker: {' '.join(cmd)}")
         proc = subprocess.run(cmd)
         log_resources(f"after-worker {target['name']}", data_root)
 
-        result_path = batch_root / f"{slug(target['name'])}_result.json"
+        result_path = result_json_path(
+            batch_root,
+            target["name"],
+            identity=identities[target["name"]],
+        )
         if result_path.exists():
             result = json.loads(result_path.read_text())
         else:
@@ -984,6 +1343,11 @@ def parse_args(argv=None):
     parser.add_argument("--template", default=str(DEFAULT_TEMPLATE))
     parser.add_argument("--data-root", default=str(DEFAULT_DATA_ROOT))
     parser.add_argument("--batch-root", default=str(DEFAULT_BATCH_ROOT))
+    parser.add_argument(
+        "--products-root",
+        default=None,
+        help="isolated per-target directory for notebook-generated products",
+    )
     parser.add_argument("--target-csv", default=str(DEFAULT_TARGET_CSV))
     parser.add_argument("--poll-seconds", type=int, default=60)
     parser.add_argument("--timeout-seconds", type=int, default=0)
