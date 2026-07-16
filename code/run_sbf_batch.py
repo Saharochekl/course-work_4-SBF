@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import atexit
 import argparse
 import builtins
 import csv
@@ -30,6 +31,7 @@ DEFAULT_COLOR_FILTER = "F090W"
 CURRENT_NOTEBOOK_FILTER_PAIR = (DEFAULT_SIGNAL_FILTER, DEFAULT_COLOR_FILTER)
 SBF2_NOTEBOOK_FAMILY = "sbf2"
 SBF3_NOTEBOOK_FAMILY = "sbf3"
+MAX_IMPLICIT_TARGETS = 14
 
 
 TARGETS = [
@@ -482,6 +484,27 @@ def optional_int(value):
     return int(value) if value else None
 
 
+def manifest_row_enabled(row):
+    """Return whether a manifest row is actionable by the downloader.
+
+    Existing manifests predate this flag and therefore remain enabled by
+    default.  Extended inventories can keep proprietary, scheduled, or
+    demonstration-only targets in the same CSV with ``download_enabled=false``
+    without making the batch runner attempt nonexistent or embargoed products.
+    """
+    value = str(row.get("download_enabled") or "").strip().lower()
+    if not value:
+        return True
+    if value in {"1", "true", "yes", "y", "on"}:
+        return True
+    if value in {"0", "false", "no", "n", "off"}:
+        return False
+    target = str(row.get("target") or row.get("galaxy") or "<unknown>").strip()
+    raise ValueError(
+        f"{target}: invalid download_enabled={row.get('download_enabled')!r}"
+    )
+
+
 def normalize_target(target):
     """Return the generic two-filter target contract.
 
@@ -546,6 +569,8 @@ def read_targets_from_csv(csv_path, data_root):
     with Path(csv_path).open() as handle:
         reader = csv.DictReader(handle)
         for row in reader:
+            if not manifest_row_enabled(row):
+                continue
             is_generic = "signal_product" in row
             galaxy = str(row.get("target") or row.get("galaxy") or "").strip()
             if is_generic:
@@ -605,6 +630,10 @@ def read_targets_from_csv(csv_path, data_root):
                         "field_contamination_flag"
                     ),
                     "calibration_family": row.get("calibration_family"),
+                    "availability_status": row.get("availability_status"),
+                    "science_role": row.get("science_role"),
+                    "priority": row.get("priority"),
+                    "public_release_date": row.get("public_release_date"),
                     "notes": row.get("notes"),
                     "target_dir": str(target_dir),
                     "source_csv": str(csv_path),
@@ -1022,20 +1051,29 @@ def download_one(url, dest, expected_size=None, chunk_size=1024 * 1024, timeout=
     return False, f"incomplete after transfer: {size}/{expected_size}"
 
 
-def ensure_disk_space_for_downloads(data_root, completed_results, min_free_gb, cleanup_enabled=True):
+def ensure_disk_space_for_downloads(
+    data_root,
+    completed_results,
+    min_free_gb,
+    cleanup_enabled=True,
+    required_bytes=0,
+):
     disk, _ = log_resources("disk-check", data_root)
-    if disk["free_gb"] >= min_free_gb:
-        return
+    required_free_gb = min_free_gb + bytes_gb(required_bytes or 0)
+    if disk["free_gb"] >= required_free_gb:
+        return True
     if not cleanup_enabled:
         print(
-            f"[{timestamp()}] [DISK] free space below threshold "
-            f"({disk['free_gb']:.1f} < {min_free_gb:.1f} GB), cleanup disabled"
+            f"[{timestamp()}] [DISK] download blocked: free space "
+            f"{disk['free_gb']:.1f} GB is below the required "
+            f"{required_free_gb:.1f} GB (reserve + next transfer); "
+            "cleanup disabled"
         )
-        return
+        return False
 
     print(
-        f"[{timestamp()}] [DISK] free space below threshold "
-        f"({disk['free_gb']:.1f} < {min_free_gb:.1f} GB), removing source inputs "
+        f"[{timestamp()}] [DISK] free space below requirement "
+        f"({disk['free_gb']:.1f} < {required_free_gb:.1f} GB), removing source inputs "
         "for completed galaxies"
     )
     for result in completed_results:
@@ -1056,8 +1094,15 @@ def ensure_disk_space_for_downloads(data_root, completed_results, min_free_gb, c
             except Exception as exc:
                 print(f"[{timestamp()}] [DISK] failed to remove {path}: {exc}")
         disk, _ = log_resources("disk-check-after-cleanup", data_root)
-        if disk["free_gb"] >= min_free_gb:
-            return
+        if disk["free_gb"] >= required_free_gb:
+            return True
+
+    print(
+        f"[{timestamp()}] [DISK] download blocked: free space "
+        f"{disk['free_gb']:.1f} GB is below the required "
+        f"{required_free_gb:.1f} GB after cleanup"
+    )
+    return False
 
 
 def load_completed_results(batch_root):
@@ -1105,13 +1150,36 @@ def download_targets_until_stopped(
                 if is_input_ready(dest, expected_size):
                     continue
                 all_ready = False
-                completed_results = load_completed_results(batch_root)
-                ensure_disk_space_for_downloads(
-                    data_root,
-                    completed_results,
-                    min_free_gb=min_free_gb,
-                    cleanup_enabled=cleanup_enabled,
+                current_size = dest.stat().st_size if dest.exists() else 0
+                remaining_bytes = (
+                    max(int(expected_size) - current_size, 0)
+                    if expected_size
+                    else 0
                 )
+                while True:
+                    completed_results = load_completed_results(batch_root)
+                    if ensure_disk_space_for_downloads(
+                        data_root,
+                        completed_results,
+                        min_free_gb=min_free_gb,
+                        cleanup_enabled=cleanup_enabled,
+                        required_bytes=remaining_bytes,
+                    ):
+                        break
+                    status = {
+                        "time": timestamp(),
+                        "target": target["name"],
+                        "band": band,
+                        "path": str(dest),
+                        "ok": False,
+                        "message": "blocked: insufficient disk space",
+                        "size": current_size,
+                        "expected_size": expected_size,
+                    }
+                    status_path.write_text(
+                        json.dumps(status, ensure_ascii=False, indent=2)
+                    )
+                    time.sleep(retry_sleep)
                 print(f"[{timestamp()}] [DOWNLOAD] {target['name']} {band} -> {dest}")
                 ok, msg = download_one(url, dest, expected_size=expected_size)
                 size = dest.stat().st_size if dest.exists() else 0
@@ -1161,8 +1229,41 @@ def start_download_manager(args, targets, completed_results):
     ]
     if args.no_cleanup_inputs:
         cmd.append("--no-cleanup-inputs")
+    if targets:
+        # The download worker re-reads the manifest in a separate process.
+        # Pass the already selected parent target set explicitly; otherwise a
+        # narrow ``--galaxies`` run could download every enabled manifest row.
+        cmd.append("--galaxies")
+        cmd.extend(target["name"] for target in targets)
     print(f"[{timestamp()}] starting download manager: {' '.join(cmd)}")
-    return subprocess.Popen(cmd)
+    process = subprocess.Popen(cmd)
+    atexit.register(stop_download_manager, process)
+    return process
+
+
+def stop_download_manager(process, grace_seconds=10):
+    if process is None or process.poll() is not None:
+        return
+    print(f"[{timestamp()}] stopping download manager")
+    process.terminate()
+    try:
+        process.wait(timeout=grace_seconds)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        process.wait()
+
+
+def select_targets(targets, galaxies, allow_bulk_targets=False):
+    if galaxies is None:
+        if len(targets) > MAX_IMPLICIT_TARGETS and not allow_bulk_targets:
+            raise RuntimeError(
+                f"manifest contains {len(targets)} actionable targets; refusing "
+                "implicit bulk selection. Pass exact names with --galaxies. "
+                "Use --allow-bulk-targets only after a storage-capacity check."
+            )
+        return list(targets)
+    wanted = set(galaxies)
+    return [target for target in targets if target["name"] in wanted]
 
 
 def run_parent(args):
@@ -1181,8 +1282,11 @@ def run_parent(args):
     else:
         targets = [normalize_target(t) for t in TARGETS]
 
-    wanted = set(args.galaxies) if args.galaxies else None
-    targets = [t for t in targets if wanted is None or t["name"] in wanted]
+    targets = select_targets(
+        targets,
+        args.galaxies,
+        allow_bulk_targets=args.allow_bulk_targets,
+    )
     if not targets:
         raise RuntimeError(f"no targets selected: {args.galaxies}")
 
@@ -1328,13 +1432,7 @@ def run_parent(args):
 
     write_summary(results, batch_root)
     link_residuals(results, batch_root)
-    if download_proc is not None:
-        if download_proc.poll() is None:
-            print(f"[{timestamp()}] waiting for download manager to finish")
-            try:
-                download_proc.wait(timeout=300)
-            except subprocess.TimeoutExpired:
-                print(f"[{timestamp()}] download manager still running; leaving it alive")
+    stop_download_manager(download_proc)
     return 0 if all(r.get("status") == "ok" for r in results) else 1
 
 
@@ -1355,6 +1453,14 @@ def parse_args(argv=None):
     parser.add_argument("--min-free-gb", type=float, default=30.0)
     parser.add_argument("--min-available-ram-gb", type=float, default=8.0)
     parser.add_argument("--galaxies", nargs="*", default=None)
+    parser.add_argument(
+        "--allow-bulk-targets",
+        action="store_true",
+        help=(
+            "allow an unfiltered manifest with more than "
+            f"{MAX_IMPLICIT_TARGETS} actionable targets"
+        ),
+    )
     parser.add_argument("--no-download", action="store_true")
     parser.add_argument("--no-cleanup-inputs", action="store_true")
     parser.add_argument("--worker", action="store_true")
@@ -1383,6 +1489,13 @@ def main():
     args = parse_args()
     if args.download_worker:
         targets = merge_known_targets(read_targets_from_csv(args.target_csv, args.data_root))
+        targets = select_targets(
+            targets,
+            args.galaxies,
+            allow_bulk_targets=args.allow_bulk_targets,
+        )
+        if not targets:
+            raise RuntimeError("download worker has no explicitly selected targets")
         completed_results = load_completed_results(args.batch_root)
         download_targets_until_stopped(
             targets,

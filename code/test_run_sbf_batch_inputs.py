@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
+import csv
 import json
 import tempfile
 import unittest
+from argparse import Namespace
+from collections import Counter
 from pathlib import Path
+from unittest.mock import Mock, patch
 
-import run_sbf2_batch as batch
+import run_sbf_batch as batch
 
 
 CODE_DIR = Path(__file__).resolve().parent
@@ -12,6 +16,166 @@ PROJECT_ROOT = CODE_DIR.parent
 
 
 class BatchInputContractTests(unittest.TestCase):
+    def test_sbf3_standalone_defaults_and_stage_dump_contract(self):
+        notebook = json.loads((CODE_DIR / "sbf-3.ipynb").read_text())
+        code = "\n".join(
+            "".join(cell.get("source", []))
+            for cell in notebook["cells"]
+            if cell.get("cell_type") == "code"
+        )
+        self.assertIn("NGC 1380", code)
+        self.assertIn("jw03055-o001_t001_nircam_clear-f356w_i2d.fits", code)
+        self.assertIn("jw03055-o001_t001_nircam_clear-f277w_i2d.fits", code)
+        self.assertIn("PROJECT_ROOT = PYTHON_EXECUTABLE.parents[2]", code)
+        self.assertIn("DATA_ROOT = PROJECT_ROOT / \"data\"", code)
+        self.assertIn(
+            "out_dir = resolve_project_path(globals().get(\"out_dir\", signal_path.parent))",
+            code,
+        )
+        for stage in (
+            "00_input",
+            "01_background",
+            "02_premask",
+            "03_sersic",
+            "04_cutout",
+            "05_isophote_input",
+            "06_isophote_cutout",
+            "07_isophotes",
+            "10_psf",
+            "11_sbf",
+            "12_summary",
+            "13_color",
+        ):
+            self.assertIn(stage, code)
+
+    def test_additional_manifest_snapshot_and_runner_boundary(self):
+        manifest = CODE_DIR / "targets_additional_manifest.csv"
+        with manifest.open(newline="") as handle:
+            rows = list(csv.DictReader(handle))
+
+        self.assertEqual(len(rows), 125)
+        enabled = [row for row in rows if row["download_enabled"] == "true"]
+        self.assertEqual(len(enabled), 114)
+        self.assertEqual(
+            Counter(row["program"] for row in enabled),
+            Counter({"7763": 74, "5989": 38, "1176": 1, "6565": 1}),
+        )
+        self.assertEqual(
+            sum(
+                int(row["signal_content_length_bytes"])
+                + int(row["color_content_length_bytes"])
+                for row in enabled
+            ),
+            246_572_758_080,
+        )
+
+        actionable = batch.read_targets_from_csv(manifest, PROJECT_ROOT / "data")
+        self.assertEqual(len(actionable), 114)
+        self.assertNotIn("NGC 4926", {target["name"] for target in actionable})
+        self.assertNotIn("Cen A", {target["name"] for target in actionable})
+        m104 = next(target for target in actionable if target["name"] == "M104")
+        self.assertEqual(
+            (m104["signal_filter"], m104["color_filter"]),
+            ("F200W", "F090W"),
+        )
+
+    def test_download_manager_receives_only_parent_selected_targets(self):
+        args = Namespace(
+            no_download=False,
+            target_csv="targets.csv",
+            data_root="data",
+            batch_root="batch",
+            download_retry_seconds=120,
+            min_free_gb=30.0,
+            no_cleanup_inputs=True,
+        )
+        targets = [{"name": "NGC 1380"}, {"name": "M104"}]
+        with patch.object(batch.subprocess, "Popen") as popen:
+            batch.start_download_manager(args, targets, [])
+        command = popen.call_args.args[0]
+        selected = command[command.index("--galaxies") + 1 :]
+        self.assertEqual(selected, ["NGC 1380", "M104"])
+
+    def test_download_manager_is_terminated_at_parent_boundary(self):
+        process = Mock()
+        process.poll.return_value = None
+        batch.stop_download_manager(process, grace_seconds=1)
+        process.terminate.assert_called_once_with()
+        process.wait.assert_called_once_with(timeout=1)
+
+    def test_target_selection_is_shared_with_download_worker(self):
+        targets = [{"name": "A"}, {"name": "B"}, {"name": "C"}]
+        self.assertEqual(
+            batch.select_targets(targets, ["B"]),
+            [{"name": "B"}],
+        )
+        self.assertEqual(batch.select_targets(targets, None), targets)
+        self.assertEqual(batch.select_targets(targets, []), [])
+
+    def test_large_manifest_requires_explicit_selection(self):
+        targets = [{"name": f"target-{index}"} for index in range(15)]
+        with self.assertRaisesRegex(RuntimeError, "implicit bulk selection"):
+            batch.select_targets(targets, None)
+        self.assertEqual(
+            batch.select_targets(targets, None, allow_bulk_targets=True),
+            targets,
+        )
+
+    def test_disk_guard_accounts_for_next_transfer(self):
+        with patch.object(
+            batch,
+            "log_resources",
+            return_value=({"free_gb": 31.0, "total_gb": 100.0}, {}),
+        ):
+            self.assertFalse(
+                batch.ensure_disk_space_for_downloads(
+                    ".",
+                    [],
+                    min_free_gb=30.0,
+                    cleanup_enabled=False,
+                    required_bytes=2 * 1024**3,
+                )
+            )
+            self.assertTrue(
+                batch.ensure_disk_space_for_downloads(
+                    ".",
+                    [],
+                    min_free_gb=30.0,
+                    cleanup_enabled=False,
+                    required_bytes=512 * 1024**2,
+                )
+            )
+
+    def test_extended_manifest_skips_disabled_rows(self):
+        columns = [
+            "program,target,obsid,signal_filter,color_filter,signal_product,"
+            "color_product,signal_product_uri,color_product_uri,download_enabled,"
+            "availability_status,science_role,priority,public_release_date\n"
+        ]
+        columns.append(
+            "5989,READY,o001,F150W,F356W,ready-f150w_i2d.fits,"
+            "ready-f356w_i2d.fits,,,true,public,calibration,1,\n"
+        )
+        columns.append(
+            "8277,EMBARGOED,o001,F150W,F356W,held-f150w_i2d.fits,"
+            "held-f356w_i2d.fits,,,false,proprietary,hold,3,2027-06-01\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = Path(tmp) / "extended.csv"
+            manifest.write_text("".join(columns))
+            targets = batch.read_targets_from_csv(manifest, Path(tmp) / "data")
+
+        self.assertEqual([target["name"] for target in targets], ["READY"])
+        self.assertEqual(targets[0]["availability_status"], "public")
+        self.assertEqual(targets[0]["science_role"], "calibration")
+
+    def test_extended_manifest_rejects_bad_enabled_flag(self):
+        self.assertFalse(batch.manifest_row_enabled({"download_enabled": "no"}))
+        with self.assertRaisesRegex(ValueError, "invalid download_enabled"):
+            batch.manifest_row_enabled(
+                {"target": "bad", "download_enabled": "eventually"}
+            )
+
     def test_generic_manifest_matches_legacy_go3055_products(self):
         generic = batch.read_targets_from_csv(
             CODE_DIR / "targets_go3055_manifest.csv", PROJECT_ROOT / "data"
@@ -23,6 +187,7 @@ class BatchInputContractTests(unittest.TestCase):
 
         self.assertEqual(len(generic), 14)
         self.assertEqual(len(legacy), 14)
+        self.assertEqual(len(batch.select_targets(generic, None)), 14)
         for current, old in zip(generic, legacy):
             self.assertEqual(current["name"], old["name"])
             self.assertEqual(current["signal_product"], old["signal_product"])
@@ -289,9 +454,13 @@ class Sbf3NotebookContractTests(unittest.TestCase):
             if cell.get("cell_type") == "code":
                 compile("".join(cell.get("source", [])), f"cell-{number}", "exec")
 
-    def test_notebook_has_no_stale_outputs(self):
+    def test_notebook_has_no_stale_science_outputs(self):
         for cell in self.notebook["cells"]:
             if cell.get("cell_type") == "code":
+                if cell.get("id") == "d34c9dac":
+                    # The bootstrap cell intentionally records the resolved
+                    # interpreter/project roots for an interactive user.
+                    continue
                 self.assertIsNone(cell.get("execution_count"))
                 self.assertEqual(cell.get("outputs"), [])
 
