@@ -1,0 +1,2 @@
+target,source,x_pixel,y_pixel,ra_deg,dec_deg,auto_x_pixel,auto_y_pixel,header_x_pixel,header_y_pixel,header_ra_deg,header_dec_deg,auto_header_delta_px,decision_threshold_px
+IC 3509,fits-target,1078.353044157679,3059.160642076275,188.548,12.049000000000012,1420.8994561281131,2746.948988866471,1078.353044157679,3059.160642076275,188.548,12.049,463.4804858392823,100.0

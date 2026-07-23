@@ -1,0 +1,35 @@
+{
+  "galaxy": "NGC 4299",
+  "status": "failed",
+  "template_name": "sbf-3.ipynb",
+  "template_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/sbf-3.ipynb",
+  "template_sha256": "6f66f3df1e9817b434d59d3beab8f5504a9a568216bf2ec9466f0641a3c4cd9b",
+  "template_family": "sbf3",
+  "signal_filter": "F150W",
+  "color_filter": "F115W",
+  "signal_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4299/jw07763-o032_t032_nircam_clear-f150w_i2d.fits",
+  "color_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4299/jw07763-o032_t032_nircam_clear-f115w_i2d.fits",
+  "signal_fingerprint": {
+    "resolved_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4299/jw07763-o032_t032_nircam_clear-f150w_i2d.fits",
+    "size": 1215855360,
+    "mtime_ns": 1784483079781245072,
+    "device": 16777234,
+    "inode": 203918943
+  },
+  "color_fingerprint": {
+    "resolved_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4299/jw07763-o032_t032_nircam_clear-f115w_i2d.fits",
+    "size": 1216258560,
+    "mtime_ns": 1784486667701164199,
+    "device": 16777234,
+    "inode": 203942361
+  },
+  "input_pair_key": "19109bc3db0b",
+  "out_dir": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/products/NGC_4299/F150W__F115W/4a250d59c4d9",
+  "job_id": "job-4a250d59c4d9044492ab90318314e2f01a94413ef2381676847c1850142bcc78",
+  "signal_sha256": "84cf12ca977913c9dd386a1bb2e77e7f12b5f50c6f7fba053ac232dee16b8bfe",
+  "color_sha256": "3d5796055b52c2ff8976d24c8be8fecac705811d7f54dea29155090265c68648",
+  "worker_log_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/batch/NGC_4299__F150W__F115W__4a250d59c4d9_result.log",
+  "cell_timings_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/batch/NGC_4299__F150W__F115W__4a250d59c4d9_result_cell_timings.jsonl",
+  "error": "RuntimeError('[ISO] isolist too short after all datasets: 0; last_err=None; attempts=[ISO] dataset=real_only did not yield a working isolist: N=0, last_err=None | [ISO] dataset=filled_fallback did not yield a working isolist: N=0, last_err=None')",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/run_sbf_batch.py\", line 1399, in run_worker\n    result = execute_template_for_target(\n        template_path,\n    ...<10 lines>...\n        worker_log_path=log_path,\n    )\n  File \"/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/run_sbf_batch.py\", line 1127, in execute_template_for_target\n    exec(compile(source, f\"{template_path}:cell-{cell_no}\", \"exec\"), namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/sbf-3.ipynb:cell-28\", line 100, in <module>\nRuntimeError: [ISO] isolist too short after all datasets: 0; last_err=None; attempts=[ISO] dataset=real_only did not yield a working isolist: N=0, last_err=None | [ISO] dataset=filled_fallback did not yield a working isolist: N=0, last_err=None\n"
+}

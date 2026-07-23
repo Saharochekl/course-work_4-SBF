@@ -1,0 +1,35 @@
+{
+  "galaxy": "NGC 4479",
+  "status": "failed",
+  "template_name": "sbf-3.ipynb",
+  "template_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/sbf-3.ipynb",
+  "template_sha256": "23fd556bc3a871a72a2a6ce52b2b986d1882e72022c3f91edd5d44c88ea92417",
+  "template_family": "sbf3",
+  "signal_filter": "F150W",
+  "color_filter": "F115W",
+  "signal_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4479/jw07763-o037_t037_nircam_clear-f150w_i2d.fits",
+  "color_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4479/jw07763-o037_t037_nircam_clear-f115w_i2d.fits",
+  "signal_fingerprint": {
+    "resolved_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4479/jw07763-o037_t037_nircam_clear-f150w_i2d.fits",
+    "size": 1216258560,
+    "mtime_ns": 1784605252151562788,
+    "device": 16777234,
+    "inode": 204692168
+  },
+  "color_fingerprint": {
+    "resolved_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4479/jw07763-o037_t037_nircam_clear-f115w_i2d.fits",
+    "size": 1216258560,
+    "mtime_ns": 1784605992350111381,
+    "device": 16777234,
+    "inode": 204767081
+  },
+  "input_pair_key": "8e1c83a6a7ba",
+  "out_dir": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/products/NGC_4479/F150W__F115W/0f71e3086964",
+  "job_id": "job-0f71e30869646f89b188dd2b9812a22c24a5352994e2f90c82acba8e3da79a43",
+  "signal_sha256": "df551582c3582abbb59b615e4d4c7211359d0234d2edd10fed7f4083a0646556",
+  "color_sha256": "f925af4e858b505fab46f5f9ebf5054a573b7afe8c353a17736498c737705b5e",
+  "worker_log_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/batch/NGC_4479__F150W__F115W__0f71e3086964_result.log",
+  "cell_timings_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/batch/NGC_4479__F150W__F115W__0f71e3086964_result_cell_timings.jsonl",
+  "error": "RuntimeError('[ISO] isolist too short after all starts and datasets; last_err=None; attempts=dataset=real_only, fix_center=False: no working start | dataset=real_only, fix_center=True: no working start | dataset=filled_fallback, fix_center=False: no working start | dataset=filled_fallback, fix_center=True: no working start; details=/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/products/NGC_4479/F150W__F115W/0f71e3086964/jw07763-o037_t037_nircam_clear-f150w_i2d_07_isophotes_start_attempts.csv')",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/run_sbf_batch.py\", line 1466, in run_worker\n    result = execute_template_for_target(\n        template_path,\n    ...<10 lines>...\n        worker_log_path=log_path,\n    )\n  File \"/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/run_sbf_batch.py\", line 1174, in execute_template_for_target\n    exec(compile(source, f\"{template_path}:cell-{cell_no}\", \"exec\"), namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/sbf-3.ipynb:cell-28\", line 172, in <module>\nRuntimeError: [ISO] isolist too short after all starts and datasets; last_err=None; attempts=dataset=real_only, fix_center=False: no working start | dataset=real_only, fix_center=True: no working start | dataset=filled_fallback, fix_center=False: no working start | dataset=filled_fallback, fix_center=True: no working start; details=/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/products/NGC_4479/F150W__F115W/0f71e3086964/jw07763-o037_t037_nircam_clear-f150w_i2d_07_isophotes_start_attempts.csv\n"
+}

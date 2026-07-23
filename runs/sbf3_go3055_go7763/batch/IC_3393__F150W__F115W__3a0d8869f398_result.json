@@ -1,0 +1,35 @@
+{
+  "galaxy": "IC 3393",
+  "status": "failed",
+  "template_name": "sbf-3.ipynb",
+  "template_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/sbf-3.ipynb",
+  "template_sha256": "35eb0371fbff7cdd8e9cb6b82cfd3e488b2b804809cfa0d8762867b555dcc1d9",
+  "template_family": "sbf3",
+  "signal_filter": "F150W",
+  "color_filter": "F115W",
+  "signal_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3393/jw07763-o058_t058_nircam_clear-f150w_i2d.fits",
+  "color_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3393/jw07763-o058_t058_nircam_clear-f115w_i2d.fits",
+  "signal_fingerprint": {
+    "resolved_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3393/jw07763-o058_t058_nircam_clear-f150w_i2d.fits",
+    "size": 1216137600,
+    "mtime_ns": 1784402327474036180,
+    "device": 16777234,
+    "inode": 203586074
+  },
+  "color_fingerprint": {
+    "resolved_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3393/jw07763-o058_t058_nircam_clear-f115w_i2d.fits",
+    "size": 1216258560,
+    "mtime_ns": 1784402344242611844,
+    "device": 16777234,
+    "inode": 203586494
+  },
+  "input_pair_key": "4ae39a574732",
+  "out_dir": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/products/IC_3393/F150W__F115W/3a0d8869f398",
+  "job_id": "job-3a0d8869f3985ec93a9d1e8759fa34fbd3df45746f7b69578a1dee06051ed566",
+  "signal_sha256": "033a8dd649fc1b1d61e3a9c035cf49eb6d3d7245aa1ad485441104359f8d4424",
+  "color_sha256": "db9c02702587fbf75bc6253422e47a7624ba034d025a270084bba4cc1b36cc33",
+  "worker_log_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/batch/IC_3393__F150W__F115W__3a0d8869f398_result.log",
+  "cell_timings_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/batch/IC_3393__F150W__F115W__3a0d8869f398_result_cell_timings.jsonl",
+  "error": "RuntimeError('[ISO] isolist too short after all datasets: 0; last_err=None; attempts=[ISO] dataset=real_only did not yield a working isolist: N=0, last_err=None | [ISO] dataset=filled_fallback did not yield a working isolist: N=0, last_err=None')",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/run_sbf_batch.py\", line 1399, in run_worker\n    result = execute_template_for_target(\n        template_path,\n    ...<10 lines>...\n        worker_log_path=log_path,\n    )\n  File \"/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/run_sbf_batch.py\", line 1127, in execute_template_for_target\n    exec(compile(source, f\"{template_path}:cell-{cell_no}\", \"exec\"), namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/sbf-3.ipynb:cell-28\", line 100, in <module>\nRuntimeError: [ISO] isolist too short after all datasets: 0; last_err=None; attempts=[ISO] dataset=real_only did not yield a working isolist: N=0, last_err=None | [ISO] dataset=filled_fallback did not yield a working isolist: N=0, last_err=None\n"
+}

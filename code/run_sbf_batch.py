@@ -5,8 +5,12 @@ import builtins
 import csv
 import gc
 import hashlib
+import importlib.metadata
+import io
 import json
 import os
+import platform
+import shlex
 import shutil
 import subprocess
 import sys
@@ -18,6 +22,31 @@ from pathlib import Path
 import numpy as np
 from astropy.io import fits
 
+from sbf_campaign_state import CampaignState, canonical_sha256, stable_job_id
+from sbf_campaign_runtime import (
+    Deadline,
+    SignalController,
+    atomic_write_json,
+    atomic_write_text,
+    build_artifact_manifest,
+    launch_process_group,
+    supervise_process,
+    terminate_process_group,
+)
+from sbf_target_status import (
+    PRIMARY_QUANTITY,
+    annulus_qc,
+    ensure_target_rows,
+    find_legacy_reusable_result,
+    measurement_method as target_status_measurement_method,
+    read_target_status,
+    science_status_fields,
+    reusable_result_from_status,
+    target_status_key,
+    update_target_status,
+    write_target_status,
+)
+
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
@@ -25,6 +54,8 @@ DEFAULT_TEMPLATE = SCRIPT_DIR / "sbf-2.ipynb"
 DEFAULT_DATA_ROOT = PROJECT_ROOT / "data"
 DEFAULT_BATCH_ROOT = SCRIPT_DIR / "sbf2_batch_outputs"
 DEFAULT_TARGET_CSV = SCRIPT_DIR / "targets_go3055_manifest.csv"
+DEFAULT_LEGACY_SBF2_RESULTS_ROOT = SCRIPT_DIR / "sbf2_batch_outputs"
+TARGET_STATUS_FILENAME = "target_status.csv"
 MAST_DOWNLOAD_PREFIX = "https://mast.stsci.edu/api/v0.1/Download/file?uri="
 DEFAULT_SIGNAL_FILTER = "F150W"
 DEFAULT_COLOR_FILTER = "F090W"
@@ -32,6 +63,27 @@ CURRENT_NOTEBOOK_FILTER_PAIR = (DEFAULT_SIGNAL_FILTER, DEFAULT_COLOR_FILTER)
 SBF2_NOTEBOOK_FAMILY = "sbf2"
 SBF3_NOTEBOOK_FAMILY = "sbf3"
 MAX_IMPLICIT_TARGETS = 14
+_ACTIVE_CAMPAIGN_LOCK = None
+SBF3_REQUIRED_FITS_KEYS = (
+    "clean_model_fits",
+    "clean_isophotes_fits",
+    "full_residual_fits",
+    "working_residual_fits",
+    "working_annuli_residual_fits",
+)
+
+
+CLI_PATH_ARGUMENTS = (
+    "template",
+    "data_root",
+    "batch_root",
+    "products_root",
+    "campaign_root",
+    "target_csv",
+    "external_download_status",
+    "signal",
+    "color",
+)
 
 
 TARGETS = [
@@ -80,11 +132,121 @@ def timestamp():
     return time.strftime("%Y-%m-%d %H:%M:%S")
 
 
+def resolve_cli_path(value):
+    """Resolve relative CLI paths against the repository, never the shell CWD."""
+    if value in (None, ""):
+        return value
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = PROJECT_ROOT / path
+    return str(path.resolve())
+
+
+def normalize_cli_paths(args):
+    """Make one command behave identically from PROJECT_ROOT and code/."""
+    for name in CLI_PATH_ARGUMENTS:
+        value = getattr(args, name, None)
+        if value not in (None, ""):
+            setattr(args, name, resolve_cli_path(value))
+    extras = getattr(args, "extra_target_csv", None)
+    if extras:
+        args.extra_target_csv = [resolve_cli_path(value) for value in extras]
+    return args
+
+
+def append_jsonl(path, payload):
+    """Append one durable, human-readable JSON event."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    line = json.dumps(as_builtin(payload), ensure_ascii=False, sort_keys=False)
+    with path.open("a", encoding="utf-8", buffering=1) as handle:
+        handle.write(line + "\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+
+
+def emit_campaign_event(
+    event_log_path,
+    event_type,
+    *,
+    state=None,
+    run_id=None,
+    job_id=None,
+    attempt_id=None,
+    payload=None,
+):
+    """Mirror a campaign event to JSONL and, when available, SQLite."""
+    event_payload = as_builtin(payload or {})
+    record = {
+        "timestamp": timestamp(),
+        "timestamp_unix": time.time(),
+        "event_type": event_type,
+        "run_id": run_id,
+        "job_id": job_id,
+        "attempt_id": attempt_id,
+        "payload": event_payload,
+    }
+    if event_log_path is not None:
+        append_jsonl(event_log_path, record)
+    if state is not None and run_id is not None:
+        state.append_event(
+            run_id,
+            job_id=job_id,
+            attempt_id=attempt_id,
+            event_type=event_type,
+            payload=event_payload,
+        )
+    return record
+
+
+def acquire_campaign_lock(campaign_root):
+    """Hold a non-blocking OS lock so two parents cannot own one campaign."""
+    import fcntl
+
+    lock_path = Path(campaign_root) / "parent.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    handle = lock_path.open("a+", encoding="utf-8")
+    try:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        handle.seek(0)
+        owner = handle.read().strip() or "unknown owner"
+        handle.close()
+        raise RuntimeError(
+            f"campaign already has an active parent ({owner}): {lock_path}"
+        )
+    handle.seek(0)
+    handle.truncate()
+    handle.write(
+        json.dumps(
+            {"pid": os.getpid(), "started": timestamp()},
+            ensure_ascii=False,
+        )
+        + "\n"
+    )
+    handle.flush()
+    os.fsync(handle.fileno())
+    return handle
+
+
+def release_campaign_lock(handle):
+    if handle is None or handle.closed:
+        return
+    try:
+        import fcntl
+
+        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+    finally:
+        handle.close()
+
+
 def as_builtin(value):
     if isinstance(value, Path):
         return str(value)
     if isinstance(value, np.generic):
-        return value.item()
+        return as_builtin(value.item())
+    if isinstance(value, float) and not np.isfinite(value):
+        return None
     if isinstance(value, np.ndarray):
         return value.tolist()
     if isinstance(value, dict):
@@ -357,15 +519,20 @@ def target_output_dir(
     color_filter=None,
     signal_fingerprint=None,
     color_fingerprint=None,
+    job_id=None,
 ):
     if products_root is None:
         return Path(signal_path).resolve().parent
     pair_label = f"{signal_filter or 'signal'}__{color_filter or 'color'}"
-    pair_key = input_pair_key(
-        signal_path,
-        color_path,
-        signal_fingerprint=signal_fingerprint,
-        color_fingerprint=color_fingerprint,
+    pair_key = (
+        str(job_id).removeprefix("job-")[:12]
+        if job_id
+        else input_pair_key(
+            signal_path,
+            color_path,
+            signal_fingerprint=signal_fingerprint,
+            color_fingerprint=color_fingerprint,
+        )
     )
     return (
         Path(products_root).resolve()
@@ -377,12 +544,17 @@ def target_output_dir(
 
 def result_json_path(batch_root, galaxy, identity=None):
     if identity and identity.get("template_family") == SBF3_NOTEBOOK_FAMILY:
+        run_key = (
+            str(identity["job_id"]).removeprefix("job-")[:12]
+            if identity.get("job_id")
+            else identity["input_pair_key"]
+        )
         run_label = "__".join(
             [
                 slug(galaxy),
                 slug(identity["signal_filter"]),
                 slug(identity["color_filter"]),
-                identity["input_pair_key"],
+                run_key,
             ]
         )
         return Path(batch_root) / f"{run_label}_result.json"
@@ -395,6 +567,7 @@ def expected_run_identity(
     signal_path,
     color_path,
     products_root=None,
+    job_id=None,
 ):
     template_path = Path(template_path).resolve()
     signal_path = Path(signal_path).resolve()
@@ -407,7 +580,8 @@ def expected_run_identity(
         signal_fingerprint=signal_fingerprint,
         color_fingerprint=color_fingerprint,
     )
-    return {
+    identity = {
+        "galaxy": target["name"],
         "template_name": template_path.name,
         "template_path": str(template_path),
         "template_sha256": sha256_file(template_path),
@@ -429,13 +603,48 @@ def expected_run_identity(
                 color_filter=target["color_filter"],
                 signal_fingerprint=signal_fingerprint,
                 color_fingerprint=color_fingerprint,
+                job_id=job_id,
             )
         ),
     }
+    if job_id:
+        identity["job_id"] = str(job_id)
+    return identity
 
 
 def result_matches_identity(result, identity):
-    return all(result.get(key) == value for key, value in identity.items())
+    """Match reusable science inputs while treating notebook details as provenance."""
+    if "galaxy" in identity and (
+        " ".join(str(result.get("galaxy") or "").upper().split())
+        != " ".join(str(identity["galaxy"]).upper().split())
+    ):
+        return False
+    for key in ("signal_filter", "color_filter"):
+        if str(result.get(key) or "").strip().upper() != str(
+            identity.get(key) or ""
+        ).strip().upper():
+            return False
+    if identity.get("job_id") and result.get("job_id") != identity.get("job_id"):
+        return False
+    for role in ("signal", "color"):
+        current = identity.get(f"{role}_fingerprint") or {}
+        recorded = result.get(f"{role}_fingerprint") or {}
+        if current.get("size") is None:
+            # A completed target remains reusable after deliberate input cleanup.
+            current_name = Path(identity.get(f"{role}_path") or "").name
+            recorded_name = Path(result.get(f"{role}_path") or "").name
+            if current_name != recorded_name:
+                return False
+            continue
+        if recorded == current:
+            continue
+        recorded_sha = result.get(f"{role}_sha256")
+        current_path = Path(identity.get(f"{role}_path") or "")
+        if not recorded_sha or not current_path.is_file():
+            return False
+        if sha256_file(current_path) != recorded_sha:
+            return False
+    return True
 
 
 def final_result_for(target, batch_root, identity=None, allow_legacy=False):
@@ -610,6 +819,10 @@ def read_targets_from_csv(csv_path, data_root):
                     "color_filter": color_filter,
                     "signal_product": signal_product,
                     "color_product": color_product,
+                    "signal_product_uri": row.get("signal_product_uri")
+                    or f"mast:JWST/product/{signal_product}",
+                    "color_product_uri": row.get("color_product_uri")
+                    or f"mast:JWST/product/{color_product}",
                     "signal_url": signal_url,
                     "color_url": color_url,
                     "signal_size": signal_size,
@@ -641,6 +854,130 @@ def read_targets_from_csv(csv_path, data_root):
     return rows
 
 
+def target_csv_paths(target_csv=None, extra_target_csvs=None):
+    """Resolve one legacy manifest plus any additional manifests."""
+    values = []
+    if isinstance(target_csv, (list, tuple)):
+        values.extend(target_csv)
+    elif target_csv:
+        values.append(target_csv)
+    values.extend(extra_target_csvs or [])
+    if not values:
+        values.append(DEFAULT_TARGET_CSV)
+
+    paths = []
+    seen = set()
+    for value in values:
+        path = Path(resolve_cli_path(value))
+        key = str(path)
+        if key not in seen:
+            paths.append(path)
+            seen.add(key)
+    return paths
+
+
+def canonical_program(value):
+    text = str(value or "").strip().upper()
+    if text.startswith("GO-"):
+        text = text[3:]
+    elif text.startswith("GO"):
+        text = text[2:]
+    text = text.strip()
+    if text.isdigit():
+        return str(int(text))
+    return text
+
+
+def archive_target_identity(target):
+    target = normalize_target(target)
+    return canonical_sha256(
+        {
+            "target": " ".join(target["name"].casefold().split()),
+            "program": canonical_program(target.get("program")),
+            "obsid": str(target.get("obsid") or "").strip().casefold(),
+            "product_uris": {
+                role: str(uri or "").strip()
+                for role, uri in campaign_product_uris(target).items()
+            },
+            "filters": {
+                "signal": target["signal_filter"],
+                "color": target["color_filter"],
+            },
+        }
+    )
+
+
+def deduplicate_manifest_targets(targets, data_root):
+    """Deduplicate identical rows and reject ambiguous local destinations."""
+    unique = []
+    by_identity = {}
+    destination_claims = {}
+
+    for raw_target in targets:
+        target = normalize_target(raw_target)
+        target["program"] = canonical_program(target.get("program"))
+        identity = archive_target_identity(target)
+        previous = by_identity.get(identity)
+        if previous is not None:
+            conflicting = []
+            for key in (
+                "signal_product",
+                "color_product",
+                "signal_size",
+                "color_size",
+            ):
+                left = previous.get(key)
+                right = target.get(key)
+                if left not in (None, "") and right not in (None, "") and left != right:
+                    conflicting.append(f"{key}={left!r}/{right!r}")
+            if conflicting:
+                raise ValueError(
+                    f"conflicting duplicate archive target {target['name']}: "
+                    + ", ".join(conflicting)
+                )
+            sources = list(previous.get("source_csvs") or [])
+            for source in (previous.get("source_csv"), target.get("source_csv")):
+                if source and source not in sources:
+                    sources.append(source)
+            previous["source_csvs"] = sources
+            continue
+
+        files = local_target_files(target, data_root)
+        uris = campaign_product_uris(target)
+        for role, path in files.items():
+            destination = str(path.resolve())
+            claim = {
+                "uri": str(uris.get(role) or "").strip(),
+                "filter": target[f"{role}_filter"],
+                "target": target["name"],
+                "role": role,
+            }
+            old_claim = destination_claims.get(destination)
+            if old_claim is not None and (
+                old_claim["uri"] != claim["uri"]
+                or old_claim["filter"] != claim["filter"]
+            ):
+                raise ValueError(
+                    f"local FITS destination has conflicting claims: {destination}; "
+                    f"{old_claim} versus {claim}"
+                )
+            destination_claims[destination] = claim
+
+        sources = [target["source_csv"]] if target.get("source_csv") else []
+        target["source_csvs"] = sources
+        by_identity[identity] = target
+        unique.append(target)
+    return unique
+
+
+def load_manifest_targets(target_csv, data_root, extra_target_csvs=None):
+    paths = target_csv_paths(target_csv, extra_target_csvs)
+    targets = []
+    for path in paths:
+        targets.extend(read_targets_from_csv(path, data_root))
+    return deduplicate_manifest_targets(merge_known_targets(targets), data_root)
+
+
 def merge_known_targets(targets):
     known = {target["name"]: normalize_target(target) for target in TARGETS}
     merged = []
@@ -649,6 +986,8 @@ def merge_known_targets(targets):
         if item["name"] in known:
             known_item = known[item["name"]]
             for key, value in known_item.items():
+                if key in {"signal_size", "color_size"}:
+                    continue
                 if item.get(key) in (None, ""):
                     item[key] = value
             for role in ("signal", "color"):
@@ -656,7 +995,7 @@ def merge_known_targets(targets):
                 product_key = f"{role}_product"
                 if (
                     item.get(size_key) in (None, "")
-                    or item.get(product_key) == known_item.get(product_key)
+                    and item.get(product_key) == known_item.get(product_key)
                 ):
                     item[size_key] = known_item.get(size_key, item.get(size_key))
         merged.append(item)
@@ -682,7 +1021,15 @@ def notebook_code_cells(template_path):
     cells = []
     for cell_no, cell in enumerate(data["cells"], start=1):
         if cell.get("cell_type") == "code":
-            cells.append((cell_no, "".join(cell.get("source", []))))
+            source = "".join(cell.get("source", []))
+            cells.append(
+                (
+                    cell_no,
+                    str(cell.get("id") or ""),
+                    hashlib.sha256(source.encode("utf-8")).hexdigest(),
+                    source,
+                )
+            )
     return cells
 
 
@@ -724,8 +1071,29 @@ def override_target_namespace(
     namespace["out_dir"].mkdir(parents=True, exist_ok=True)
 
 
-def result_paths(out_dir, stem, pipeline_label="sbf2"):
+def result_paths(
+    out_dir,
+    stem,
+    pipeline_label="sbf2",
+    notebook_family_label=None,
+):
     out_dir = Path(out_dir)
+    family = str(notebook_family_label or pipeline_label).lower()
+    family = family.replace("-", "").replace("_", "")
+    if family == SBF3_NOTEBOOK_FAMILY:
+        return {
+            "clean_model_fits": out_dir / f"{stem}_01_модель_чистая.fits",
+            "clean_isophotes_fits": out_dir
+            / f"{stem}_02_изофоты_чистые.fits",
+            "full_residual_fits": out_dir / f"{stem}_03_остатки_общие.fits",
+            "working_residual_fits": out_dir
+            / f"{stem}_04_остатки_общие_рабочие.fits",
+            "working_annuli_residual_fits": out_dir
+            / f"{stem}_05_остатки_общие_рабочие_два_кольца.fits",
+            "df_sbf_csv": out_dir / f"{stem}_{pipeline_label}_df_sbf.csv",
+            "annulus_summary_csv": out_dir
+            / f"{stem}_{pipeline_label}_annulus_summary.csv",
+        }
     return {
         "model_full_fits": out_dir / f"{stem}_sbf_model_full.fits",
         "science_residual_fits": out_dir / f"{stem}_sbf_resid_full_science.fits",
@@ -749,9 +1117,14 @@ def execute_template_for_target(
     signal_filter=DEFAULT_SIGNAL_FILTER,
     color_filter=DEFAULT_COLOR_FILTER,
     output_dir=None,
+    job_id=None,
+    input_sha256=None,
+    cell_timings_path=None,
+    worker_log_path=None,
 ):
     template_path = Path(template_path).resolve()
     pipeline_label = template_path.stem.replace("-", "").replace("_", "")
+    pipeline_family = notebook_family(template_path)
     signal_fingerprint = input_fingerprint(signal_path)
     color_fingerprint = input_fingerprint(color_path)
     pair_key = input_pair_key(
@@ -776,13 +1149,64 @@ def execute_template_for_target(
     namespace["display"] = make_display(namespace)
     code_cells = notebook_code_cells(template_path)
 
-    for cell_no, source in code_cells:
-        print(f"[{timestamp()}] executing {template_path.name} cell {cell_no}")
+    for cell_no, cell_id, cell_sha256, source in code_cells:
+        cell_started = time.monotonic()
+        cell_base = {
+            "timestamp": timestamp(),
+            "worker_pid": os.getpid(),
+            "job_id": job_id,
+            "galaxy": galaxy,
+            "notebook": template_path.name,
+            "cell_no": cell_no,
+            "cell_id": cell_id or None,
+            "cell_sha256": cell_sha256,
+        }
+        print(
+            f"[{timestamp()}] [CELL_START] {template_path.name} cell {cell_no} "
+            f"id={cell_id or '-'} sha256={cell_sha256[:12]}"
+        )
+        if cell_timings_path is not None:
+            append_jsonl(
+                cell_timings_path,
+                {**cell_base, "event_type": "CELL_START", "status": "running"},
+            )
         try:
             exec(compile(source, f"{template_path}:cell-{cell_no}", "exec"), namespace)
-        except Exception:
-            print(f"[{timestamp()}] failed in {template_path.name} cell {cell_no}")
+        except Exception as exc:
+            duration = time.monotonic() - cell_started
+            print(
+                f"[{timestamp()}] [CELL_FAILED] {template_path.name} cell {cell_no} "
+                f"after {duration:.3f}s: {exc!r}"
+            )
+            if cell_timings_path is not None:
+                append_jsonl(
+                    cell_timings_path,
+                    {
+                        **cell_base,
+                        "timestamp": timestamp(),
+                        "event_type": "CELL_FAILED",
+                        "status": "failed",
+                        "duration_seconds": duration,
+                        "error": repr(exc),
+                    },
+                )
             raise
+        duration = time.monotonic() - cell_started
+        print(
+            f"[{timestamp()}] [CELL_END] {template_path.name} cell {cell_no} "
+            f"status=ok duration={duration:.3f}s"
+        )
+        if cell_timings_path is not None:
+            append_jsonl(
+                cell_timings_path,
+                {
+                    **cell_base,
+                    "timestamp": timestamp(),
+                    "event_type": "CELL_END",
+                    "status": "ok",
+                    "duration_seconds": duration,
+                },
+            )
 
         # The frozen sbf-2 parameter cell overwrites injected values. Reapply
         # them only for that legacy cell; sbf-3 preserves preseeded globals.
@@ -807,7 +1231,28 @@ def execute_template_for_target(
 
     out_dir = Path(namespace["out_dir"])
     stem = namespace["stem"]
-    paths = result_paths(out_dir, stem, pipeline_label=pipeline_label)
+    paths = result_paths(
+        out_dir,
+        stem,
+        pipeline_label=pipeline_label,
+        notebook_family_label=pipeline_family,
+    )
+
+    if pipeline_family == SBF3_NOTEBOOK_FAMILY:
+        product_errors = []
+        for key in SBF3_REQUIRED_FITS_KEYS:
+            product_path = paths[key]
+            if not product_path.exists():
+                product_errors.append(f"{key}: missing {product_path}")
+                continue
+            readable, read_error = fits_is_readable(product_path)
+            if not readable:
+                product_errors.append(f"{key}: unreadable {product_path}: {read_error}")
+        if product_errors:
+            raise RuntimeError(
+                "sbf-3 did not produce the required five FITS products: "
+                + " | ".join(product_errors)
+            )
 
     df_sbf = namespace.get("df_sbf")
     if df_sbf is not None:
@@ -823,7 +1268,7 @@ def execute_template_for_target(
         "template_name": template_path.name,
         "template_path": str(template_path),
         "template_sha256": sha256_file(template_path),
-        "template_family": notebook_family(template_path),
+        "template_family": pipeline_family,
         "signal_filter": signal_filter,
         "color_filter": color_filter,
         "color_name": f"{color_filter}-{signal_filter}",
@@ -835,7 +1280,18 @@ def execute_template_for_target(
         "out_dir": str(out_dir.resolve()),
         "stem": stem,
     }
+    if input_sha256:
+        result["signal_sha256"] = input_sha256.get("signal")
+        result["color_sha256"] = input_sha256.get("color")
+    if cell_timings_path is not None:
+        result["cell_timings_path"] = str(Path(cell_timings_path).resolve())
+    if worker_log_path is not None:
+        result["worker_log_path"] = str(Path(worker_log_path).resolve())
+    if job_id:
+        result["job_id"] = str(job_id)
     namespace_metadata = {
+        "pipeline_version": "PIPELINE_VERSION",
+        "siaf_prd_version": "LOCAL_SIAF_PRD_VERSION",
         "input_family": "INPUT_FAMILY",
         "signal_bunit": "signal_bunit",
         "color_bunit": "color_bunit",
@@ -847,7 +1303,18 @@ def execute_template_for_target(
         "science_pixel_scale_arcsec": "science_pixel_scale_arcsec",
         "psf_pixel_scale_arcsec": "psf_pixel_scale_arcsec",
         "psf_scale_rel_error": "psf_scale_rel_error",
+        "psf_native_scale_rel_error": "psf_native_scale_rel_error",
+        "psf_method_id": "psf_method_id",
+        "psf_method_limitations": "psf_method_limitations",
+        "psf_detector_set": "psf_detector_set",
+        "psf_input_count": "psf_input_count",
+        "psf_selected_extension": "psf_selected_ext",
+        "opd_corr_id": "opd_corr_id",
+        "opd_signed_delta_days": "opd_signed_delta_days",
         "opd_delta_days": "opd_delta_days",
+        "selected_sbf_region": "selected_sbf_region",
+        "selected_sbf_selection_method": "selected_sbf_selection_method",
+        "selected_color_index": "selected_color",
     }
     for result_key, namespace_key in namespace_metadata.items():
         if namespace_key in namespace:
@@ -864,7 +1331,14 @@ def execute_template_for_target(
     color_summary = namespace.get("df_color_summary")
     if color_summary is not None and len(color_summary) > 0:
         try:
-            row0 = color_summary.iloc[0].to_dict()
+            selected_color_rows = color_summary
+            if "selected_for_final" in color_summary.columns:
+                selected_color_rows = color_summary[
+                    color_summary["selected_for_final"].fillna(False).astype(bool)
+                ]
+            if selected_color_rows.empty:
+                raise ValueError("no color row selected for final result")
+            row0 = selected_color_rows.iloc[0].to_dict()
             color_value = as_builtin(
                 row0.get("color_index", row0.get("color_F090W_F150W"))
             )
@@ -875,14 +1349,49 @@ def execute_template_for_target(
         except Exception:
             pass
 
-    batch_root.mkdir(parents=True, exist_ok=True)
     result_json = result_json_path(batch_root, galaxy, identity=result)
-    result_json.write_text(json.dumps(as_builtin(result), ensure_ascii=False, indent=2))
+    if pipeline_family == SBF3_NOTEBOOK_FAMILY:
+        required_artifacts = {
+            key: Path(result[key]) for key in SBF3_REQUIRED_FITS_KEYS
+        }
+        artifact_manifest = build_artifact_manifest(
+            required_artifacts,
+            base_dir=out_dir,
+            include_sha256=True,
+            validate_fits=True,
+            require_astropy=True,
+        )
+        if not artifact_manifest["ok"] or artifact_manifest["count"] != len(
+            SBF3_REQUIRED_FITS_KEYS
+        ):
+            raise RuntimeError(
+                "required FITS failed the final artifact/hash gate: "
+                + " | ".join(
+                    f"{item['name']}: {item.get('fits_error') or item.get('error')}"
+                    for item in artifact_manifest["artifacts"]
+                    if not item.get("ok")
+                )
+            )
+        manifest_path = (
+            Path(batch_root)
+            / "artifact_manifests"
+            / f"{result_json.stem}_artifacts.json"
+        )
+        atomic_write_json(manifest_path, artifact_manifest)
+        result["artifacts_verified"] = True
+        result["artifacts_verified_at"] = artifact_manifest["created_at_utc"]
+        result["artifact_manifest_path"] = str(manifest_path.resolve())
+        result["artifact_count"] = artifact_manifest["count"]
+        result["artifact_manifest"] = artifact_manifest["artifacts"]
+
+    batch_root.mkdir(parents=True, exist_ok=True)
+    atomic_write_json(result_json, as_builtin(result), sort_keys=False)
     print(f"[{timestamp()}] wrote result {result_json}")
     return result
 
 
 def run_worker(args):
+    normalize_cli_paths(args)
     template_path = Path(args.template).resolve()
     batch_root = Path(args.batch_root).resolve()
     batch_root.mkdir(parents=True, exist_ok=True)
@@ -903,10 +1412,14 @@ def run_worker(args):
         args.signal,
         args.color,
         products_root=args.products_root,
+        job_id=args.job_id,
     )
     log_path = result_json_path(
         batch_root, args.galaxy, identity=worker_identity
     ).with_suffix(".log")
+    cell_timings_path = log_path.with_name(
+        f"{log_path.stem}_cell_timings.jsonl"
+    )
     output_dir = target_output_dir(
         args.galaxy,
         args.signal,
@@ -916,19 +1429,39 @@ def run_worker(args):
         color_filter=color_filter,
         signal_fingerprint=worker_identity["signal_fingerprint"],
         color_fingerprint=worker_identity["color_fingerprint"],
+        job_id=args.job_id,
     )
 
     with log_path.open("a") as log_file:
         tee_out = Tee(sys.stdout, log_file)
         tee_err = Tee(sys.stderr, log_file)
         with redirect_stdout(tee_out), redirect_stderr(tee_err):
-            print(f"[{timestamp()}] worker start: {args.galaxy}")
+            print("=" * 88)
+            print(
+                f"[{timestamp()}] worker start: {args.galaxy}; pid={os.getpid()}; "
+                f"job_id={args.job_id or '-'}"
+            )
+            print(f"[{timestamp()}] command: {shlex.join(sys.argv)}")
+            print(f"[{timestamp()}] template: {template_path} sha256={sha256_file(template_path)}")
+            print(f"[{timestamp()}] signal: {signal_filter} {Path(args.signal).resolve()}")
+            print(f"[{timestamp()}] color:  {color_filter} {Path(args.color).resolve()}")
+            print(f"[{timestamp()}] output directory: {output_dir}")
+            print(f"[{timestamp()}] cell timings: {cell_timings_path}")
+            input_hashes = {}
             try:
                 validate_run_layout(
                     template_path, batch_root, args.products_root
                 )
                 validate_notebook_filter_pair(
                     template_path, signal_filter, color_filter
+                )
+                input_hashes = {
+                    "signal": sha256_file(args.signal),
+                    "color": sha256_file(args.color),
+                }
+                print(
+                    f"[{timestamp()}] input SHA256: "
+                    f"signal={input_hashes['signal']} color={input_hashes['color']}"
                 )
                 result = execute_template_for_target(
                     template_path,
@@ -939,6 +1472,10 @@ def run_worker(args):
                     signal_filter=signal_filter,
                     color_filter=color_filter,
                     output_dir=output_dir,
+                    job_id=args.job_id,
+                    input_sha256=input_hashes,
+                    cell_timings_path=cell_timings_path,
+                    worker_log_path=log_path,
                 )
                 print(
                     f"[{timestamp()}] worker done: {args.galaxy} "
@@ -951,13 +1488,17 @@ def run_worker(args):
                     "galaxy": args.galaxy,
                     "status": "failed",
                     **worker_identity,
+                    "signal_sha256": input_hashes.get("signal"),
+                    "color_sha256": input_hashes.get("color"),
+                    "worker_log_path": str(log_path.resolve()),
+                    "cell_timings_path": str(cell_timings_path.resolve()),
                     "error": repr(exc),
                     "traceback": traceback.format_exc(),
                 }
                 err_path = result_json_path(
                     batch_root, args.galaxy, identity=err
                 )
-                err_path.write_text(json.dumps(err, ensure_ascii=False, indent=2))
+                atomic_write_json(err_path, err, sort_keys=False)
                 print(err["traceback"])
                 print(f"[{timestamp()}] worker failed: {args.galaxy}")
                 return 1
@@ -967,7 +1508,7 @@ def write_summary(results, batch_root):
     batch_root = Path(batch_root)
     csv_path = batch_root / "sbf2_batch_results.csv"
     json_path = batch_root / "sbf2_batch_results.json"
-    json_path.write_text(json.dumps(as_builtin(results), ensure_ascii=False, indent=2))
+    atomic_write_json(json_path, as_builtin(results), sort_keys=False)
 
     keys = []
     for result in results:
@@ -975,11 +1516,12 @@ def write_summary(results, batch_root):
             if key not in keys:
                 keys.append(key)
 
-    with csv_path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=keys)
-        writer.writeheader()
-        for result in results:
-            writer.writerow({key: result.get(key, "") for key in keys})
+    buffer = io.StringIO(newline="")
+    writer = csv.DictWriter(buffer, fieldnames=keys)
+    writer.writeheader()
+    for result in results:
+        writer.writerow({key: result.get(key, "") for key in keys})
+    atomic_write_text(csv_path, buffer.getvalue())
 
     print(f"[{timestamp()}] summary CSV  -> {csv_path}")
     print(f"[{timestamp()}] summary JSON -> {json_path}")
@@ -989,16 +1531,47 @@ def write_summary(results, batch_root):
 def link_residuals(results, batch_root):
     residual_dir = Path(batch_root) / "residuals"
     residual_dir.mkdir(parents=True, exist_ok=True)
+    name_counts = {}
+    for result in results:
+        if result.get("status") == "ok":
+            key = slug(result["galaxy"])
+            name_counts[key] = name_counts.get(key, 0) + 1
     for result in results:
         if result.get("status") != "ok":
             continue
-        galaxy_slug = slug(result["galaxy"])
-        for key in [
-            "science_residual_fits",
-            "inner_usable_residual_fits",
-            "outer_usable_residual_fits",
-        ]:
-            src = Path(result.get(key, ""))
+        base_galaxy_slug = slug(result["galaxy"])
+        galaxy_slug = base_galaxy_slug
+        if name_counts.get(base_galaxy_slug, 0) > 1:
+            run_key = str(result.get("job_id") or result.get("input_pair_key") or "run")
+            run_key = run_key.removeprefix("job-")[:12]
+            galaxy_slug = "__".join(
+                [
+                    base_galaxy_slug,
+                    slug(result.get("signal_filter") or "signal"),
+                    slug(result.get("color_filter") or "color"),
+                    run_key,
+                ]
+            )
+        if result.get("template_family") == SBF3_NOTEBOOK_FAMILY:
+            residual_keys = [
+                "working_residual_fits",
+                "working_annuli_residual_fits",
+            ]
+        else:
+            residual_keys = [
+                "science_residual_fits",
+                "inner_usable_residual_fits",
+                "outer_usable_residual_fits",
+            ]
+        for key in residual_keys:
+            if name_counts.get(base_galaxy_slug, 0) > 1:
+                legacy = residual_dir / f"{base_galaxy_slug}_{key}.fits"
+                if legacy.is_symlink():
+                    legacy.unlink()
+            source_path = result.get(key)
+            if not source_path:
+                continue
+            src = Path(source_path)
             if not src.exists():
                 continue
             dst = residual_dir / f"{galaxy_slug}_{key}.fits"
@@ -1020,8 +1593,16 @@ def download_one(url, dest, expected_size=None, chunk_size=1024 * 1024, timeout=
     if is_input_ready(dest, expected_size):
         return True, "already-ready"
 
+    # A partially transferred file must never masquerade as a finished input.
+    # Keep it under a .part name and publish it atomically only after the FITS
+    # readability/size gate has passed.  Adopt partial files left by older
+    # versions of this downloader so interrupted campaigns can still resume.
+    partial = dest.with_name(f"{dest.name}.part")
+    if dest.exists() and not partial.exists():
+        os.replace(dest, partial)
+
     headers = {"Accept-Encoding": "identity"}
-    start = dest.stat().st_size if dest.exists() else 0
+    start = partial.stat().st_size if partial.exists() else 0
     if start:
         headers["Range"] = f"bytes={start}-"
 
@@ -1030,24 +1611,26 @@ def download_one(url, dest, expected_size=None, chunk_size=1024 * 1024, timeout=
         with urllib.request.urlopen(req, timeout=timeout) as response:
             if start and response.status == 200:
                 start = 0
-                dest.unlink(missing_ok=True)
+                partial.unlink(missing_ok=True)
             mode = "ab" if start else "wb"
-            with dest.open(mode) as handle:
+            with partial.open(mode) as handle:
                 while True:
                     chunk = response.read(chunk_size)
                     if not chunk:
                         break
                     handle.write(chunk)
     except urllib.error.HTTPError as exc:
-        if exc.code == 416 and is_input_ready(dest, expected_size):
+        if exc.code == 416 and is_input_ready(partial, expected_size):
+            os.replace(partial, dest)
             return True, "range-complete"
         return False, f"HTTP {exc.code}: {exc.reason}"
     except Exception as exc:
         return False, repr(exc)
 
-    if is_input_ready(dest, expected_size):
+    if is_input_ready(partial, expected_size):
+        os.replace(partial, dest)
         return True, "downloaded"
-    size = dest.stat().st_size if dest.exists() else 0
+    size = partial.stat().st_size if partial.exists() else 0
     return False, f"incomplete after transfer: {size}/{expected_size}"
 
 
@@ -1057,6 +1640,7 @@ def ensure_disk_space_for_downloads(
     min_free_gb,
     cleanup_enabled=True,
     required_bytes=0,
+    protected_input_paths=None,
 ):
     disk, _ = log_resources("disk-check", data_root)
     required_free_gb = min_free_gb + bytes_gb(required_bytes or 0)
@@ -1076,8 +1660,19 @@ def ensure_disk_space_for_downloads(
         f"({disk['free_gb']:.1f} < {required_free_gb:.1f} GB), removing source inputs "
         "for completed galaxies"
     )
+    confined_root = Path(data_root).resolve()
+    protected = {
+        Path(path).resolve() for path in (protected_input_paths or [])
+    }
     for result in completed_results:
-        if result.get("status") != "ok":
+        artifacts_valid = result_artifacts_still_valid(result)
+        if result.get("status") != "ok" or not artifacts_valid:
+            if result.get("status") == "ok":
+                print(
+                    f"[{timestamp()}] [DISK] preserving inputs for "
+                    f"{result.get('galaxy', '<unknown>')}: artifacts are not "
+                    "currently verified"
+                )
             continue
         input_paths = [
             result.get("signal_path") or result.get("f150w_path"),
@@ -1086,6 +1681,21 @@ def ensure_disk_space_for_downloads(
         for value in input_paths:
             path = Path(value or "")
             if not path.exists():
+                continue
+            try:
+                resolved_path = path.resolve()
+                resolved_path.relative_to(confined_root)
+            except ValueError:
+                print(
+                    f"[{timestamp()}] [DISK] refusing to remove input outside "
+                    f"data root: {path}"
+                )
+                continue
+            if resolved_path in protected:
+                print(
+                    f"[{timestamp()}] [DISK] preserving shared input still "
+                    f"needed by a pending job: {path}"
+                )
                 continue
             try:
                 size_gb = bytes_gb(path.stat().st_size)
@@ -1105,14 +1715,56 @@ def ensure_disk_space_for_downloads(
     return False
 
 
-def load_completed_results(batch_root):
+def result_artifacts_still_valid(result):
+    """Recheck the deletion authority; a stale boolean is never sufficient."""
+    if not result.get("artifacts_verified"):
+        return False
+    if result.get("template_family") != SBF3_NOTEBOOK_FAMILY:
+        return False
+    artifacts = {
+        key: result.get(key)
+        for key in SBF3_REQUIRED_FITS_KEYS
+        if result.get(key)
+    }
+    if len(artifacts) != len(SBF3_REQUIRED_FITS_KEYS):
+        return False
+    try:
+        out_dir = Path(result["out_dir"]).resolve()
+        for value in artifacts.values():
+            Path(value).resolve().relative_to(out_dir)
+    except (KeyError, TypeError, ValueError):
+        return False
+    try:
+        current = build_artifact_manifest(
+            artifacts,
+            include_sha256=True,
+            validate_fits=True,
+            require_astropy=True,
+        )
+    except Exception:
+        return False
+    if not current.get("ok"):
+        return False
+    recorded = {
+        item.get("name"): item.get("sha256")
+        for item in result.get("artifact_manifest", [])
+    }
+    return all(
+        recorded.get(item["name"]) == item.get("sha256")
+        for item in current["artifacts"]
+    )
+
+
+def load_completed_results(batch_root, allowed_job_ids=None):
     completed = []
     for result_file in sorted(Path(batch_root).glob("*_result.json")):
         try:
             result = json.loads(result_file.read_text())
         except Exception:
             continue
-        if result.get("status") == "ok":
+        if allowed_job_ids is not None and result.get("job_id") not in allowed_job_ids:
+            continue
+        if result.get("status") == "ok" and result.get("artifacts_verified"):
             completed.append(result)
     return completed
 
@@ -1126,6 +1778,8 @@ def download_targets_until_stopped(
     cleanup_enabled,
     retry_sleep,
     stop_when_all_ready=False,
+    eligible_cleanup_job_ids=None,
+    protected_input_paths=None,
 ):
     status_path = Path(batch_root) / "download_status.json"
     while True:
@@ -1150,20 +1804,31 @@ def download_targets_until_stopped(
                 if is_input_ready(dest, expected_size):
                     continue
                 all_ready = False
-                current_size = dest.stat().st_size if dest.exists() else 0
+                partial = dest.with_name(f"{dest.name}.part")
+                current_size = (
+                    dest.stat().st_size
+                    if dest.exists()
+                    else partial.stat().st_size
+                    if partial.exists()
+                    else 0
+                )
                 remaining_bytes = (
                     max(int(expected_size) - current_size, 0)
                     if expected_size
                     else 0
                 )
                 while True:
-                    completed_results = load_completed_results(batch_root)
+                    completed_results = load_completed_results(
+                        batch_root,
+                        allowed_job_ids=eligible_cleanup_job_ids,
+                    )
                     if ensure_disk_space_for_downloads(
                         data_root,
                         completed_results,
                         min_free_gb=min_free_gb,
                         cleanup_enabled=cleanup_enabled,
                         required_bytes=remaining_bytes,
+                        protected_input_paths=protected_input_paths,
                     ):
                         break
                     status = {
@@ -1176,9 +1841,7 @@ def download_targets_until_stopped(
                         "size": current_size,
                         "expected_size": expected_size,
                     }
-                    status_path.write_text(
-                        json.dumps(status, ensure_ascii=False, indent=2)
-                    )
+                    atomic_write_json(status_path, status, sort_keys=False)
                     time.sleep(retry_sleep)
                 print(f"[{timestamp()}] [DOWNLOAD] {target['name']} {band} -> {dest}")
                 ok, msg = download_one(url, dest, expected_size=expected_size)
@@ -1193,7 +1856,7 @@ def download_targets_until_stopped(
                     "size": size,
                     "expected_size": expected_size,
                 }
-                status_path.write_text(json.dumps(status, ensure_ascii=False, indent=2))
+                atomic_write_json(status_path, status, sort_keys=False)
                 if ok:
                     print(f"[{timestamp()}] [DOWNLOAD] ready: {target['name']} {band} ({msg})")
                 else:
@@ -1209,34 +1872,71 @@ def download_targets_until_stopped(
             return all_ready
 
 
-def start_download_manager(args, targets, completed_results):
+def start_download_manager(
+    args, targets, completed_results, protected_targets=None
+):
     if args.no_download:
         return None
     cmd = [
         sys.executable,
         str(Path(__file__).resolve()),
         "--download-worker",
-        "--target-csv",
-        str(Path(args.target_csv).resolve()),
         "--data-root",
-        str(Path(args.data_root).resolve()),
+        resolve_cli_path(args.data_root),
         "--batch-root",
-        str(Path(args.batch_root).resolve()),
+        resolve_cli_path(args.batch_root),
         "--download-retry-seconds",
         str(args.download_retry_seconds),
         "--min-free-gb",
         str(args.min_free_gb),
     ]
+    manifests = target_csv_paths(
+        getattr(args, "target_csv", None),
+        getattr(args, "extra_target_csv", None),
+    )
+    cmd.extend(["--target-csv", str(manifests[0])])
+    for manifest in manifests[1:]:
+        cmd.extend(["--extra-target-csv", str(manifest)])
+    programs = getattr(args, "programs", None)
+    if programs:
+        cmd.append("--programs")
+        cmd.extend(programs)
     if args.no_cleanup_inputs:
         cmd.append("--no-cleanup-inputs")
+    cleanup_job_ids = sorted(
+        {
+            result["job_id"]
+            for result in completed_results
+            if result.get("job_id") and result.get("artifacts_verified")
+        }
+    )
+    if cleanup_job_ids:
+        cmd.append("--cleanup-job-ids")
+        cmd.extend(cleanup_job_ids)
+    protected_paths = []
+    for protected_target in (protected_targets or targets):
+        try:
+            files = local_target_files(
+                protected_target, Path(resolve_cli_path(args.data_root))
+            )
+        except ValueError:
+            # Keeps the helper usable by dry CLI/unit callers that only carry
+            # names; real manifest targets always have both product names.
+            continue
+        protected_paths.extend(str(path.resolve()) for path in files.values())
+    if protected_paths:
+        cmd.append("--protected-inputs")
+        cmd.extend(sorted(set(protected_paths)))
     if targets:
         # The download worker re-reads the manifest in a separate process.
         # Pass the already selected parent target set explicitly; otherwise a
         # narrow ``--galaxies`` run could download every enabled manifest row.
+        cmd.append("--target-keys")
+        cmd.extend(target_manifest_key(target) for target in targets)
         cmd.append("--galaxies")
         cmd.extend(target["name"] for target in targets)
     print(f"[{timestamp()}] starting download manager: {' '.join(cmd)}")
-    process = subprocess.Popen(cmd)
+    process = subprocess.Popen(cmd, start_new_session=(os.name != "nt"))
     atexit.register(stop_download_manager, process)
     return process
 
@@ -1253,7 +1953,45 @@ def stop_download_manager(process, grace_seconds=10):
         process.wait()
 
 
-def select_targets(targets, galaxies, allow_bulk_targets=False):
+def target_manifest_key(target):
+    return canonical_sha256(
+        {
+            "name": target.get("name"),
+            "program": target.get("program"),
+            "obsid": target.get("obsid"),
+            "signal_product": target.get("signal_product"),
+            "color_product": target.get("color_product"),
+            "signal_filter": target.get("signal_filter"),
+            "color_filter": target.get("color_filter"),
+            "product_uris": campaign_product_uris(target),
+        }
+    )
+
+
+def select_targets(
+    targets, galaxies, allow_bulk_targets=False, target_keys=None, programs=None
+):
+    if programs is not None:
+        wanted_programs = {canonical_program(value) for value in programs}
+        available_programs = {
+            canonical_program(target.get("program")) for target in targets
+        }
+        unknown = sorted(wanted_programs - available_programs)
+        if unknown:
+            raise ValueError(
+                "requested programs are absent from the selected manifests: "
+                + ", ".join(unknown)
+            )
+        targets = [
+            target
+            for target in targets
+            if canonical_program(target.get("program")) in wanted_programs
+        ]
+    if target_keys is not None:
+        wanted_keys = set(target_keys)
+        targets = [
+            target for target in targets if target_manifest_key(target) in wanted_keys
+        ]
     if galaxies is None:
         if len(targets) > MAX_IMPLICIT_TARGETS and not allow_bulk_targets:
             raise RuntimeError(
@@ -1266,7 +2004,709 @@ def select_targets(targets, galaxies, allow_bulk_targets=False):
     return [target for target in targets if target["name"] in wanted]
 
 
-def run_parent(args):
+def campaign_product_uris(target):
+    signal_product = target.get("signal_product")
+    color_product = target.get("color_product")
+    return {
+        "signal": target.get("signal_product_uri")
+        or (f"mast:JWST/product/{signal_product}" if signal_product else None),
+        "color": target.get("color_product_uri")
+        or (f"mast:JWST/product/{color_product}" if color_product else None),
+    }
+
+
+def target_inputs_ready(target, data_root):
+    signal_path, color_path = target_paths(target, data_root)
+    return is_input_ready(signal_path, target.get("signal_size")) and is_input_ready(
+        color_path, target.get("color_size")
+    )
+
+
+def remaining_input_growth(targets, data_root):
+    """Estimate bytes still needed to publish all selected final FITS files."""
+    remaining_bytes = 0
+    unknown_products = []
+    for target in targets:
+        files = local_target_files(target, data_root)
+        for role, final_path in files.items():
+            expected = optional_int(target.get(f"{role}_size"))
+            if is_input_ready(final_path, expected):
+                continue
+            candidates = [
+                final_path,
+                final_path.with_name(f"{final_path.name}.part"),
+                final_path.with_name(f"{final_path.name}.restart.part"),
+            ]
+            current = max(
+                (path.stat().st_size for path in candidates if path.exists()),
+                default=0,
+            )
+            if expected is None:
+                unknown_products.append(
+                    {
+                        "target": target["name"],
+                        "role": role,
+                        "path": str(final_path),
+                    }
+                )
+            else:
+                remaining_bytes += max(expected - current, 0)
+    return {
+        "remaining_bytes": remaining_bytes,
+        "remaining_gb": bytes_gb(remaining_bytes),
+        "unknown_product_count": len(unknown_products),
+        "unknown_products": unknown_products,
+    }
+
+
+def read_json_snapshot(path):
+    path = Path(path)
+    if not path.exists():
+        return None, "missing"
+    try:
+        return json.loads(path.read_text(encoding="utf-8")), None
+    except Exception as exc:
+        return None, repr(exc)
+
+
+def input_wait_snapshot(target, data_root):
+    files = local_target_files(target, data_root)
+    snapshot = {}
+    for role, final_path in files.items():
+        expected = optional_int(target.get(f"{role}_size"))
+        final_exists = final_path.exists()
+        final_size = final_path.stat().st_size if final_exists else 0
+        final_ready = is_input_ready(final_path, expected)
+        fits_error = None
+        if final_exists and not final_ready:
+            _, fits_error = fits_is_readable(final_path)
+        part_path = final_path.with_name(f"{final_path.name}.part")
+        restart_path = final_path.with_name(f"{final_path.name}.restart.part")
+        sidecar_path = final_path.with_name(f"{final_path.name}.part.json")
+        part_size = part_path.stat().st_size if part_path.exists() else 0
+        restart_size = restart_path.stat().st_size if restart_path.exists() else 0
+        transfer_size = max(part_size, restart_size)
+        percent = (
+            100.0 * transfer_size / expected
+            if expected and transfer_size
+            else None
+        )
+        sidecar, sidecar_error = read_json_snapshot(sidecar_path)
+        snapshot[role] = {
+            "filter": target[f"{role}_filter"],
+            "final_path": str(final_path.resolve()),
+            "expected_size_bytes": expected,
+            "final_exists": final_exists,
+            "final_size_bytes": final_size,
+            "final_ready": final_ready,
+            "final_fits_error": fits_error,
+            "part_path": str(part_path.resolve()),
+            "part_exists": part_path.exists(),
+            "part_size_bytes": part_size,
+            "restart_part_path": str(restart_path.resolve()),
+            "restart_part_exists": restart_path.exists(),
+            "restart_part_size_bytes": restart_size,
+            "transfer_percent": percent,
+            "part_metadata": sidecar,
+            "part_metadata_error": (
+                None if sidecar_error == "missing" else sidecar_error
+            ),
+        }
+    return snapshot
+
+
+def external_download_snapshot(status_path, target):
+    if status_path is None:
+        return None
+    path = Path(status_path)
+    status, error = read_json_snapshot(path)
+    base = {
+        "path": str(path.resolve()),
+        "exists": path.exists(),
+        "mtime": path.stat().st_mtime if path.exists() else None,
+        "read_error": None if error == "missing" else error,
+    }
+    if not isinstance(status, dict):
+        return base
+    wanted_program = canonical_program(target.get("program"))
+    wanted_target = " ".join(target["name"].casefold().split())
+    wanted_obsid = str(target.get("obsid") or "").strip().casefold()
+    matching_results = []
+    for result in status.get("results") or []:
+        if canonical_program(result.get("program")) != wanted_program:
+            continue
+        if " ".join(str(result.get("target") or "").casefold().split()) != wanted_target:
+            continue
+        result_obsid = str(result.get("obsid") or "").strip().casefold()
+        if wanted_obsid and result_obsid and result_obsid != wanted_obsid:
+            continue
+        matching_results.append(result)
+    return {
+        **base,
+        "started_at": status.get("started_at"),
+        "updated_at": status.get("updated_at"),
+        "programs": status.get("programs"),
+        "interrupted": status.get("interrupted"),
+        "counts": status.get("counts"),
+        "matching_results": matching_results,
+    }
+
+
+def format_input_progress(target, inputs):
+    parts = []
+    for role in ("signal", "color"):
+        item = inputs[role]
+        if item["final_ready"]:
+            state_text = f"ready {item['final_size_bytes']} B"
+        elif item["part_exists"] or item["restart_part_exists"]:
+            transferred = max(
+                item["part_size_bytes"], item["restart_part_size_bytes"]
+            )
+            percent = item.get("transfer_percent")
+            state_text = f"part {transferred} B"
+            if percent is not None:
+                state_text += f" ({percent:.1f}%)"
+        elif item["final_exists"]:
+            state_text = f"invalid final {item['final_size_bytes']} B"
+        else:
+            state_text = "missing"
+        parts.append(f"{role}:{item['filter']}={state_text}")
+    return f"{target['name']} GO-{canonical_program(target.get('program'))}: " + "; ".join(parts)
+
+
+def verified_campaign_result(target, batch_root, identity):
+    """Load verified work by target/input identity, independent of notebook SHA.
+
+    Version-1 job ids included the notebook and campaign digests.  The fallback
+    scan adopts only successful results with the same galaxy, filters and input
+    files, then republishes a tiny result receipt under the version-2 job id.
+    Failed or interrupted receipts are never candidates.
+    """
+    batch_root = Path(batch_root)
+    direct_path = result_json_path(batch_root, target["name"], identity=identity)
+    prefix = "__".join(
+        [
+            slug(target["name"]),
+            slug(identity["signal_filter"]),
+            slug(identity["color_filter"]),
+        ]
+    )
+    candidate_paths = [direct_path]
+    candidate_paths.extend(
+        path
+        for path in sorted(batch_root.glob(f"{prefix}__*_result.json"))
+        if path != direct_path
+    )
+
+    legacy_identity = dict(identity)
+    legacy_identity.pop("job_id", None)
+    for path in candidate_paths:
+        if not path.exists():
+            continue
+        try:
+            result = json.loads(path.read_text())
+        except Exception:
+            continue
+        if result.get("status") != "ok":
+            continue
+        match_identity = identity if path == direct_path else legacy_identity
+        if not result_matches_identity(result, match_identity):
+            continue
+        if result.get("template_family") == SBF3_NOTEBOOK_FAMILY:
+            if not result_artifacts_still_valid(result):
+                continue
+
+        if path != direct_path and identity.get("job_id"):
+            adopted = dict(result)
+            adopted["producer_job_id"] = result.get("job_id")
+            adopted["producer_template_sha256"] = result.get("template_sha256")
+            adopted["job_id"] = identity["job_id"]
+            adopted["reused_from_result_json"] = str(path.resolve())
+            adopted["reused_for_template_sha256"] = identity.get("template_sha256")
+            adopted["reused_at"] = timestamp()
+            adopted["reused_at_unix"] = time.time()
+            atomic_write_json(direct_path, as_builtin(adopted), sort_keys=False)
+            return adopted
+        return result
+    return None
+
+
+def wait_for_campaign_inputs(
+    target,
+    data_root,
+    process,
+    deadline,
+    signal_controller,
+    poll_seconds,
+    timeout_seconds=0,
+    state=None,
+    run_id=None,
+    job_id=None,
+    emergency_ram_gb=0,
+    critical_free_gb=0,
+    external_status_path=None,
+    event_log_path=None,
+):
+    started = time.monotonic()
+    report_interval = max(0.1, float(poll_seconds))
+    next_report = started
+    initial_inputs = input_wait_snapshot(target, data_root)
+    emit_campaign_event(
+        event_log_path,
+        "INPUT_WAIT_STARTED",
+        state=state,
+        run_id=run_id,
+        job_id=job_id,
+        payload={
+            "target": target["name"],
+            "program": canonical_program(target.get("program")),
+            "obsid": target.get("obsid"),
+            "filters": {
+                "signal": target["signal_filter"],
+                "color": target["color_filter"],
+            },
+            "inputs": initial_inputs,
+            "external_downloader": external_download_snapshot(
+                external_status_path, target
+            ),
+        },
+    )
+
+    def abort(reason):
+        inputs = input_wait_snapshot(target, data_root)
+        emit_campaign_event(
+            event_log_path,
+            "INPUT_WAIT_ABORTED",
+            state=state,
+            run_id=run_id,
+            job_id=job_id,
+            payload={
+                "target": target["name"],
+                "reason": reason,
+                "elapsed_seconds": time.monotonic() - started,
+                "inputs": inputs,
+                "external_downloader": external_download_snapshot(
+                    external_status_path, target
+                ),
+            },
+        )
+        print(f"[{timestamp()}] [INPUT_WAIT_ABORTED] {target['name']}: {reason}")
+        return False, reason
+
+    while True:
+        if target_inputs_ready(target, data_root):
+            inputs = input_wait_snapshot(target, data_root)
+            emit_campaign_event(
+                event_log_path,
+                "INPUT_READY",
+                state=state,
+                run_id=run_id,
+                job_id=job_id,
+                payload={
+                    "target": target["name"],
+                    "elapsed_seconds": time.monotonic() - started,
+                    "inputs": inputs,
+                    "external_downloader": external_download_snapshot(
+                        external_status_path, target
+                    ),
+                },
+            )
+            print(f"[{timestamp()}] [INPUT_READY] {format_input_progress(target, inputs)}")
+            return True, "ready"
+        if signal_controller.stop_requested:
+            return abort("signal")
+        if deadline.hard_expired:
+            return abort("deadline")
+        if timeout_seconds and time.monotonic() - started >= timeout_seconds:
+            return abort("input-timeout")
+        if process is not None and process.poll() is not None:
+            return abort(f"downloader-exited-{process.returncode}")
+        now = time.monotonic()
+        if now >= next_report:
+            disk, mem = log_resources(f"waiting-input {target['name']}", data_root)
+            inputs = input_wait_snapshot(target, data_root)
+            downloader = external_download_snapshot(external_status_path, target)
+            elapsed = now - started
+            print(
+                f"[{timestamp()}] [INPUT_WAIT] elapsed={elapsed:.0f}s; "
+                f"{format_input_progress(target, inputs)}"
+            )
+            payload = {
+                "target": target["name"],
+                "elapsed_seconds": elapsed,
+                "inputs": inputs,
+                "disk": disk,
+                "memory": mem,
+                "external_downloader": downloader,
+            }
+            emit_campaign_event(
+                event_log_path,
+                "INPUT_WAIT_HEARTBEAT",
+                state=state,
+                run_id=run_id,
+                job_id=job_id,
+                payload=payload,
+            )
+            if state is not None and run_id is not None:
+                state.record_resource_sample(
+                    run_id,
+                    job_id=job_id,
+                    ram_total_bytes=mem.get("total") if mem else None,
+                    ram_available_bytes=mem.get("available") if mem else None,
+                    disk_total_bytes=disk.get("total"),
+                    disk_free_bytes=disk.get("free"),
+                    metrics={"phase": "download-wait", **payload},
+                )
+            if (
+                emergency_ram_gb > 0
+                and mem.get("available_gb") is not None
+                and mem["available_gb"] < emergency_ram_gb
+            ):
+                return abort("resource-emergency-ram")
+            if critical_free_gb > 0 and disk["free_gb"] < critical_free_gb:
+                return abort("resource-critical-disk")
+            next_report = now + report_interval
+        remaining = deadline.remaining()
+        sleep_seconds = min(5.0, max(0.1, float(poll_seconds)))
+        if remaining is not None:
+            sleep_seconds = min(sleep_seconds, max(0.1, remaining))
+        signal_controller.wait(sleep_seconds)
+
+
+def wait_for_worker_capacity(
+    args,
+    data_root,
+    deadline,
+    signal_controller,
+    state=None,
+    run_id=None,
+    job_id=None,
+    pending_targets=None,
+):
+    while True:
+        if signal_controller.stop_requested or deadline.hard_expired:
+            return False
+        disk, mem = log_resources("before-worker", data_root)
+        available_gb = mem.get("available_gb") if mem else None
+        enough_ram = (
+            available_gb is None or available_gb >= args.min_available_ram_gb
+        )
+        input_growth = remaining_input_growth(pending_targets or [], data_root)
+        download_reserve_gb = float(
+            getattr(args, "external_download_reserve_gb", 0.0) or 0.0
+        )
+        if (
+            input_growth["remaining_bytes"] <= 0
+            and input_growth["unknown_product_count"] == 0
+        ):
+            download_reserve_gb = 0.0
+        estimated_output_gb = float(
+            getattr(args, "estimated_worker_output_gb", 0.0) or 0.0
+        )
+        archive_required_free_gb = (
+            download_reserve_gb
+            + input_growth["remaining_gb"]
+            + estimated_output_gb
+        )
+        processing_floor_gb = float(
+            getattr(args, "min_processing_free_gb", 0.0) or 0.0
+        )
+        required_free_gb = max(
+            args.critical_free_gb,
+            processing_floor_gb + estimated_output_gb,
+            archive_required_free_gb,
+        )
+        enough_disk = disk["free_gb"] >= required_free_gb
+        if state is not None and run_id is not None:
+            state.record_resource_sample(
+                run_id,
+                job_id=job_id,
+                ram_total_bytes=mem.get("total") if mem else None,
+                ram_available_bytes=mem.get("available") if mem else None,
+                disk_total_bytes=disk.get("total"),
+                disk_free_bytes=disk.get("free"),
+                metrics={
+                    "phase": "worker-capacity",
+                    "disk": disk,
+                    "memory": mem,
+                    "input_growth": input_growth,
+                    "download_reserve_gb": download_reserve_gb,
+                    "estimated_worker_output_gb": estimated_output_gb,
+                    "processing_floor_gb": processing_floor_gb,
+                    "required_free_gb": required_free_gb,
+                    "admitted": enough_ram and enough_disk,
+                },
+            )
+        if enough_ram and enough_disk:
+            print(
+                f"[{timestamp()}] [RESOURCE] worker admitted: "
+                f"disk={disk['free_gb']:.1f} GB, required={required_free_gb:.1f} GB; "
+                f"remaining inputs={input_growth['remaining_gb']:.1f} GB"
+            )
+            return True
+        print(
+            f"[{timestamp()}] [RESOURCE] worker blocked: "
+            f"RAM={available_gb if available_gb is not None else 'unknown'} GB, "
+            f"disk={disk['free_gb']:.1f} GB (required={required_free_gb:.1f} GB; "
+            f"remaining inputs={input_growth['remaining_gb']:.1f} GB; "
+            f"download reserve={download_reserve_gb:.1f} GB; "
+            f"processing floor={processing_floor_gb:.1f} GB; "
+            f"next products={estimated_output_gb:.1f} GB)"
+        )
+        gc.collect()
+        remaining = deadline.remaining()
+        sleep_seconds = min(5.0, max(0.1, float(args.poll_seconds)))
+        if remaining is not None:
+            sleep_seconds = min(sleep_seconds, max(0.1, remaining))
+        signal_controller.wait(sleep_seconds)
+
+
+def record_resource_sample(state, run_id, job_id, attempt_id, sample):
+    ram = sample.get("system_ram") or {}
+    worker = sample.get("worker") or {}
+    swap = sample.get("swap") or {}
+    disk = sample.get("disk") or {}
+    state.record_resource_sample(
+        run_id,
+        job_id=job_id,
+        attempt_id=attempt_id,
+        sampled_at=sample.get("timestamp_unix"),
+        ram_total_bytes=ram.get("total_bytes"),
+        ram_available_bytes=sample.get("available_ram_bytes"),
+        process_rss_bytes=worker.get("rss_bytes"),
+        children_rss_bytes=worker.get("children_rss_bytes"),
+        swap_used_bytes=sample.get("swap_used_bytes"),
+        disk_total_bytes=disk.get("total_bytes"),
+        disk_free_bytes=sample.get("disk_free_bytes"),
+        metrics=sample,
+    )
+
+
+def validate_parent_args(args):
+    if args.max_attempts < 1:
+        raise ValueError("--max-attempts must be at least 1")
+    if args.resource_sample_seconds <= 0:
+        raise ValueError("--resource-sample-seconds must be positive")
+    if args.soft_stop_minutes < 0:
+        raise ValueError("--soft-stop-minutes must not be negative")
+    if args.emergency_available_ram_gb > args.min_available_ram_gb:
+        raise ValueError(
+            "--emergency-available-ram-gb must not exceed "
+            "--min-available-ram-gb"
+        )
+    nonnegative = {
+        "--wall-time-hours": args.wall_time_hours,
+        "--worker-timeout-hours": args.worker_timeout_hours,
+        "--min-free-gb": args.min_free_gb,
+        "--min-available-ram-gb": args.min_available_ram_gb,
+        "--emergency-available-ram-gb": args.emergency_available_ram_gb,
+        "--max-worker-rss-gb": args.max_worker_rss_gb,
+        "--critical-free-gb": args.critical_free_gb,
+        "--min-processing-free-gb": getattr(
+            args, "min_processing_free_gb", 0.0
+        ),
+        "--external-download-reserve-gb": getattr(
+            args, "external_download_reserve_gb", 0.0
+        ),
+        "--estimated-worker-output-gb": getattr(
+            args, "estimated_worker_output_gb", 0.0
+        ),
+        "--worker-term-grace-seconds": args.worker_term_grace_seconds,
+        "--worker-kill-grace-seconds": args.worker_kill_grace_seconds,
+        "--timeout-seconds": args.timeout_seconds,
+    }
+    invalid = [name for name, value in nonnegative.items() if value < 0]
+    if invalid:
+        raise ValueError(f"must not be negative: {', '.join(invalid)}")
+    if args.poll_seconds <= 0 or args.download_retry_seconds <= 0:
+        raise ValueError("--poll-seconds and --download-retry-seconds must be positive")
+
+
+def campaign_root_from_args(args):
+    batch_root = Path(args.batch_root).resolve()
+    return (
+        Path(args.campaign_root).resolve()
+        if getattr(args, "campaign_root", None)
+        else batch_root / "campaign"
+    )
+
+
+def command_provenance(args):
+    argv = getattr(args, "_argv", None)
+    if argv is None:
+        command = list(sys.argv)
+    else:
+        command = [str(Path(__file__).resolve()), *map(str, argv)]
+    return {
+        "argv": command,
+        "shell_command": shlex.join(command),
+        "resolved_args": as_builtin(
+            {
+                key: value
+                for key, value in vars(args).items()
+                if not key.startswith("_")
+            }
+        ),
+    }
+
+
+def git_provenance(path):
+    result = {"root": str(Path(path).resolve()), "head": None, "status": None}
+    try:
+        result["head"] = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=path,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        result["status"] = subprocess.run(
+            ["git", "status", "--short"],
+            cwd=path,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.splitlines()
+    except Exception as exc:
+        result["error"] = repr(exc)
+    return result
+
+
+def package_provenance():
+    packages = (
+        "numpy",
+        "astropy",
+        "photutils",
+        "stpsf",
+        "scipy",
+        "matplotlib",
+        "pandas",
+        "psutil",
+    )
+    versions = {}
+    for package in packages:
+        try:
+            versions[package] = importlib.metadata.version(package)
+        except importlib.metadata.PackageNotFoundError:
+            versions[package] = None
+    return versions
+
+
+def write_run_provenance(
+    campaign_root,
+    *,
+    args,
+    run_id,
+    template,
+    manifests,
+    targets,
+    external_status_path,
+):
+    campaign_root = Path(campaign_root)
+    snapshots_root = campaign_root / "input_contract_snapshots"
+    snapshots_root.mkdir(parents=True, exist_ok=True)
+    manifest_records = []
+    for manifest in manifests:
+        digest = sha256_file(manifest)
+        snapshot = snapshots_root / f"{manifest.stem}__{digest[:12]}{manifest.suffix}"
+        if not snapshot.exists():
+            atomic_write_text(snapshot, manifest.read_text(encoding="utf-8"))
+        manifest_records.append(
+            {
+                "path": str(manifest),
+                "sha256": digest,
+                "size_bytes": manifest.stat().st_size,
+                "snapshot": str(snapshot.resolve()),
+            }
+        )
+    template_digest = sha256_file(template)
+    template_snapshot = (
+        snapshots_root
+        / f"{template.stem}__{template_digest[:12]}{template.suffix}"
+    )
+    if not template_snapshot.exists():
+        atomic_write_text(template_snapshot, template.read_text(encoding="utf-8"))
+
+    provenance = {
+        "created_at": timestamp(),
+        "created_at_unix": time.time(),
+        "run_id": run_id,
+        "process": {
+            "pid": os.getpid(),
+            "cwd": str(Path.cwd()),
+            "python_executable": sys.executable,
+            "python_version": sys.version,
+            "platform": platform.platform(),
+        },
+        "command": command_provenance(args),
+        "environment": {
+            "packages": package_provenance(),
+            "STPSF_PATH": os.environ.get("STPSF_PATH"),
+            "CRDS_PATH": os.environ.get("CRDS_PATH"),
+            "CRDS_CONTEXT": os.environ.get("CRDS_CONTEXT"),
+        },
+        "git": git_provenance(PROJECT_ROOT),
+        "template": {
+            "path": str(template),
+            "sha256": template_digest,
+            "family": notebook_family(template),
+            "snapshot": str(template_snapshot.resolve()),
+        },
+        "manifests": manifest_records,
+        "programs": [canonical_program(value) for value in (getattr(args, "programs", None) or [])],
+        "external_download_status": (
+            str(Path(external_status_path).resolve())
+            if external_status_path is not None
+            else None
+        ),
+        "selected_target_count": len(targets),
+        "selected_targets": targets,
+        "required_sbf3_fits": list(SBF3_REQUIRED_FITS_KEYS),
+    }
+    path = campaign_root / "run_provenance.json"
+    atomic_write_json(path, as_builtin(provenance), sort_keys=False)
+    append_jsonl(campaign_root / "invocations.jsonl", provenance)
+    return path
+
+
+def write_campaign_report(campaign_root, snapshot, target_jobs, results_by_job):
+    lines = [
+        f"SBF campaign report: {snapshot['run']['run_id']}",
+        f"Generated: {timestamp()}",
+        f"State: {snapshot['run']['state']}",
+        f"Counts: {json.dumps(snapshot['counts'], ensure_ascii=False, sort_keys=True)}",
+        "",
+        "Targets:",
+    ]
+    for target, job in target_jobs:
+        stored = next(
+            (
+                item
+                for item in snapshot.get("jobs", [])
+                if item.get("job_id") == job["job_id"]
+            ),
+            job,
+        )
+        result = results_by_job.get(job["job_id"], {})
+        lines.append(
+            f"- {target['name']} | GO-{canonical_program(target.get('program'))} "
+            f"| {target['signal_filter']}+{target['color_filter']} "
+            f"| {stored.get('state')} | job_id={job['job_id']}"
+        )
+        if result.get("error"):
+            lines.append(f"  error: {result['error']}")
+        if result.get("artifact_manifest_path"):
+            lines.append(f"  artifacts: {result['artifact_manifest_path']}")
+        if result.get("cell_timings_path"):
+            lines.append(f"  cell timings: {result['cell_timings_path']}")
+    report_path = Path(campaign_root) / "campaign_report.txt"
+    atomic_write_text(report_path, "\n".join(lines) + "\n")
+    return report_path
+
+
+def _run_parent_impl(args):
+    global _ACTIVE_CAMPAIGN_LOCK
+    validate_parent_args(args)
     template = Path(args.template).resolve()
     data_root = Path(args.data_root).resolve()
     batch_root = Path(args.batch_root).resolve()
@@ -1277,8 +2717,19 @@ def run_parent(args):
     template_family = notebook_family(template)
     batch_root.mkdir(parents=True, exist_ok=True)
 
-    if args.target_csv:
-        targets = merge_known_targets(read_targets_from_csv(args.target_csv, data_root))
+    raw_target_csv = getattr(args, "target_csv", None)
+    raw_extra_target_csv = getattr(args, "extra_target_csv", None)
+    manifests = (
+        target_csv_paths(raw_target_csv, raw_extra_target_csv)
+        if raw_target_csv or raw_extra_target_csv
+        else []
+    )
+    if manifests:
+        targets = load_manifest_targets(
+            raw_target_csv,
+            data_root,
+            raw_extra_target_csv,
+        )
     else:
         targets = [normalize_target(t) for t in TARGETS]
 
@@ -1286,154 +2737,892 @@ def run_parent(args):
         targets,
         args.galaxies,
         allow_bulk_targets=args.allow_bulk_targets,
+        target_keys=args.target_keys,
+        programs=getattr(args, "programs", None),
     )
     if not targets:
         raise RuntimeError(f"no targets selected: {args.galaxies}")
 
-    completed_results = []
-    results = []
-    identities = {}
-    for target in targets:
-        signal_path, color_path = target_paths(target, data_root)
-        identities[target["name"]] = expected_run_identity(
-            template,
-            target,
-            signal_path,
-            color_path,
-            products_root=products_root,
+    campaign_root = campaign_root_from_args(args)
+    event_log_path = campaign_root / "campaign_events.jsonl"
+    external_status_path = None
+    if getattr(args, "external_download_status", None):
+        external_status_path = Path(args.external_download_status).resolve()
+    elif args.no_download:
+        external_status_path = (
+            data_root / "download_go3055_go7763_status.json"
+        ).resolve()
+    campaign_lock = acquire_campaign_lock(campaign_root)
+    _ACTIVE_CAMPAIGN_LOCK = campaign_lock
+    atexit.register(release_campaign_lock, campaign_lock)
+    campaign_config = {
+        # Version 2 separates durable target/input identity from notebook SHA.
+        # The config bump starts one clean run while verified old products are
+        # adopted below instead of being recomputed.
+        "schema_version": 2,
+        "job_identity_version": 2,
+        "notebook_family": template_family,
+        "required_fits": list(SBF3_REQUIRED_FITS_KEYS)
+        if template_family == SBF3_NOTEBOOK_FAMILY
+        else [],
+    }
+    state = CampaignState(campaign_root)
+    run = state.create_or_resume_run(
+        template_sha256=sha256_file(template),
+        config=campaign_config,
+        run_id=args.run_id,
+        wall_time_seconds=(
+            None if args.wall_time_hours <= 0 else args.wall_time_hours * 3600
+        ),
+        soft_stop_seconds=args.soft_stop_minutes * 60,
+        metadata={
+            "template": str(template),
+            "batch_root": str(batch_root),
+            "products_root": str(products_root) if products_root else None,
+            "target_csv": str(manifests[0]) if len(manifests) == 1 else None,
+            "target_csvs": [str(path) for path in manifests],
+            "programs": [
+                canonical_program(value)
+                for value in (getattr(args, "programs", None) or [])
+            ],
+            "external_download_status": (
+                str(external_status_path) if external_status_path else None
+            ),
+            "download_mode": "external-consumer" if args.no_download else "integrated",
+        },
+        resume=not args.new_run,
+    )
+    run_id = run["run_id"]
+    args._active_campaign_state = state
+    args._active_run_id = run_id
+    provenance_path = write_run_provenance(
+        campaign_root,
+        args=args,
+        run_id=run_id,
+        template=template,
+        manifests=manifests,
+        targets=targets,
+        external_status_path=external_status_path,
+    )
+    emit_campaign_event(
+        event_log_path,
+        "CAMPAIGN_INVOCATION",
+        state=state,
+        run_id=run_id,
+        payload={
+            "resumed": bool(run.get("resume_count")),
+            "provenance_path": str(provenance_path),
+            "target_count": len(targets),
+            "programs": sorted(
+                {canonical_program(target.get("program")) for target in targets}
+            ),
+        },
+    )
+    print(
+        f"[{timestamp()}] campaign {run_id}: {len(targets)} targets; "
+        f"manifests={', '.join(str(path) for path in manifests)}"
+    )
+    print(f"[{timestamp()}] provenance -> {provenance_path}")
+    print(f"[{timestamp()}] event log  -> {event_log_path}")
+    if external_status_path is not None:
+        print(f"[{timestamp()}] external downloader status -> {external_status_path}")
+    for position, target in enumerate(targets, start=1):
+        print(
+            f"[{timestamp()}] queue {position:03d}/{len(targets):03d}: "
+            f"GO-{canonical_program(target.get('program'))} {target['name']} "
+            f"signal={target['signal_filter']} color={target['color_filter']}"
         )
-        allow_legacy = (
-            template_family == SBF2_NOTEBOOK_FAMILY and products_root is None
-        )
-        existing = final_result_for(
-            target,
-            batch_root,
-            identity=identities[target["name"]],
-            allow_legacy=allow_legacy,
-        )
-        if existing is not None:
-            completed_results.append(existing)
-            results.append(existing)
-            print(f"[{timestamp()}] reusing completed result for {target['name']}")
-    download_proc = start_download_manager(args, targets, completed_results)
-    for target in targets:
-        signal_path, color_path = target_paths(target, data_root)
-        identities[target["name"]] = expected_run_identity(
-            template,
-            target,
-            signal_path,
-            color_path,
-            products_root=products_root,
-        )
-        allow_legacy = (
-            template_family == SBF2_NOTEBOOK_FAMILY and products_root is None
-        )
-        existing = final_result_for(
-            target,
-            batch_root,
-            identity=identities[target["name"]],
-            allow_legacy=allow_legacy,
-        )
-        if existing is not None:
-            if not any(r.get("galaxy") == existing.get("galaxy") for r in results):
-                results.append(existing)
-            write_summary(results, batch_root)
-            link_residuals(results, batch_root)
-            continue
+    recovered = state.recover_incomplete_work(run_id)
+    if recovered:
+        print(f"[{timestamp()}] recovered {len(recovered)} interrupted jobs")
 
-        log_resources(f"before-wait {target['name']}", data_root)
-        wait_for_input(
-            signal_path,
-            expected_size=target.get("signal_size"),
-            poll_seconds=args.poll_seconds,
-            timeout_seconds=args.timeout_seconds,
-        )
-        wait_for_input(
-            color_path,
-            expected_size=target.get("color_size"),
-            poll_seconds=args.poll_seconds,
-            timeout_seconds=args.timeout_seconds,
-        )
-        # Files may have been downloaded after the initial cache check. Capture
-        # their real local fingerprints before choosing output/result paths.
-        identities[target["name"]] = expected_run_identity(
-            template,
-            target,
-            signal_path,
-            color_path,
-            products_root=products_root,
-        )
-
-        while True:
-            _, mem = log_resources(f"before-worker {target['name']}", data_root)
-            available_gb = mem.get("available_gb") if mem else None
-            if available_gb is None or available_gb >= args.min_available_ram_gb:
-                break
-            print(
-                f"[{timestamp()}] [RESOURCE] waiting for RAM before {target['name']}: "
-                f"available={available_gb:.1f} GB < {args.min_available_ram_gb:.1f} GB"
-            )
-            gc.collect()
-            time.sleep(args.poll_seconds)
-
-        cmd = [
-            sys.executable,
-            str(Path(__file__).resolve()),
-            "--worker",
-            "--galaxy",
-            target["name"],
-            "--signal",
-            str(signal_path),
-            "--color",
-            str(color_path),
-            "--signal-filter",
-            target["signal_filter"],
-            "--color-filter",
-            target["color_filter"],
-            "--template",
-            str(template),
-            "--batch-root",
-            str(batch_root),
-        ]
-        if products_root is not None:
-            cmd.extend(["--products-root", str(products_root)])
-        print(f"[{timestamp()}] starting worker: {' '.join(cmd)}")
-        proc = subprocess.run(cmd)
-        log_resources(f"after-worker {target['name']}", data_root)
-
-        result_path = result_json_path(
-            batch_root,
-            target["name"],
-            identity=identities[target["name"]],
-        )
-        if result_path.exists():
-            result = json.loads(result_path.read_text())
-        else:
-            result = {
-                "galaxy": target["name"],
-                "status": "failed",
-                "error": f"worker exited {proc.returncode} without result json",
+    job_specs = []
+    for position, target in enumerate(targets):
+        job_specs.append(
+            {
+                "target": target["name"],
+                "program": target.get("program"),
+                "obsid": target.get("obsid"),
+                "product_uris": campaign_product_uris(target),
+                "filters": {
+                    "signal": target["signal_filter"],
+                    "color": target["color_filter"],
+                },
+                "payload": target,
+                "priority": int(target.get("priority") or 0),
+                "queue_position": position,
             }
-        if proc.returncode != 0 and result.get("status") == "ok":
-            result["status"] = "failed"
-            result["error"] = f"worker exited {proc.returncode}"
-        results.append(result)
-        if result.get("status") == "ok":
-            completed_results.append(result)
-        write_summary(results, batch_root)
-        link_residuals(results, batch_root)
-        ensure_disk_space_for_downloads(
-            data_root,
-            completed_results,
-            min_free_gb=args.min_free_gb,
-            cleanup_enabled=not args.no_cleanup_inputs,
         )
-        gc.collect()
+    jobs = state.upsert_jobs(run_id, job_specs)
+    target_jobs = list(zip(targets, jobs))
 
-    write_summary(results, batch_root)
-    link_residuals(results, batch_root)
-    stop_download_manager(download_proc)
-    return 0 if all(r.get("status") == "ok" for r in results) else 1
+    # This compact CSV is the human-facing and SHA-independent completion
+    # ledger.  SQLite remains the detailed attempt/event store, while only a
+    # physically validated ``done`` row suppresses another notebook run.
+    target_status_path = campaign_root / TARGET_STATUS_FILENAME
+    target_status_rows = read_target_status(target_status_path)
+    ensure_target_rows(target_status_rows, targets)
+    sqlite_to_public_status = {
+        "RUNNING": "running",
+        "VERIFYING": "running",
+        "FAILED": "failed",
+        "RETRY_WAIT": "failed",
+        "SKIPPED": "skipped",
+        "CANCELLED": "skipped",
+    }
+    for target, job in target_jobs:
+        status_row = target_status_rows[target_status_key(target)]
+        if status_row.get("status") == "done":
+            continue
+        update_target_status(
+            target_status_rows,
+            target,
+            sqlite_to_public_status.get(job["state"], "pending"),
+            result_value="",
+            result_unit="",
+            selected_region="",
+            selection_method="",
+            qc="",
+            result_json="",
+            error=job.get("last_error") or "",
+        )
+    write_target_status(target_status_path, target_status_rows)
+    print(f"[{timestamp()}] target status -> {target_status_path}")
+
+    def persist_target_status(target, public_status, **details):
+        if public_status != "done":
+            for field in (
+                "result_value",
+                "result_unit",
+                "selected_region",
+                "selection_method",
+                "qc",
+                "result_json",
+            ):
+                details.setdefault(field, "")
+        if details.get("error") is not None:
+            details["error"] = str(details["error"])[:2000]
+        row = update_target_status(
+            target_status_rows,
+            target,
+            public_status,
+            **details,
+        )
+        write_target_status(target_status_path, target_status_rows)
+        return row
+
+    selected_job_ids = {job["job_id"] for job in jobs}
+    for stored_job in state.list_jobs(run_id):
+        if (
+            stored_job["job_id"] not in selected_job_ids
+            and stored_job["state"] != "SUCCEEDED"
+        ):
+            state.transition_job(
+                run_id,
+                stored_job["job_id"],
+                "SKIPPED",
+                force=True,
+                details={"reason": "not selected by resumed invocation"},
+            )
+
+    now_wall = time.time()
+    remaining = (
+        None
+        if run.get("deadline_at") is None
+        else max(0.0, run["deadline_at"] - now_wall)
+    )
+    reserve = (
+        0.0
+        if run.get("deadline_at") is None or run.get("soft_stop_at") is None
+        else max(0.0, run["deadline_at"] - run["soft_stop_at"])
+    )
+    deadline = Deadline(
+        wall_time_seconds=remaining,
+        soft_stop_seconds=reserve,
+    )
+    completed_results = []
+    results_by_job = {}
+    identities = {}
+
+    for target, job in target_jobs:
+        signal_path, color_path = target_paths(target, data_root)
+        identity = expected_run_identity(
+            template,
+            target,
+            signal_path,
+            color_path,
+            products_root=products_root,
+            job_id=job["job_id"],
+        )
+        identities[job["job_id"]] = identity
+        status_row = target_status_rows[target_status_key(target)]
+        existing = reusable_result_from_status(target_status_rows, target)
+        reuse_source = (
+            status_row.get("result_json") if existing is not None else None
+        )
+        reuse_kind = "target-status" if existing is not None else None
+        if existing is None:
+            existing = verified_campaign_result(target, batch_root, identity)
+            if existing is not None:
+                reuse_source = str(
+                    result_json_path(
+                        batch_root, target["name"], identity=identity
+                    ).resolve()
+                )
+                reuse_kind = "campaign-result"
+        if existing is None:
+            existing = find_legacy_reusable_result(
+                target, DEFAULT_LEGACY_SBF2_RESULTS_ROOT
+            )
+            if existing is not None:
+                reuse_source = existing.get("result_json")
+                reuse_kind = "legacy-go3055"
+        if existing is not None:
+            existing = dict(existing)
+            producer_job_id = existing.get("producer_job_id") or existing.get(
+                "job_id"
+            )
+            existing["producer_job_id"] = producer_job_id
+            existing["job_id"] = job["job_id"]
+            existing["reused_from_result_json"] = reuse_source
+            existing["reuse_kind"] = reuse_kind
+            completed_results.append(existing)
+            results_by_job[job["job_id"]] = existing
+            for artifact in existing.get("artifact_manifest", []):
+                state.record_artifact(
+                    run_id,
+                    job["job_id"],
+                    attempt_id=None,
+                    kind=artifact["name"],
+                    path=artifact["path"],
+                    size_bytes=artifact.get("size_bytes"),
+                    sha256=artifact.get("sha256"),
+                    verified=artifact.get("ok"),
+                    metadata={
+                        "fits_valid": artifact.get("fits_valid"),
+                        "reused": True,
+                        "producer_job_id": producer_job_id,
+                    },
+                )
+            emit_campaign_event(
+                event_log_path,
+                "RESULT_REUSED",
+                state=state,
+                run_id=run_id,
+                job_id=job["job_id"],
+                payload={
+                    "target": target["name"],
+                    "producer_job_id": producer_job_id,
+                    "producer_template_sha256": existing.get(
+                        "producer_template_sha256",
+                        existing.get("template_sha256"),
+                    ),
+                    "current_template_sha256": identity.get("template_sha256"),
+                    "reused_from_result_json": existing.get(
+                        "reused_from_result_json"
+                    ),
+                    "artifact_count": len(existing.get("artifact_manifest", [])),
+                    "reuse_kind": reuse_kind,
+                    "target_status_path": str(target_status_path),
+                },
+            )
+            science_fields = science_status_fields(existing)
+            persist_target_status(
+                target,
+                "done",
+                method=target_status_measurement_method(existing),
+                **science_fields,
+                result_json=reuse_source,
+                qc=annulus_qc(existing),
+                error="",
+            )
+            if job["state"] != "SUCCEEDED":
+                state.transition_job(
+                    run_id, job["job_id"], "SUCCEEDED", force=True,
+                    details={"reason": "verified result reused"},
+                )
+        elif status_row.get("status") == "done":
+            # A textual ``done`` flag is authoritative only while its result
+            # and required products remain physically readable.  Demote a
+            # stale row instead of silently suppressing necessary work.
+            persist_target_status(
+                target,
+                "pending",
+                qc="",
+                error="stored done result failed product validation",
+            )
+            if job["state"] == "SUCCEEDED":
+                state.transition_job(
+                    run_id,
+                    job["job_id"],
+                    "PENDING",
+                    force=True,
+                    error="stored done result failed product validation",
+                )
+        elif job["state"] == "SUCCEEDED":
+            persist_target_status(
+                target,
+                "pending",
+                qc="",
+                error="stored success failed artifact verification",
+            )
+            state.transition_job(
+                run_id, job["job_id"], "PENDING", force=True,
+                error="stored success failed artifact verification",
+            )
+        elif job["state"] in {"SKIPPED", "CANCELLED"}:
+            persist_target_status(target, "pending", error="")
+            state.transition_job(
+                run_id,
+                job["job_id"],
+                "PENDING",
+                force=True,
+                details={"reason": "selected again"},
+            )
+
+    prefetch_proc = None
+    prefetch_job_id = None
+    stop_reason = None
+    with SignalController() as signal_controller:
+        try:
+            for index, (target, job) in enumerate(target_jobs):
+                job_id = job["job_id"]
+                if job_id in results_by_job:
+                    continue
+                if prefetch_proc is not None and prefetch_job_id != job_id:
+                    stop_download_manager(prefetch_proc)
+                    prefetch_proc = None
+                    prefetch_job_id = None
+                if signal_controller.stop_requested:
+                    stop_reason = signal_controller.signal_name or "signal"
+                    break
+                if not deadline.may_start():
+                    stop_reason = "soft-deadline"
+                    state.set_run_state(run_id, "SOFT_STOPPED")
+                    break
+
+                signal_path, color_path = target_paths(target, data_root)
+                identity = expected_run_identity(
+                    template, target, signal_path, color_path,
+                    products_root=products_root, job_id=job_id,
+                )
+                identities[job_id] = identity
+
+                current_job = state.get_job(run_id, job_id)
+                if current_job["attempt_count"] >= args.max_attempts:
+                    state.transition_job(
+                        run_id, job_id, "FAILED", force=True,
+                        error="maximum attempt count reached",
+                    )
+                    results_by_job[job_id] = {
+                        "job_id": job_id,
+                        "galaxy": target["name"],
+                        "status": "failed",
+                        "error": "maximum attempt count reached",
+                    }
+                    persist_target_status(
+                        target,
+                        "failed",
+                        error="maximum attempt count reached",
+                    )
+                    continue
+
+                if target_inputs_ready(target, data_root):
+                    state.transition_job(run_id, job_id, "READY", force=True)
+                    ready_inputs = input_wait_snapshot(target, data_root)
+                    emit_campaign_event(
+                        event_log_path,
+                        "INPUT_READY_INITIAL",
+                        state=state,
+                        run_id=run_id,
+                        job_id=job_id,
+                        payload={
+                            "target": target["name"],
+                            "program": canonical_program(target.get("program")),
+                            "inputs": ready_inputs,
+                        },
+                    )
+                    print(
+                        f"[{timestamp()}] [INPUT_READY_INITIAL] "
+                        f"{format_input_progress(target, ready_inputs)}"
+                    )
+                    if prefetch_job_id == job_id:
+                        stop_download_manager(prefetch_proc)
+                        prefetch_proc = None
+                        prefetch_job_id = None
+                else:
+                    state.transition_job(run_id, job_id, "DOWNLOADING", force=True)
+                    if prefetch_job_id != job_id:
+                        stop_download_manager(prefetch_proc)
+                        protected_targets = [
+                            candidate_target
+                            for candidate_target, candidate_job in target_jobs
+                            if candidate_job["job_id"] not in results_by_job
+                        ]
+                        prefetch_proc = start_download_manager(
+                            args,
+                            [target],
+                            completed_results,
+                            protected_targets=protected_targets,
+                        )
+                        prefetch_job_id = job_id
+                    ready, reason = wait_for_campaign_inputs(
+                        target, data_root, prefetch_proc, deadline,
+                        signal_controller, args.poll_seconds, args.timeout_seconds,
+                        state=state, run_id=run_id, job_id=job_id,
+                        emergency_ram_gb=args.emergency_available_ram_gb,
+                        critical_free_gb=args.critical_free_gb,
+                        external_status_path=external_status_path,
+                        event_log_path=event_log_path,
+                    )
+                    if not ready:
+                        state.transition_job(
+                            run_id, job_id, "INTERRUPTED", force=True, error=reason
+                        )
+                        persist_target_status(target, "pending", error=reason)
+                        stop_reason = reason
+                        break
+                    stop_download_manager(prefetch_proc)
+                    prefetch_proc = None
+                    prefetch_job_id = None
+                    state.transition_job(run_id, job_id, "READY", force=True)
+
+                if not wait_for_worker_capacity(
+                    args, data_root, deadline, signal_controller,
+                    state=state, run_id=run_id, job_id=job_id,
+                    pending_targets=[
+                        candidate_target
+                        for candidate_target, candidate_job in target_jobs
+                        if candidate_job["job_id"] not in results_by_job
+                    ],
+                ):
+                    state.transition_job(
+                        run_id, job_id, "INTERRUPTED", force=True,
+                        error="stopped while waiting for resources",
+                    )
+                    persist_target_status(
+                        target,
+                        "pending",
+                        error="stopped while waiting for resources",
+                    )
+                    stop_reason = "resource-wait-stopped"
+                    break
+                if not deadline.may_start():
+                    state.transition_job(run_id, job_id, "READY", force=True)
+                    persist_target_status(
+                        target, "pending", error="soft deadline reached"
+                    )
+                    state.set_run_state(run_id, "SOFT_STOPPED")
+                    stop_reason = "soft-deadline"
+                    break
+
+                # At most one future target is downloaded while this worker runs.
+                if args.prefetch_targets == 1:
+                    for next_target, next_job in target_jobs[index + 1 :]:
+                        if next_job["job_id"] in results_by_job:
+                            continue
+                        if not target_inputs_ready(next_target, data_root):
+                            state.transition_job(
+                                run_id,
+                                next_job["job_id"],
+                                "DOWNLOADING",
+                                force=True,
+                                details={"reason": "single-target prefetch"},
+                            )
+                            protected_targets = [
+                                candidate_target
+                                for candidate_target, candidate_job in target_jobs
+                                if candidate_job["job_id"] not in results_by_job
+                            ]
+                            prefetch_proc = start_download_manager(
+                                args,
+                                [next_target],
+                                completed_results,
+                                protected_targets=protected_targets,
+                            )
+                            prefetch_job_id = next_job["job_id"]
+                        break
+
+                cmd = [
+                    sys.executable,
+                    str(Path(__file__).resolve()),
+                    "--worker",
+                    "--job-id", job_id,
+                    "--galaxy", target["name"],
+                    "--signal", str(signal_path),
+                    "--color", str(color_path),
+                    "--signal-filter", target["signal_filter"],
+                    "--color-filter", target["color_filter"],
+                    "--template", str(template),
+                    "--batch-root", str(batch_root),
+                ]
+                if products_root is not None:
+                    cmd.extend(["--products-root", str(products_root)])
+                print(f"[{timestamp()}] starting worker: {' '.join(cmd)}")
+                emit_campaign_event(
+                    event_log_path,
+                    "WORKER_START_REQUESTED",
+                    state=state,
+                    run_id=run_id,
+                    job_id=job_id,
+                    payload={
+                        "target": target["name"],
+                        "program": canonical_program(target.get("program")),
+                        "filters": {
+                            "signal": target["signal_filter"],
+                            "color": target["color_filter"],
+                        },
+                        "command": cmd,
+                        "signal_path": str(signal_path),
+                        "color_path": str(color_path),
+                    },
+                )
+                state.transition_job(run_id, job_id, "RUNNING", force=True)
+                persist_target_status(
+                    target,
+                    "running",
+                    method="sbf3",
+                    quantity=PRIMARY_QUANTITY,
+                    error="",
+                )
+                worker_log = result_json_path(
+                    batch_root, target["name"], identity=identity
+                ).with_suffix(".log")
+                try:
+                    proc = launch_process_group(cmd)
+                except Exception as exc:
+                    attempt = state.record_attempt_start(
+                        run_id, job_id, command=cmd, pid=None, log_path=worker_log
+                    )
+                    state.record_attempt_end(
+                        attempt["attempt_id"], state="FAILED", error=repr(exc)
+                    )
+                    state.transition_job(
+                        run_id, job_id, "FAILED", force=True, error=repr(exc)
+                    )
+                    results_by_job[job_id] = {
+                        "job_id": job_id,
+                        "galaxy": target["name"],
+                        "status": "failed",
+                        "error": f"worker could not start: {exc!r}",
+                    }
+                    persist_target_status(
+                        target,
+                        "failed",
+                        error=f"worker could not start: {exc!r}",
+                    )
+                    continue
+                try:
+                    attempt = state.record_attempt_start(
+                        run_id, job_id, command=cmd, pid=proc.pid,
+                        log_path=worker_log,
+                    )
+                except BaseException:
+                    terminate_process_group(
+                        proc,
+                        term_grace_seconds=args.worker_term_grace_seconds,
+                        kill_grace_seconds=args.worker_kill_grace_seconds,
+                    )
+                    state.transition_job(
+                        run_id, job_id, "INTERRUPTED", force=True,
+                        error="failed to persist worker attempt",
+                    )
+                    persist_target_status(
+                        target,
+                        "pending",
+                        error="failed to persist worker attempt",
+                    )
+                    raise
+                timeout_seconds = (
+                    None
+                    if args.worker_timeout_hours <= 0
+                    else args.worker_timeout_hours * 3600
+                )
+                try:
+                    supervision = supervise_process(
+                        proc,
+                        deadline=deadline,
+                        signal_controller=signal_controller,
+                        timeout_seconds=timeout_seconds,
+                        sample_interval_seconds=args.resource_sample_seconds,
+                        disk_path=data_root,
+                        min_available_ram_gib=args.min_available_ram_gb,
+                        emergency_available_ram_gib=args.emergency_available_ram_gb,
+                        max_worker_rss_gib=(
+                            None
+                            if args.max_worker_rss_gb <= 0
+                            else args.max_worker_rss_gb
+                        ),
+                        min_free_disk_gib=args.critical_free_gb,
+                        callback=lambda sample, jid=job_id, aid=attempt["attempt_id"]: (
+                            record_resource_sample(state, run_id, jid, aid, sample)
+                        ),
+                        term_grace_seconds=args.worker_term_grace_seconds,
+                        kill_grace_seconds=args.worker_kill_grace_seconds,
+                    )
+                except BaseException as exc:
+                    terminate_process_group(
+                        proc,
+                        term_grace_seconds=args.worker_term_grace_seconds,
+                        kill_grace_seconds=args.worker_kill_grace_seconds,
+                    )
+                    state.record_attempt_end(
+                        attempt["attempt_id"],
+                        state="INTERRUPTED",
+                        exit_code=proc.poll(),
+                        error=f"supervisor failed: {exc!r}",
+                    )
+                    state.transition_job(
+                        run_id,
+                        job_id,
+                        "INTERRUPTED",
+                        force=True,
+                        error=f"supervisor failed: {exc!r}",
+                    )
+                    persist_target_status(
+                        target,
+                        "pending",
+                        error=f"supervisor failed: {exc!r}",
+                    )
+                    raise
+                emit_campaign_event(
+                    event_log_path,
+                    "WORKER_SUPERVISION_ENDED",
+                    state=state,
+                    run_id=run_id,
+                    job_id=job_id,
+                    attempt_id=attempt["attempt_id"],
+                    payload=supervision.as_dict(),
+                )
+
+                result = verified_campaign_result(target, batch_root, identity)
+                if supervision.ok and result is not None:
+                    state.transition_job(run_id, job_id, "VERIFYING", force=True)
+                    for artifact in result.get("artifact_manifest", []):
+                        state.record_artifact(
+                            run_id, job_id, attempt_id=attempt["attempt_id"],
+                            kind=artifact["name"], path=artifact["path"],
+                            size_bytes=artifact.get("size_bytes"),
+                            sha256=artifact.get("sha256"), verified=artifact.get("ok"),
+                            metadata={"fits_valid": artifact.get("fits_valid")},
+                        )
+                    state.record_attempt_end(
+                        attempt["attempt_id"], state="SUCCEEDED",
+                        exit_code=supervision.returncode,
+                        metadata={"supervision": supervision.as_dict()},
+                    )
+                    state.transition_job(run_id, job_id, "SUCCEEDED")
+                    completed_results.append(result)
+                    results_by_job[job_id] = result
+                    science_fields = science_status_fields(result)
+                    persist_target_status(
+                        target,
+                        "done",
+                        method=target_status_measurement_method(result),
+                        **science_fields,
+                        result_json=result_json_path(
+                            batch_root, target["name"], identity=identity
+                        ),
+                        qc=annulus_qc(result),
+                        error="",
+                    )
+                    emit_campaign_event(
+                        event_log_path,
+                        "ARTIFACTS_VERIFIED",
+                        state=state,
+                        run_id=run_id,
+                        job_id=job_id,
+                        attempt_id=attempt["attempt_id"],
+                        payload={
+                            "target": target["name"],
+                            "artifact_count": result.get("artifact_count"),
+                            "artifact_manifest_path": result.get(
+                                "artifact_manifest_path"
+                            ),
+                            "artifacts": result.get("artifact_manifest"),
+                        },
+                    )
+                else:
+                    error = supervision.detail or (
+                        f"worker exited {supervision.returncode}; "
+                        "required artifacts are absent or invalid"
+                    )
+                    attempt_state = (
+                        "INTERRUPTED"
+                        if supervision.reason in {"signal", "deadline"}
+                        else "FAILED"
+                    )
+                    state.record_attempt_end(
+                        attempt["attempt_id"], state=attempt_state,
+                        exit_code=supervision.returncode, error=error,
+                        metadata={"supervision": supervision.as_dict()},
+                    )
+                    refreshed = state.get_job(run_id, job_id)
+                    if (
+                        attempt_state == "FAILED"
+                        and refreshed["attempt_count"] < args.max_attempts
+                        and deadline.may_start()
+                        and not signal_controller.stop_requested
+                    ):
+                        state.transition_job(
+                            run_id, job_id, "RETRY_WAIT", force=True, error=error
+                        )
+                        persist_target_status(target, "failed", error=error)
+                        # Requeue at the tail.  The stable job_id keeps the
+                        # second attempt attached to the same database row.
+                        target_jobs.append((target, state.get_job(run_id, job_id)))
+                    else:
+                        state.transition_job(
+                            run_id, job_id, attempt_state, force=True, error=error
+                        )
+                        persist_target_status(
+                            target,
+                            "pending" if attempt_state == "INTERRUPTED" else "failed",
+                            error=error,
+                        )
+                        results_by_job[job_id] = {
+                            "job_id": job_id,
+                            "galaxy": target["name"],
+                            "status": "failed",
+                            "error": error,
+                            "supervision": supervision.as_dict(),
+                        }
+                    if attempt_state == "INTERRUPTED":
+                        stop_reason = supervision.reason
+                        break
+
+                current_results = list(results_by_job.values())
+                write_summary(current_results, batch_root)
+                link_residuals(current_results, batch_root)
+                state.snapshot_queue(run_id)
+                ensure_disk_space_for_downloads(
+                    data_root, completed_results,
+                    min_free_gb=args.min_free_gb,
+                    cleanup_enabled=not args.no_cleanup_inputs,
+                    protected_input_paths={
+                        str(path.resolve())
+                        for candidate_target, candidate_job in target_jobs
+                        if candidate_job["job_id"] not in results_by_job
+                        for path in local_target_files(
+                            candidate_target, data_root
+                        ).values()
+                    },
+                )
+                gc.collect()
+        finally:
+            stop_download_manager(prefetch_proc)
+
+    final_results = list(results_by_job.values())
+    write_summary(final_results, batch_root)
+    link_residuals(final_results, batch_root)
+    jobs_final = state.list_jobs(run_id)
+    states = {job["state"] for job in jobs_final}
+    if signal_controller.stop_requested or stop_reason in {"signal", "deadline"}:
+        state.set_run_state(run_id, "INTERRUPTED", error=stop_reason)
+    elif stop_reason == "soft-deadline":
+        state.set_run_state(run_id, "SOFT_STOPPED")
+    elif states <= {"SUCCEEDED", "SKIPPED"}:
+        state.set_run_state(run_id, "COMPLETED")
+    elif "FAILED" in states:
+        state.set_run_state(run_id, "FAILED", error="one or more jobs failed")
+    else:
+        state.set_run_state(run_id, "INTERRUPTED", error=stop_reason)
+    snapshot = state.snapshot_queue(run_id)
+    report_path = write_campaign_report(
+        campaign_root, snapshot, target_jobs, results_by_job
+    )
+    emit_campaign_event(
+        event_log_path,
+        "CAMPAIGN_FINISHED",
+        state=state,
+        run_id=run_id,
+        payload={
+            "state": snapshot["run"]["state"],
+            "counts": snapshot["counts"],
+            "stop_reason": stop_reason,
+            "report_path": str(report_path),
+        },
+    )
+    release_campaign_lock(campaign_lock)
+    _ACTIVE_CAMPAIGN_LOCK = None
+    print(
+        f"[{timestamp()}] campaign {run_id}: {snapshot['run']['state']} "
+        f"{snapshot['counts']}"
+    )
+    print(f"[{timestamp()}] campaign report -> {report_path}")
+    return 0 if snapshot["run"]["state"] == "COMPLETED" else 1
+
+
+def run_parent(args):
+    global _ACTIVE_CAMPAIGN_LOCK
+    normalize_cli_paths(args)
+    validate_parent_args(args)
+    campaign_root = campaign_root_from_args(args)
+    campaign_root.mkdir(parents=True, exist_ok=True)
+    log_path = campaign_root / "campaign.log"
+    event_log_path = campaign_root / "campaign_events.jsonl"
+    with log_path.open("a", encoding="utf-8", buffering=1) as log_file:
+        tee_out = Tee(sys.stdout, log_file)
+        tee_err = Tee(sys.stderr, log_file)
+        with redirect_stdout(tee_out), redirect_stderr(tee_err):
+            print("=" * 96)
+            print(
+                f"[{timestamp()}] parent invocation start; pid={os.getpid()}; "
+                f"cwd={Path.cwd()}"
+            )
+            print(f"[{timestamp()}] command: {command_provenance(args)['shell_command']}")
+            print(f"[{timestamp()}] persistent parent log -> {log_path}")
+            emit_campaign_event(
+                event_log_path,
+                "PARENT_INVOCATION_STARTED",
+                payload={
+                    "pid": os.getpid(),
+                    "cwd": str(Path.cwd()),
+                    "command": command_provenance(args),
+                    "campaign_log": str(log_path),
+                },
+            )
+            try:
+                returncode = _run_parent_impl(args)
+            except BaseException as exc:
+                trace = traceback.format_exc()
+                print(trace)
+                active_state = getattr(args, "_active_campaign_state", None)
+                active_run_id = getattr(args, "_active_run_id", None)
+                if active_state is not None and active_run_id is not None:
+                    try:
+                        active_state.set_run_state(
+                            active_run_id,
+                            "INTERRUPTED",
+                            error=f"parent crash: {exc!r}",
+                        )
+                    except Exception as state_exc:
+                        print(
+                            f"[{timestamp()}] failed to persist parent crash in SQLite: "
+                            f"{state_exc!r}"
+                        )
+                emit_campaign_event(
+                    event_log_path,
+                    "PARENT_CRASH",
+                    state=active_state,
+                    run_id=active_run_id,
+                    payload={"error": repr(exc), "traceback": trace},
+                )
+                atomic_write_text(
+                    campaign_root / "parent_crash.txt",
+                    f"[{timestamp()}] {exc!r}\n\n{trace}",
+                )
+                raise
+            finally:
+                release_campaign_lock(_ACTIVE_CAMPAIGN_LOCK)
+                _ACTIVE_CAMPAIGN_LOCK = None
+            emit_campaign_event(
+                event_log_path,
+                "PARENT_INVOCATION_ENDED",
+                payload={"returncode": returncode},
+            )
+            print(f"[{timestamp()}] parent invocation end; returncode={returncode}")
+            return returncode
 
 
 def parse_args(argv=None):
@@ -1447,12 +3636,107 @@ def parse_args(argv=None):
         help="isolated per-target directory for notebook-generated products",
     )
     parser.add_argument("--target-csv", default=str(DEFAULT_TARGET_CSV))
+    parser.add_argument(
+        "--extra-target-csv",
+        action="append",
+        default=[],
+        help="additional target manifest; may be repeated",
+    )
+    parser.add_argument(
+        "--programs",
+        nargs="+",
+        default=None,
+        help="only these GO programs (for example: 3055 7763)",
+    )
+    parser.add_argument(
+        "--external-download-status",
+        default=None,
+        help=(
+            "telemetry JSON written by an independent downloader; final FITS "
+            "validation remains the readiness authority"
+        ),
+    )
     parser.add_argument("--poll-seconds", type=int, default=60)
     parser.add_argument("--timeout-seconds", type=int, default=0)
     parser.add_argument("--download-retry-seconds", type=int, default=120)
     parser.add_argument("--min-free-gb", type=float, default=30.0)
-    parser.add_argument("--min-available-ram-gb", type=float, default=8.0)
+    parser.add_argument("--min-available-ram-gb", type=float, default=1.0)
+    parser.add_argument(
+        "--campaign-root",
+        default=None,
+        help="SQLite state and queue snapshots; defaults to BATCH_ROOT/campaign",
+    )
+    parser.add_argument("--run-id", default=None)
+    parser.add_argument(
+        "--new-run",
+        action="store_true",
+        help="do not resume the newest compatible unfinished campaign",
+    )
+    parser.add_argument("--wall-time-hours", type=float, default=48.0)
+    parser.add_argument("--soft-stop-minutes", type=float, default=30.0)
+    parser.add_argument("--worker-timeout-hours", type=float, default=12.0)
+    parser.add_argument("--resource-sample-seconds", type=float, default=30.0)
+    parser.add_argument("--emergency-available-ram-gb", type=float, default=0.5)
+    parser.add_argument(
+        "--max-worker-rss-gb",
+        type=float,
+        default=0.0,
+        help="0 disables the per-worker RSS ceiling",
+    )
+    parser.add_argument("--critical-free-gb", type=float, default=5.0)
+    parser.add_argument(
+        "--min-processing-free-gb",
+        type=float,
+        default=0.0,
+        help=(
+            "free-space floor to preserve after the estimated next notebook "
+            "products are written"
+        ),
+    )
+    parser.add_argument(
+        "--external-download-reserve-gb",
+        type=float,
+        default=0.0,
+        help=(
+            "free-space reserve owned by an independent downloader; combined "
+            "with the calculated remaining manifest bytes"
+        ),
+    )
+    parser.add_argument(
+        "--estimated-worker-output-gb",
+        type=float,
+        default=1.0,
+        help="space reserved before starting the next five-FITS sbf-3 result",
+    )
+    parser.add_argument("--worker-term-grace-seconds", type=float, default=300.0)
+    parser.add_argument("--worker-kill-grace-seconds", type=float, default=10.0)
+    parser.add_argument("--max-attempts", type=int, default=2)
+    parser.add_argument(
+        "--prefetch-targets",
+        type=int,
+        choices=(0, 1),
+        default=1,
+        help="hard cap on future targets downloaded while a worker runs",
+    )
     parser.add_argument("--galaxies", nargs="*", default=None)
+    parser.add_argument(
+        "--target-keys",
+        nargs="*",
+        default=None,
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--cleanup-job-ids",
+        nargs="*",
+        default=None,
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--protected-inputs",
+        nargs="*",
+        default=None,
+        help=argparse.SUPPRESS,
+    )
     parser.add_argument(
         "--allow-bulk-targets",
         action="store_true",
@@ -1466,6 +3750,7 @@ def parse_args(argv=None):
     parser.add_argument("--worker", action="store_true")
     parser.add_argument("--download-worker", action="store_true")
     parser.add_argument("--galaxy", default=None)
+    parser.add_argument("--job-id", default=None)
     parser.add_argument(
         "--signal",
         "--f150w",
@@ -1482,21 +3767,34 @@ def parse_args(argv=None):
     )
     parser.add_argument("--signal-filter", default=DEFAULT_SIGNAL_FILTER)
     parser.add_argument("--color-filter", default=DEFAULT_COLOR_FILTER)
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    args._argv = list(sys.argv[1:] if argv is None else argv)
+    return args
 
 
 def main():
+    global _ACTIVE_CAMPAIGN_LOCK
     args = parse_args()
+    normalize_cli_paths(args)
     if args.download_worker:
-        targets = merge_known_targets(read_targets_from_csv(args.target_csv, args.data_root))
+        targets = load_manifest_targets(
+            args.target_csv,
+            args.data_root,
+            args.extra_target_csv,
+        )
         targets = select_targets(
             targets,
             args.galaxies,
             allow_bulk_targets=args.allow_bulk_targets,
+            target_keys=args.target_keys,
+            programs=args.programs,
         )
         if not targets:
             raise RuntimeError("download worker has no explicitly selected targets")
-        completed_results = load_completed_results(args.batch_root)
+        completed_results = load_completed_results(
+            args.batch_root,
+            allowed_job_ids=set(args.cleanup_job_ids or []),
+        )
         download_targets_until_stopped(
             targets,
             Path(args.data_root).resolve(),
@@ -1505,13 +3803,19 @@ def main():
             min_free_gb=args.min_free_gb,
             cleanup_enabled=not args.no_cleanup_inputs,
             retry_sleep=args.download_retry_seconds,
+            eligible_cleanup_job_ids=set(args.cleanup_job_ids or []),
+            protected_input_paths=set(args.protected_inputs or []),
         )
         return 0
     if args.worker:
         if not args.galaxy or not args.signal or not args.color:
             raise SystemExit("--worker requires --galaxy, --signal and --color")
         return run_worker(args)
-    return run_parent(args)
+    try:
+        return run_parent(args)
+    finally:
+        release_campaign_lock(_ACTIVE_CAMPAIGN_LOCK)
+        _ACTIVE_CAMPAIGN_LOCK = None
 
 
 if __name__ == "__main__":

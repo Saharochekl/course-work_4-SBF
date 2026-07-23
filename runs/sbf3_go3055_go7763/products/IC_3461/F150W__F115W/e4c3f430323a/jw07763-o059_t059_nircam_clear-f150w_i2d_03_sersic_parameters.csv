@@ -1,0 +1,2 @@
+amplitude,r_eff,n,x0,y0,ellip,theta_rad,fit_radius_px,purpose
+0.4124113963731131,250.0,4.0,1078.4448200330903,3059.1661001328803,0.2,0.0,2000.0,global NaN/WHT gap fill for isophote solver only

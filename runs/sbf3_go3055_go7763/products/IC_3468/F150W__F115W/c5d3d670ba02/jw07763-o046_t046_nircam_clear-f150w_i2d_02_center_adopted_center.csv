@@ -1,0 +1,2 @@
+target,source,x_pixel,y_pixel,ra_deg,dec_deg,auto_x_pixel,auto_y_pixel,header_x_pixel,header_y_pixel,header_ra_deg,header_dec_deg,auto_header_delta_px,decision_threshold_px
+IC 3468,fits-target,1078.5335329995896,3059.174345350309,188.05919999999998,10.251499999999993,2715.050474749037,2017.298454125317,1078.5335329995896,3059.174345350309,188.05919999999998,10.2515,1940.0239878282011,100.0

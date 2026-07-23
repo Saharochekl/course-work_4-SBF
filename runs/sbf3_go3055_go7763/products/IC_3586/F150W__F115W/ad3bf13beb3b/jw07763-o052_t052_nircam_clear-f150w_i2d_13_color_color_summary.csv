@@ -1,0 +1,3 @@
+summary,signal_filter,color_filter,color_name,sampling_mode,color_index,sigma_proxy,notes
+SBF-weighted circular-annuli color,F150W,F115W,F115W-F150W,wcs_bilinear,0.15400747601276502,0.007387312713283259,"uses same annulus weights as recommended SBF; sigma_proxy is half inner-outer color difference, not full calibration error"
+mean of available circular-annuli colors,F150W,F115W,F115W-F150W,wcs_bilinear,0.15872739189562313,0.010447237828616372,simple annulus-matched diagnostic color summary

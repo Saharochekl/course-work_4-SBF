@@ -1,0 +1,3540 @@
+{
+  "updated_at": "2026-07-20T16:08:56+00:00",
+  "mode": "dry-run",
+  "data_root": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data",
+  "output_dir": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd",
+  "max_delta_days": 7.0,
+  "date_count": 26,
+  "ready_count": 7,
+  "failed_dates": [
+    "2024-06-09",
+    "2024-06-26",
+    "2024-06-27",
+    "2024-08-24",
+    "2026-05-17",
+    "2026-06-01",
+    "2026-06-02",
+    "2026-06-05",
+    "2026-06-07",
+    "2026-06-15",
+    "2026-06-16",
+    "2026-06-18",
+    "2026-06-19",
+    "2026-06-20",
+    "2026-06-21",
+    "2026-06-23",
+    "2026-06-24",
+    "2026-06-27",
+    "2026-06-28"
+  ],
+  "manifest_product_count": 176,
+  "manifest_header_failures": [
+    {
+      "program": "7763",
+      "obsid": "o024_t024",
+      "target": "NGC 4476",
+      "filter": "F115W",
+      "product": "jw07763-o024_t024_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o024_t024_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o007_t007",
+      "target": "NGC 4477",
+      "filter": "F150W",
+      "product": "jw07763-o007_t007_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o007_t007_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o007_t007",
+      "target": "NGC 4477",
+      "filter": "F115W",
+      "product": "jw07763-o007_t007_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o007_t007_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o017_t017",
+      "target": "NGC 4478",
+      "filter": "F150W",
+      "product": "jw07763-o017_t017_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o017_t017_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o017_t017",
+      "target": "NGC 4478",
+      "filter": "F115W",
+      "product": "jw07763-o017_t017_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o017_t017_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o037_t037",
+      "target": "NGC 4479",
+      "filter": "F150W",
+      "product": "jw07763-o037_t037_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o037_t037_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o037_t037",
+      "target": "NGC 4479",
+      "filter": "F115W",
+      "product": "jw07763-o037_t037_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o037_t037_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o041_t041",
+      "target": "NGC 4482",
+      "filter": "F150W",
+      "product": "jw07763-o041_t041_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o041_t041_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o041_t041",
+      "target": "NGC 4482",
+      "filter": "F115W",
+      "product": "jw07763-o041_t041_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o041_t041_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o034_t034",
+      "target": "NGC4486A",
+      "filter": "F150W",
+      "product": "jw07763-o034_t034_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o034_t034_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o034_t034",
+      "target": "NGC4486A",
+      "filter": "F115W",
+      "product": "jw07763-o034_t034_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o034_t034_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o044_t044",
+      "target": "NGC4486B",
+      "filter": "F150W",
+      "product": "jw07763-o044_t044_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o044_t044_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o044_t044",
+      "target": "NGC4486B",
+      "filter": "F115W",
+      "product": "jw07763-o044_t044_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o044_t044_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o035_t035",
+      "target": "NGC 4497",
+      "filter": "F150W",
+      "product": "jw07763-o035_t035_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o035_t035_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o035_t035",
+      "target": "NGC 4497",
+      "filter": "F115W",
+      "product": "jw07763-o035_t035_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o035_t035_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o015_t015",
+      "target": "NGC 4503",
+      "filter": "F150W",
+      "product": "jw07763-o015_t015_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o015_t015_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o015_t015",
+      "target": "NGC 4503",
+      "filter": "F115W",
+      "product": "jw07763-o015_t015_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o015_t015_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o040_t040",
+      "target": "NGC 4506",
+      "filter": "F150W",
+      "product": "jw07763-o040_t040_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o040_t040_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o040_t040",
+      "target": "NGC 4506",
+      "filter": "F115W",
+      "product": "jw07763-o040_t040_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o040_t040_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o028_t028",
+      "target": "NGC 4528",
+      "filter": "F150W",
+      "product": "jw07763-o028_t028_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o028_t028_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o028_t028",
+      "target": "NGC 4528",
+      "filter": "F115W",
+      "product": "jw07763-o028_t028_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o028_t028_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o018_t018",
+      "target": "NGC 4531",
+      "filter": "F150W",
+      "product": "jw07763-o018_t018_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o018_t018_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o018_t018",
+      "target": "NGC 4531",
+      "filter": "F115W",
+      "product": "jw07763-o018_t018_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o018_t018_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o003_t003",
+      "target": "NGC 4548",
+      "filter": "F150W",
+      "product": "jw07763-o003_t003_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o003_t003_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o003_t003",
+      "target": "NGC 4548",
+      "filter": "F115W",
+      "product": "jw07763-o003_t003_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o003_t003_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o026_t026",
+      "target": "NGC 4550",
+      "filter": "F150W",
+      "product": "jw07763-o026_t026_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o026_t026_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o026_t026",
+      "target": "NGC 4550",
+      "filter": "F115W",
+      "product": "jw07763-o026_t026_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o026_t026_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o029_t029",
+      "target": "NGC 4551",
+      "filter": "F150W",
+      "product": "jw07763-o029_t029_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o029_t029_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o029_t029",
+      "target": "NGC 4551",
+      "filter": "F115W",
+      "product": "jw07763-o029_t029_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o029_t029_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o016_t016",
+      "target": "NGC 4564",
+      "filter": "F150W",
+      "product": "jw07763-o016_t016_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o016_t016_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o016_t016",
+      "target": "NGC 4564",
+      "filter": "F115W",
+      "product": "jw07763-o016_t016_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o016_t016_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o002_t002",
+      "target": "NGC 4569",
+      "filter": "F150W",
+      "product": "jw07763-o002_t002_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o002_t002_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o002_t002",
+      "target": "NGC 4569",
+      "filter": "F115W",
+      "product": "jw07763-o002_t002_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o002_t002_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o010_t010",
+      "target": "NGC 4571",
+      "filter": "F150W",
+      "product": "jw07763-o010_t010_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o010_t010_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o010_t010",
+      "target": "NGC 4571",
+      "filter": "F115W",
+      "product": "jw07763-o010_t010_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o010_t010_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o001_t001",
+      "target": "NGC 4579",
+      "filter": "F150W",
+      "product": "jw07763-o001_t001_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o001_t001_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o001_t001",
+      "target": "NGC 4579",
+      "filter": "F115W",
+      "product": "jw07763-o001_t001_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o001_t001_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o030_t030",
+      "target": "NGC 4606",
+      "filter": "F150W",
+      "product": "jw07763-o030_t030_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o030_t030_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o030_t030",
+      "target": "NGC 4606",
+      "filter": "F115W",
+      "product": "jw07763-o030_t030_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o030_t030_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o071_t071",
+      "target": "PGC 040707",
+      "filter": "F150W",
+      "product": "jw07763-o071_t071_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o071_t071_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o071_t071",
+      "target": "PGC 040707",
+      "filter": "F115W",
+      "product": "jw07763-o071_t071_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o071_t071_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o074_t074",
+      "target": "PGC 040723",
+      "filter": "F150W",
+      "product": "jw07763-o074_t074_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o074_t074_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o074_t074",
+      "target": "PGC 040723",
+      "filter": "F115W",
+      "product": "jw07763-o074_t074_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o074_t074_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o063_t063",
+      "target": "PGC 041156",
+      "filter": "F150W",
+      "product": "jw07763-o063_t063_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o063_t063_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o063_t063",
+      "target": "PGC 041156",
+      "filter": "F115W",
+      "product": "jw07763-o063_t063_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o063_t063_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o064_t064",
+      "target": "PGC 041723",
+      "filter": "F150W",
+      "product": "jw07763-o064_t064_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o064_t064_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o064_t064",
+      "target": "PGC 041723",
+      "filter": "F115W",
+      "product": "jw07763-o064_t064_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o064_t064_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o073_t073",
+      "target": "PGC 041782",
+      "filter": "F150W",
+      "product": "jw07763-o073_t073_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o073_t073_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o073_t073",
+      "target": "PGC 041782",
+      "filter": "F115W",
+      "product": "jw07763-o073_t073_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o073_t073_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o066_t066",
+      "target": "PGC 041959",
+      "filter": "F150W",
+      "product": "jw07763-o066_t066_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o066_t066_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o066_t066",
+      "target": "PGC 041959",
+      "filter": "F115W",
+      "product": "jw07763-o066_t066_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o066_t066_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    }
+  ],
+  "manifest_headers": [
+    {
+      "program": "3055",
+      "obsid": "o001_t001",
+      "target": "NGC 1380",
+      "filter": "F150W",
+      "product": "jw03055-o001_t001_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o001_t001_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1380/jw03055-o001_t001_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2023-11-09",
+      "time_obs": "21:14:47.240",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o001_t001",
+      "target": "NGC 1380",
+      "filter": "F090W",
+      "product": "jw03055-o001_t001_nircam_clear-f090w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o001_t001_nircam_clear-f090w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1380/jw03055-o001_t001_nircam_clear-f090w_i2d.fits",
+      "date_obs": "2023-11-09",
+      "time_obs": "18:40:21.479",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o002_t002",
+      "target": "NGC 1399",
+      "filter": "F150W",
+      "product": "jw03055-o002_t002_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o002_t002_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1399/jw03055-o002_t002_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2023-10-12",
+      "time_obs": "15:44:20.922",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o002_t002",
+      "target": "NGC 1399",
+      "filter": "F090W",
+      "product": "jw03055-o002_t002_nircam_clear-f090w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o002_t002_nircam_clear-f090w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1399/jw03055-o002_t002_nircam_clear-f090w_i2d.fits",
+      "date_obs": "2023-10-12",
+      "time_obs": "13:06:09.625",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o003_t003",
+      "target": "NGC 1404",
+      "filter": "F150W",
+      "product": "jw03055-o003_t003_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o003_t003_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1404/jw03055-o003_t003_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2023-11-14",
+      "time_obs": "14:57:26.128",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o003_t003",
+      "target": "NGC 1404",
+      "filter": "F090W",
+      "product": "jw03055-o003_t003_nircam_clear-f090w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o003_t003_nircam_clear-f090w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1404/jw03055-o003_t003_nircam_clear-f090w_i2d.fits",
+      "date_obs": "2023-11-14",
+      "time_obs": "12:19:36.335",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o006_t006",
+      "target": "NGC 4472",
+      "filter": "F150W",
+      "product": "jw03055-o006_t006_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o006_t006_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4472/jw03055-o006_t006_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2024-06-09",
+      "time_obs": "08:27:06.857",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o006_t006",
+      "target": "NGC 4472",
+      "filter": "F090W",
+      "product": "jw03055-o006_t006_nircam_clear-f090w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o006_t006_nircam_clear-f090w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4472/jw03055-o006_t006_nircam_clear-f090w_i2d.fits",
+      "date_obs": "2024-06-09",
+      "time_obs": "06:38:40.412",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o008_t008",
+      "target": "NGC 4552",
+      "filter": "F150W",
+      "product": "jw03055-o008_t008_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o008_t008_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4552/jw03055-o008_t008_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2024-06-26",
+      "time_obs": "22:56:31.948",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o008_t008",
+      "target": "NGC 4552",
+      "filter": "F090W",
+      "product": "jw03055-o008_t008_nircam_clear-f090w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o008_t008_nircam_clear-f090w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4552/jw03055-o008_t008_nircam_clear-f090w_i2d.fits",
+      "date_obs": "2024-06-26",
+      "time_obs": "21:07:54.750",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o014_t014",
+      "target": "NGC 4636",
+      "filter": "F150W",
+      "product": "jw03055-o014_t014_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o014_t014_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4636/jw03055-o014_t014_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2024-05-15",
+      "time_obs": "12:36:03.536",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o014_t014",
+      "target": "NGC 4636",
+      "filter": "F090W",
+      "product": "jw03055-o014_t014_nircam_clear-f090w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o014_t014_nircam_clear-f090w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4636/jw03055-o014_t014_nircam_clear-f090w_i2d.fits",
+      "date_obs": "2024-05-15",
+      "time_obs": "10:50:28.802",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o010_t010",
+      "target": "NGC 4649",
+      "filter": "F150W",
+      "product": "jw03055-o010_t010_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o010_t010_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4649/jw03055-o010_t010_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2024-06-27",
+      "time_obs": "01:39:39.011",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o010_t010",
+      "target": "NGC 4649",
+      "filter": "F090W",
+      "product": "jw03055-o010_t010_nircam_clear-f090w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o010_t010_nircam_clear-f090w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4649/jw03055-o010_t010_nircam_clear-f090w_i2d.fits",
+      "date_obs": "2024-06-26",
+      "time_obs": "00:17:09.363",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o011_t011",
+      "target": "NGC 4697",
+      "filter": "F150W",
+      "product": "jw03055-o011_t011_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o011_t011_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4697/jw03055-o011_t011_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2024-06-26",
+      "time_obs": "07:39:52.118",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o011_t011",
+      "target": "NGC 4697",
+      "filter": "F090W",
+      "product": "jw03055-o011_t011_nircam_clear-f090w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o011_t011_nircam_clear-f090w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4697/jw03055-o011_t011_nircam_clear-f090w_i2d.fits",
+      "date_obs": "2024-06-26",
+      "time_obs": "06:44:12.951",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o007_t007",
+      "target": "NGC 4486",
+      "filter": "F150W",
+      "product": "jw03055-o007_t007_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o007_t007_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4486/jw03055-o007_t007_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2024-06-26",
+      "time_obs": "20:21:30.133",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o007_t007",
+      "target": "NGC 4486",
+      "filter": "F090W",
+      "product": "jw03055-o007_t007_nircam_clear-f090w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o007_t007_nircam_clear-f090w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4486/jw03055-o007_t007_nircam_clear-f090w_i2d.fits",
+      "date_obs": "2024-06-26",
+      "time_obs": "18:33:03.623",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o004_t004",
+      "target": "NGC 4374",
+      "filter": "F150W",
+      "product": "jw03055-o004_t004_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o004_t004_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4374/jw03055-o004_t004_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2024-05-12",
+      "time_obs": "22:06:36.284",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o004_t004",
+      "target": "NGC 4374",
+      "filter": "F090W",
+      "product": "jw03055-o004_t004_nircam_clear-f090w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o004_t004_nircam_clear-f090w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4374/jw03055-o004_t004_nircam_clear-f090w_i2d.fits",
+      "date_obs": "2024-05-12",
+      "time_obs": "20:32:17.981",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o005_t005",
+      "target": "NGC 4406",
+      "filter": "F150W",
+      "product": "jw03055-o005_t005_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o005_t005_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4406/jw03055-o005_t005_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2024-05-30",
+      "time_obs": "11:11:13.452",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o005_t005",
+      "target": "NGC 4406",
+      "filter": "F090W",
+      "product": "jw03055-o005_t005_nircam_clear-f090w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o005_t005_nircam_clear-f090w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4406/jw03055-o005_t005_nircam_clear-f090w_i2d.fits",
+      "date_obs": "2024-05-30",
+      "time_obs": "09:36:33.708",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o009_t009",
+      "target": "NGC 4621",
+      "filter": "F150W",
+      "product": "jw03055-o009_t009_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o009_t009_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4621/jw03055-o009_t009_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2024-05-26",
+      "time_obs": "16:58:13.061",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o009_t009",
+      "target": "NGC 4621",
+      "filter": "F090W",
+      "product": "jw03055-o009_t009_nircam_clear-f090w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o009_t009_nircam_clear-f090w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4621/jw03055-o009_t009_nircam_clear-f090w_i2d.fits",
+      "date_obs": "2024-05-26",
+      "time_obs": "15:09:46.551",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o012_t012",
+      "target": "NGC 1549",
+      "filter": "F150W",
+      "product": "jw03055-o012_t012_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o012_t012_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1549/jw03055-o012_t012_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2024-08-24",
+      "time_obs": "21:54:15.409",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o012_t012",
+      "target": "NGC 1549",
+      "filter": "F090W",
+      "product": "jw03055-o012_t012_nircam_clear-f090w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o012_t012_nircam_clear-f090w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1549/jw03055-o012_t012_nircam_clear-f090w_i2d.fits",
+      "date_obs": "2024-08-24",
+      "time_obs": "19:16:14.864",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o013_t013",
+      "target": "NGC 3379",
+      "filter": "F150W",
+      "product": "jw03055-o013_t013_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o013_t013_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 3379/jw03055-o013_t013_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2024-05-26",
+      "time_obs": "22:56:04.324",
+      "error": null
+    },
+    {
+      "program": "3055",
+      "obsid": "o013_t013",
+      "target": "NGC 3379",
+      "filter": "F090W",
+      "product": "jw03055-o013_t013_nircam_clear-f090w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw03055-o013_t013_nircam_clear-f090w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 3379/jw03055-o013_t013_nircam_clear-f090w_i2d.fits",
+      "date_obs": "2024-05-26",
+      "time_obs": "21:56:50.437",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o048_t048",
+      "target": "IC 0794",
+      "filter": "F150W",
+      "product": "jw07763-o048_t048_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o048_t048_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 0794/jw07763-o048_t048_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "04:33:49.529",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o048_t048",
+      "target": "IC 0794",
+      "filter": "F115W",
+      "product": "jw07763-o048_t048_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o048_t048_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 0794/jw07763-o048_t048_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "03:52:07.859",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o051_t051",
+      "target": "IC 3328",
+      "filter": "F150W",
+      "product": "jw07763-o051_t051_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o051_t051_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3328/jw07763-o051_t051_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "07:47:11.813",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o051_t051",
+      "target": "IC 3328",
+      "filter": "F115W",
+      "product": "jw07763-o051_t051_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o051_t051_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3328/jw07763-o051_t051_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "07:05:08.712",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o056_t056",
+      "target": "IC 3349",
+      "filter": "F150W",
+      "product": "jw07763-o056_t056_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o056_t056_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3349/jw07763-o056_t056_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "11:08:35.066",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o056_t056",
+      "target": "IC 3349",
+      "filter": "F115W",
+      "product": "jw07763-o056_t056_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o056_t056_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3349/jw07763-o056_t056_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "10:27:04.148",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o049_t049",
+      "target": "IC 3358",
+      "filter": "F150W",
+      "product": "jw07763-o049_t049_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o049_t049_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3358/jw07763-o049_t049_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "06:07:13.043",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o049_t049",
+      "target": "IC 3358",
+      "filter": "F115W",
+      "product": "jw07763-o049_t049_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o049_t049_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3358/jw07763-o049_t049_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "05:25:20.622",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o061_t061",
+      "target": "IC 3363",
+      "filter": "F150W",
+      "product": "jw07763-o061_t061_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o061_t061_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3363/jw07763-o061_t061_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "16:00:17.257",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o061_t061",
+      "target": "IC 3363",
+      "filter": "F115W",
+      "product": "jw07763-o061_t061_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o061_t061_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3363/jw07763-o061_t061_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "15:18:46.339",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o043_t043",
+      "target": "IC 3381",
+      "filter": "F150W",
+      "product": "jw07763-o043_t043_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o043_t043_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3381/jw07763-o043_t043_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-07",
+      "time_obs": "16:56:46.618",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o043_t043",
+      "target": "IC 3381",
+      "filter": "F115W",
+      "product": "jw07763-o043_t043_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o043_t043_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3381/jw07763-o043_t043_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-07",
+      "time_obs": "16:15:04.949",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o072_t072",
+      "target": "IC 3383",
+      "filter": "F150W",
+      "product": "jw07763-o072_t072_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o072_t072_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3383/jw07763-o072_t072_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-24",
+      "time_obs": "06:43:48.104",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o072_t072",
+      "target": "IC 3383",
+      "filter": "F115W",
+      "product": "jw07763-o072_t072_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o072_t072_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3383/jw07763-o072_t072_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-24",
+      "time_obs": "06:01:55.682",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o070_t070",
+      "target": "IC 3388",
+      "filter": "F150W",
+      "product": "jw07763-o070_t070_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o070_t070_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3388/jw07763-o070_t070_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "19:05:13.246",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o070_t070",
+      "target": "IC 3388",
+      "filter": "F115W",
+      "product": "jw07763-o070_t070_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o070_t070_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3388/jw07763-o070_t070_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "18:23:20.824",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o058_t058",
+      "target": "IC 3393",
+      "filter": "F150W",
+      "product": "jw07763-o058_t058_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o058_t058_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3393/jw07763-o058_t058_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "14:22:39.918",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o058_t058",
+      "target": "IC 3393",
+      "filter": "F115W",
+      "product": "jw07763-o058_t058_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o058_t058_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3393/jw07763-o058_t058_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "13:40:58.249",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o075_t075",
+      "target": "IC 3437",
+      "filter": "F150W",
+      "product": "jw07763-o075_t075_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o075_t075_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3437/jw07763-o075_t075_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-24",
+      "time_obs": "11:43:44.742",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o075_t075",
+      "target": "IC 3437",
+      "filter": "F115W",
+      "product": "jw07763-o075_t075_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o075_t075_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3437/jw07763-o075_t075_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-24",
+      "time_obs": "11:02:03.153",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o055_t055",
+      "target": "IC 3442",
+      "filter": "F150W",
+      "product": "jw07763-o055_t055_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o055_t055_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3442/jw07763-o055_t055_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "09:20:00.640",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o055_t055",
+      "target": "IC 3442",
+      "filter": "F115W",
+      "product": "jw07763-o055_t055_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o055_t055_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3442/jw07763-o055_t055_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "08:37:57.530",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o076_t076",
+      "target": "IC 3443",
+      "filter": "F150W",
+      "product": "jw07763-o076_t076_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o076_t076_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3443/jw07763-o076_t076_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-24",
+      "time_obs": "13:31:05.056",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o076_t076",
+      "target": "IC 3443",
+      "filter": "F115W",
+      "product": "jw07763-o076_t076_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o076_t076_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3443/jw07763-o076_t076_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-24",
+      "time_obs": "12:49:01.882",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o057_t057",
+      "target": "IC 3457",
+      "filter": "F150W",
+      "product": "jw07763-o057_t057_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o057_t057_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3457/jw07763-o057_t057_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "12:44:59.188",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o057_t057",
+      "target": "IC 3457",
+      "filter": "F115W",
+      "product": "jw07763-o057_t057_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o057_t057_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3457/jw07763-o057_t057_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-21",
+      "time_obs": "12:03:28.206",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o059_t059",
+      "target": "IC 3461",
+      "filter": "F150W",
+      "product": "jw07763-o059_t059_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o059_t059_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3461/jw07763-o059_t059_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-27",
+      "time_obs": "17:10:55.758",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o059_t059",
+      "target": "IC 3461",
+      "filter": "F115W",
+      "product": "jw07763-o059_t059_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o059_t059_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3461/jw07763-o059_t059_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-27",
+      "time_obs": "16:29:03.337",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o068_t068",
+      "target": "IC 3466",
+      "filter": "F150W",
+      "product": "jw07763-o068_t068_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o068_t068_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3466/jw07763-o068_t068_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-28",
+      "time_obs": "17:00:41.866",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o068_t068",
+      "target": "IC 3466",
+      "filter": "F115W",
+      "product": "jw07763-o068_t068_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o068_t068_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3466/jw07763-o068_t068_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-28",
+      "time_obs": "16:18:49.445",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o046_t046",
+      "target": "IC 3468",
+      "filter": "F150W",
+      "product": "jw07763-o046_t046_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o046_t046_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3468/jw07763-o046_t046_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-23",
+      "time_obs": "17:38:50.806",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o046_t046",
+      "target": "IC 3468",
+      "filter": "F115W",
+      "product": "jw07763-o046_t046_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o046_t046_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3468/jw07763-o046_t046_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-23",
+      "time_obs": "16:57:09.136",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o054_t054",
+      "target": "IC 3470",
+      "filter": "F150W",
+      "product": "jw07763-o054_t054_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o054_t054_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3470/jw07763-o054_t054_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-27",
+      "time_obs": "15:38:39.060",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o054_t054",
+      "target": "IC 3470",
+      "filter": "F115W",
+      "product": "jw07763-o054_t054_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o054_t054_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3470/jw07763-o054_t054_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-27",
+      "time_obs": "14:56:57.390",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o047_t047",
+      "target": "IC 3475",
+      "filter": "F150W",
+      "product": "jw07763-o047_t047_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o047_t047_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3475/jw07763-o047_t047_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-27",
+      "time_obs": "12:33:11.966",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o047_t047",
+      "target": "IC 3475",
+      "filter": "F115W",
+      "product": "jw07763-o047_t047_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o047_t047_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3475/jw07763-o047_t047_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-27",
+      "time_obs": "11:51:30.297",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o060_t060",
+      "target": "IC 3486",
+      "filter": "F150W",
+      "product": "jw07763-o060_t060_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o060_t060_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3486/jw07763-o060_t060_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-27",
+      "time_obs": "18:43:34.473",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o060_t060",
+      "target": "IC 3486",
+      "filter": "F115W",
+      "product": "jw07763-o060_t060_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o060_t060_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3486/jw07763-o060_t060_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-27",
+      "time_obs": "18:01:31.299",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o065_t065",
+      "target": "IC 3492",
+      "filter": "F150W",
+      "product": "jw07763-o065_t065_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o065_t065_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3492/jw07763-o065_t065_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-27",
+      "time_obs": "22:58:52.986",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o065_t065",
+      "target": "IC 3492",
+      "filter": "F115W",
+      "product": "jw07763-o065_t065_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o065_t065_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3492/jw07763-o065_t065_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-27",
+      "time_obs": "22:17:22.068",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o053_t053",
+      "target": "IC 3501",
+      "filter": "F150W",
+      "product": "jw07763-o053_t053_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o053_t053_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3501/jw07763-o053_t053_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-27",
+      "time_obs": "14:06:01.689",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o053_t053",
+      "target": "IC 3501",
+      "filter": "F115W",
+      "product": "jw07763-o053_t053_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o053_t053_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3501/jw07763-o053_t053_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-27",
+      "time_obs": "13:24:30.771",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o067_t067",
+      "target": "IC 3509",
+      "filter": "F150W",
+      "product": "jw07763-o067_t067_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o067_t067_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3509/jw07763-o067_t067_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-28",
+      "time_obs": "15:25:09.648",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o067_t067",
+      "target": "IC 3509",
+      "filter": "F115W",
+      "product": "jw07763-o067_t067_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o067_t067_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3509/jw07763-o067_t067_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-28",
+      "time_obs": "14:43:17.226",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o052_t052",
+      "target": "IC 3586",
+      "filter": "F150W",
+      "product": "jw07763-o052_t052_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o052_t052_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3586/jw07763-o052_t052_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-28",
+      "time_obs": "23:25:58.132",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o052_t052",
+      "target": "IC 3586",
+      "filter": "F115W",
+      "product": "jw07763-o052_t052_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o052_t052_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3586/jw07763-o052_t052_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-28",
+      "time_obs": "22:44:16.462",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o050_t050",
+      "target": "IC 3631",
+      "filter": "F150W",
+      "product": "jw07763-o050_t050_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o050_t050_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3631/jw07763-o050_t050_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-28",
+      "time_obs": "21:44:44.922",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o050_t050",
+      "target": "IC 3631",
+      "filter": "F115W",
+      "product": "jw07763-o050_t050_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o050_t050_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3631/jw07763-o050_t050_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-28",
+      "time_obs": "21:03:03.252",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o069_t069",
+      "target": "IC 3635",
+      "filter": "F150W",
+      "product": "jw07763-o069_t069_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o069_t069_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3635/jw07763-o069_t069_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-28",
+      "time_obs": "02:09:14.799",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o069_t069",
+      "target": "IC 3635",
+      "filter": "F115W",
+      "product": "jw07763-o069_t069_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o069_t069_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3635/jw07763-o069_t069_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-28",
+      "time_obs": "01:27:33.129",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o025_t025",
+      "target": "NGC 4294",
+      "filter": "F150W",
+      "product": "jw07763-o025_t025_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o025_t025_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4294/jw07763-o025_t025_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-07",
+      "time_obs": "22:17:01.896",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o025_t025",
+      "target": "NGC 4294",
+      "filter": "F115W",
+      "product": "jw07763-o025_t025_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o025_t025_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4294/jw07763-o025_t025_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-07",
+      "time_obs": "21:35:09.474",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o032_t032",
+      "target": "NGC 4299",
+      "filter": "F150W",
+      "product": "jw07763-o032_t032_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o032_t032_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4299/jw07763-o032_t032_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-07",
+      "time_obs": "12:05:34.891",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o032_t032",
+      "target": "NGC 4299",
+      "filter": "F115W",
+      "product": "jw07763-o032_t032_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o032_t032_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4299/jw07763-o032_t032_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-07",
+      "time_obs": "11:23:53.222",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o038_t038",
+      "target": "NGC 4306",
+      "filter": "F150W",
+      "product": "jw07763-o038_t038_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o038_t038_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4306/jw07763-o038_t038_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-07",
+      "time_obs": "13:42:11.750",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o038_t038",
+      "target": "NGC 4306",
+      "filter": "F115W",
+      "product": "jw07763-o038_t038_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o038_t038_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4306/jw07763-o038_t038_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-07",
+      "time_obs": "13:00:19.328",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o019_t019",
+      "target": "NGC 4313",
+      "filter": "F150W",
+      "product": "jw07763-o019_t019_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o019_t019_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4313/jw07763-o019_t019_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-02",
+      "time_obs": "01:31:43.343",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o019_t019",
+      "target": "NGC 4313",
+      "filter": "F115W",
+      "product": "jw07763-o019_t019_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o019_t019_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4313/jw07763-o019_t019_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-02",
+      "time_obs": "00:49:29.481",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o039_t039",
+      "target": "NGC 4351",
+      "filter": "F150W",
+      "product": "jw07763-o039_t039_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o039_t039_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4351/jw07763-o039_t039_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-07",
+      "time_obs": "15:16:25.184",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o039_t039",
+      "target": "NGC 4351",
+      "filter": "F115W",
+      "product": "jw07763-o039_t039_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o039_t039_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4351/jw07763-o039_t039_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-07",
+      "time_obs": "14:34:43.451",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o036_t036",
+      "target": "NGC 4352",
+      "filter": "F150W",
+      "product": "jw07763-o036_t036_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o036_t036_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4352/jw07763-o036_t036_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-18",
+      "time_obs": "01:55:12.555",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o036_t036",
+      "target": "NGC 4352",
+      "filter": "F115W",
+      "product": "jw07763-o036_t036_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o036_t036_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4352/jw07763-o036_t036_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-18",
+      "time_obs": "01:13:41.637",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o011_t011",
+      "target": "NGC 4371",
+      "filter": "F150W",
+      "product": "jw07763-o011_t011_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o011_t011_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4371/jw07763-o011_t011_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-16",
+      "time_obs": "03:46:53.633",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o011_t011",
+      "target": "NGC 4371",
+      "filter": "F115W",
+      "product": "jw07763-o011_t011_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o011_t011_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4371/jw07763-o011_t011_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-16",
+      "time_obs": "03:05:11.964",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o023_t023",
+      "target": "NGC 4387",
+      "filter": "F150W",
+      "product": "jw07763-o023_t023_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o023_t023_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4387/jw07763-o023_t023_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-05",
+      "time_obs": "14:10:36.057",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o023_t023",
+      "target": "NGC 4387",
+      "filter": "F115W",
+      "product": "jw07763-o023_t023_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o023_t023_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4387/jw07763-o023_t023_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-05",
+      "time_obs": "13:28:54.323",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o013_t013",
+      "target": "NGC 4388",
+      "filter": "F150W",
+      "product": "jw07763-o013_t013_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o013_t013_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4388/jw07763-o013_t013_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-01",
+      "time_obs": "00:02:31.092",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o013_t013",
+      "target": "NGC 4388",
+      "filter": "F115W",
+      "product": "jw07763-o013_t013_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o013_t013_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4388/jw07763-o013_t013_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-01",
+      "time_obs": "23:12:57.051",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o022_t022",
+      "target": "NGC 4402",
+      "filter": "F150W",
+      "product": "jw07763-o022_t022_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o022_t022_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4402/jw07763-o022_t022_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-05",
+      "time_obs": "12:39:32.446",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o022_t022",
+      "target": "NGC 4402",
+      "filter": "F115W",
+      "product": "jw07763-o022_t022_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o022_t022_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4402/jw07763-o022_t022_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-05",
+      "time_obs": "11:57:50.777",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o031_t031",
+      "target": "NGC 4413",
+      "filter": "F150W",
+      "product": "jw07763-o031_t031_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o031_t031_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4413/jw07763-o031_t031_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-16",
+      "time_obs": "20:20:18.439",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o031_t031",
+      "target": "NGC 4413",
+      "filter": "F115W",
+      "product": "jw07763-o031_t031_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o031_t031_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4413/jw07763-o031_t031_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-16",
+      "time_obs": "19:38:47.522",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o005_t005",
+      "target": "NGC 4429",
+      "filter": "F150W",
+      "product": "jw07763-o005_t005_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o005_t005_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4429/jw07763-o005_t005_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-05-17",
+      "time_obs": "23:02:56.557",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o005_t005",
+      "target": "NGC 4429",
+      "filter": "F115W",
+      "product": "jw07763-o005_t005_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o005_t005_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4429/jw07763-o005_t005_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-05-17",
+      "time_obs": "22:20:53.447",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o042_t042",
+      "target": "NGC 4431",
+      "filter": "F150W",
+      "product": "jw07763-o042_t042_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o042_t042_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4431/jw07763-o042_t042_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-19",
+      "time_obs": "02:36:51.212",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o042_t042",
+      "target": "NGC 4431",
+      "filter": "F115W",
+      "product": "jw07763-o042_t042_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o042_t042_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4431/jw07763-o042_t042_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-19",
+      "time_obs": "01:54:58.791",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o008_t008",
+      "target": "NGC 4435",
+      "filter": "F150W",
+      "product": "jw07763-o008_t008_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o008_t008_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4435/jw07763-o008_t008_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-16",
+      "time_obs": "02:08:50.567",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o008_t008",
+      "target": "NGC 4435",
+      "filter": "F115W",
+      "product": "jw07763-o008_t008_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o008_t008_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4435/jw07763-o008_t008_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-16",
+      "time_obs": "01:27:19.650",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o045_t045",
+      "target": "NGC 4436",
+      "filter": "F150W",
+      "product": "jw07763-o045_t045_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o045_t045_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4436/jw07763-o045_t045_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-20",
+      "time_obs": "09:23:23.548",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o045_t045",
+      "target": "NGC 4436",
+      "filter": "F115W",
+      "product": "jw07763-o045_t045_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o045_t045_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4436/jw07763-o045_t045_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-20",
+      "time_obs": "08:41:52.566",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o006_t006",
+      "target": "NGC 4438",
+      "filter": "F150W",
+      "product": "jw07763-o006_t006_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o006_t006_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4438/jw07763-o006_t006_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-15",
+      "time_obs": "22:59:38.258",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o006_t006",
+      "target": "NGC 4438",
+      "filter": "F115W",
+      "product": "jw07763-o006_t006_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o006_t006_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4438/jw07763-o006_t006_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-15",
+      "time_obs": "22:17:45.837",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o012_t012",
+      "target": "NGC 4442",
+      "filter": "F150W",
+      "product": "jw07763-o012_t012_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o012_t012_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4442/jw07763-o012_t012_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-01",
+      "time_obs": "20:44:10.059",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o012_t012",
+      "target": "NGC 4442",
+      "filter": "F115W",
+      "product": "jw07763-o012_t012_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o012_t012_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4442/jw07763-o012_t012_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-01",
+      "time_obs": "20:02:17.638",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o033_t033",
+      "target": "NGC 4452",
+      "filter": "F150W",
+      "product": "jw07763-o033_t033_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o033_t033_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4452/jw07763-o033_t033_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-02",
+      "time_obs": "03:02:35.177",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o033_t033",
+      "target": "NGC 4452",
+      "filter": "F115W",
+      "product": "jw07763-o033_t033_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o033_t033_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4452/jw07763-o033_t033_nircam_clear-f115w_i2d.fits",
+      "date_obs": "2026-06-02",
+      "time_obs": "02:21:04.195",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o021_t021",
+      "target": "NGC 4458",
+      "filter": "F150W",
+      "product": "jw07763-o021_t021_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o021_t021_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4458/jw07763-o021_t021_nircam_clear-f150w_i2d.fits",
+      "date_obs": "2026-06-16",
+      "time_obs": "07:50:48.499",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o021_t021",
+      "target": "NGC 4458",
+      "filter": "F115W",
+      "product": "jw07763-o021_t021_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o021_t021_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4458/jw07763-o021_t021_nircam_clear-f115w_i2d.fits.part",
+      "date_obs": "2026-06-16",
+      "time_obs": "07:09:06.829",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o009_t009",
+      "target": "NGC 4459",
+      "filter": "F150W",
+      "product": "jw07763-o009_t009_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o009_t009_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4459/jw07763-o009_t009_nircam_clear-f150w_i2d.fits.part",
+      "date_obs": "2026-06-01",
+      "time_obs": "22:17:11.366",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o009_t009",
+      "target": "NGC 4459",
+      "filter": "F115W",
+      "product": "jw07763-o009_t009_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o009_t009_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4459/jw07763-o009_t009_nircam_clear-f115w_i2d.fits.part",
+      "date_obs": "2026-06-01",
+      "time_obs": "21:35:08.192",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o014_t014",
+      "target": "NGC 4461",
+      "filter": "F150W",
+      "product": "jw07763-o014_t014_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o014_t014_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4461/jw07763-o014_t014_nircam_clear-f150w_i2d.fits.part",
+      "date_obs": "2026-06-16",
+      "time_obs": "05:26:22.268",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o014_t014",
+      "target": "NGC 4461",
+      "filter": "F115W",
+      "product": "jw07763-o014_t014_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o014_t014_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4461/jw07763-o014_t014_nircam_clear-f115w_i2d.fits.part",
+      "date_obs": "2026-06-16",
+      "time_obs": "04:44:29.846",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o004_t004",
+      "target": "NGC 4473",
+      "filter": "F150W",
+      "product": "jw07763-o004_t004_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o004_t004_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4473/jw07763-o004_t004_nircam_clear-f150w_i2d.fits.part",
+      "date_obs": "2026-05-17",
+      "time_obs": "21:31:33.426",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o004_t004",
+      "target": "NGC 4473",
+      "filter": "F115W",
+      "product": "jw07763-o004_t004_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o004_t004_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4473/jw07763-o004_t004_nircam_clear-f115w_i2d.fits.part",
+      "date_obs": "2026-05-17",
+      "time_obs": "20:49:51.757",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o020_t020",
+      "target": "NGC 4474",
+      "filter": "F150W",
+      "product": "jw07763-o020_t020_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o020_t020_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4474/jw07763-o020_t020_nircam_clear-f150w_i2d.fits.part",
+      "date_obs": "2026-06-05",
+      "time_obs": "11:02:35.844",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o020_t020",
+      "target": "NGC 4474",
+      "filter": "F115W",
+      "product": "jw07763-o020_t020_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o020_t020_nircam_clear-f115w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4474/jw07763-o020_t020_nircam_clear-f115w_i2d.fits.part",
+      "date_obs": "2026-06-05",
+      "time_obs": "10:20:43.422",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o024_t024",
+      "target": "NGC 4476",
+      "filter": "F150W",
+      "product": "jw07763-o024_t024_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o024_t024_nircam_clear-f150w_i2d.fits",
+      "header_source": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4476/jw07763-o024_t024_nircam_clear-f150w_i2d.fits.part",
+      "date_obs": "2026-06-20",
+      "time_obs": "06:24:17.639",
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o024_t024",
+      "target": "NGC 4476",
+      "filter": "F115W",
+      "product": "jw07763-o024_t024_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o024_t024_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o007_t007",
+      "target": "NGC 4477",
+      "filter": "F150W",
+      "product": "jw07763-o007_t007_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o007_t007_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o007_t007",
+      "target": "NGC 4477",
+      "filter": "F115W",
+      "product": "jw07763-o007_t007_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o007_t007_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o017_t017",
+      "target": "NGC 4478",
+      "filter": "F150W",
+      "product": "jw07763-o017_t017_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o017_t017_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o017_t017",
+      "target": "NGC 4478",
+      "filter": "F115W",
+      "product": "jw07763-o017_t017_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o017_t017_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o037_t037",
+      "target": "NGC 4479",
+      "filter": "F150W",
+      "product": "jw07763-o037_t037_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o037_t037_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o037_t037",
+      "target": "NGC 4479",
+      "filter": "F115W",
+      "product": "jw07763-o037_t037_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o037_t037_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o041_t041",
+      "target": "NGC 4482",
+      "filter": "F150W",
+      "product": "jw07763-o041_t041_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o041_t041_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o041_t041",
+      "target": "NGC 4482",
+      "filter": "F115W",
+      "product": "jw07763-o041_t041_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o041_t041_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o034_t034",
+      "target": "NGC4486A",
+      "filter": "F150W",
+      "product": "jw07763-o034_t034_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o034_t034_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o034_t034",
+      "target": "NGC4486A",
+      "filter": "F115W",
+      "product": "jw07763-o034_t034_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o034_t034_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o044_t044",
+      "target": "NGC4486B",
+      "filter": "F150W",
+      "product": "jw07763-o044_t044_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o044_t044_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o044_t044",
+      "target": "NGC4486B",
+      "filter": "F115W",
+      "product": "jw07763-o044_t044_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o044_t044_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o035_t035",
+      "target": "NGC 4497",
+      "filter": "F150W",
+      "product": "jw07763-o035_t035_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o035_t035_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o035_t035",
+      "target": "NGC 4497",
+      "filter": "F115W",
+      "product": "jw07763-o035_t035_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o035_t035_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o015_t015",
+      "target": "NGC 4503",
+      "filter": "F150W",
+      "product": "jw07763-o015_t015_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o015_t015_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o015_t015",
+      "target": "NGC 4503",
+      "filter": "F115W",
+      "product": "jw07763-o015_t015_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o015_t015_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o040_t040",
+      "target": "NGC 4506",
+      "filter": "F150W",
+      "product": "jw07763-o040_t040_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o040_t040_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o040_t040",
+      "target": "NGC 4506",
+      "filter": "F115W",
+      "product": "jw07763-o040_t040_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o040_t040_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o028_t028",
+      "target": "NGC 4528",
+      "filter": "F150W",
+      "product": "jw07763-o028_t028_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o028_t028_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o028_t028",
+      "target": "NGC 4528",
+      "filter": "F115W",
+      "product": "jw07763-o028_t028_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o028_t028_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o018_t018",
+      "target": "NGC 4531",
+      "filter": "F150W",
+      "product": "jw07763-o018_t018_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o018_t018_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o018_t018",
+      "target": "NGC 4531",
+      "filter": "F115W",
+      "product": "jw07763-o018_t018_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o018_t018_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o003_t003",
+      "target": "NGC 4548",
+      "filter": "F150W",
+      "product": "jw07763-o003_t003_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o003_t003_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o003_t003",
+      "target": "NGC 4548",
+      "filter": "F115W",
+      "product": "jw07763-o003_t003_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o003_t003_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o026_t026",
+      "target": "NGC 4550",
+      "filter": "F150W",
+      "product": "jw07763-o026_t026_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o026_t026_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o026_t026",
+      "target": "NGC 4550",
+      "filter": "F115W",
+      "product": "jw07763-o026_t026_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o026_t026_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o029_t029",
+      "target": "NGC 4551",
+      "filter": "F150W",
+      "product": "jw07763-o029_t029_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o029_t029_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o029_t029",
+      "target": "NGC 4551",
+      "filter": "F115W",
+      "product": "jw07763-o029_t029_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o029_t029_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o016_t016",
+      "target": "NGC 4564",
+      "filter": "F150W",
+      "product": "jw07763-o016_t016_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o016_t016_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o016_t016",
+      "target": "NGC 4564",
+      "filter": "F115W",
+      "product": "jw07763-o016_t016_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o016_t016_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o002_t002",
+      "target": "NGC 4569",
+      "filter": "F150W",
+      "product": "jw07763-o002_t002_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o002_t002_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o002_t002",
+      "target": "NGC 4569",
+      "filter": "F115W",
+      "product": "jw07763-o002_t002_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o002_t002_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o010_t010",
+      "target": "NGC 4571",
+      "filter": "F150W",
+      "product": "jw07763-o010_t010_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o010_t010_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o010_t010",
+      "target": "NGC 4571",
+      "filter": "F115W",
+      "product": "jw07763-o010_t010_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o010_t010_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o001_t001",
+      "target": "NGC 4579",
+      "filter": "F150W",
+      "product": "jw07763-o001_t001_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o001_t001_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o001_t001",
+      "target": "NGC 4579",
+      "filter": "F115W",
+      "product": "jw07763-o001_t001_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o001_t001_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o030_t030",
+      "target": "NGC 4606",
+      "filter": "F150W",
+      "product": "jw07763-o030_t030_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o030_t030_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o030_t030",
+      "target": "NGC 4606",
+      "filter": "F115W",
+      "product": "jw07763-o030_t030_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o030_t030_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o071_t071",
+      "target": "PGC 040707",
+      "filter": "F150W",
+      "product": "jw07763-o071_t071_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o071_t071_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o071_t071",
+      "target": "PGC 040707",
+      "filter": "F115W",
+      "product": "jw07763-o071_t071_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o071_t071_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o074_t074",
+      "target": "PGC 040723",
+      "filter": "F150W",
+      "product": "jw07763-o074_t074_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o074_t074_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o074_t074",
+      "target": "PGC 040723",
+      "filter": "F115W",
+      "product": "jw07763-o074_t074_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o074_t074_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o063_t063",
+      "target": "PGC 041156",
+      "filter": "F150W",
+      "product": "jw07763-o063_t063_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o063_t063_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o063_t063",
+      "target": "PGC 041156",
+      "filter": "F115W",
+      "product": "jw07763-o063_t063_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o063_t063_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o064_t064",
+      "target": "PGC 041723",
+      "filter": "F150W",
+      "product": "jw07763-o064_t064_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o064_t064_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o064_t064",
+      "target": "PGC 041723",
+      "filter": "F115W",
+      "product": "jw07763-o064_t064_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o064_t064_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o073_t073",
+      "target": "PGC 041782",
+      "filter": "F150W",
+      "product": "jw07763-o073_t073_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o073_t073_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o073_t073",
+      "target": "PGC 041782",
+      "filter": "F115W",
+      "product": "jw07763-o073_t073_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o073_t073_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o066_t066",
+      "target": "PGC 041959",
+      "filter": "F150W",
+      "product": "jw07763-o066_t066_nircam_clear-f150w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o066_t066_nircam_clear-f150w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    },
+    {
+      "program": "7763",
+      "obsid": "o066_t066",
+      "target": "PGC 041959",
+      "filter": "F115W",
+      "product": "jw07763-o066_t066_nircam_clear-f115w_i2d.fits",
+      "product_uri": "mast:JWST/product/jw07763-o066_t066_nircam_clear-f115w_i2d.fits",
+      "header_source": null,
+      "date_obs": null,
+      "time_obs": null,
+      "error": null
+    }
+  ],
+  "dates": [
+    {
+      "date": "2023-10-12",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1399/jw03055-o002_t002_nircam_clear-f090w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1399/jw03055-o002_t002_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "3055"
+      ],
+      "science_time_mjd": 60229.60087122107,
+      "science_time_isot": "2023-10-12T14:25:15.274",
+      "file_count": 2,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2023101202-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2023-10-12T06:53:15.400",
+        "opd_delta_days": -0.3138874247742933
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2023101202-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2023-10-12T06:53:15.400",
+        "opd_delta_days": -0.3138874247742933
+      },
+      "ready_offline": true
+    },
+    {
+      "date": "2023-11-09",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1380/jw03055-o001_t001_nircam_clear-f090w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1380/jw03055-o001_t001_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1380/jw03055-o001_t001_nircam_clear-f277w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1380/jw03055-o001_t001_nircam_clear-f356w_i2d.fits"
+      ],
+      "programs": [
+        "3055"
+      ],
+      "science_time_mjd": 60257.8316476794,
+      "science_time_isot": "2023-11-09T19:57:34.360",
+      "file_count": 4,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2023111002-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2023-11-10T01:09:35.017",
+        "opd_delta_days": 0.21667427662032424
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2023111002-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2023-11-10T01:09:35.017",
+        "opd_delta_days": 0.21667427662032424
+      },
+      "ready_offline": true
+    },
+    {
+      "date": "2023-11-14",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1404/jw03055-o003_t003_nircam_clear-f090w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1404/jw03055-o003_t003_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1404/jw03055-o003_t003_nircam_clear-f277w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1404/jw03055-o003_t003_nircam_clear-f356w_i2d.fits"
+      ],
+      "programs": [
+        "3055"
+      ],
+      "science_time_mjd": 60262.56841703125,
+      "science_time_isot": "2023-11-14T13:38:31.232",
+      "file_count": 4,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2023111002-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2023-11-10T01:09:35.017",
+        "opd_delta_days": -4.520095075233257
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2023111002-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2023-11-10T01:09:35.017",
+        "opd_delta_days": -4.520095075233257
+      },
+      "ready_offline": true
+    },
+    {
+      "date": "2024-05-12",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4374/jw03055-o004_t004_nircam_clear-f090w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4374/jw03055-o004_t004_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "3055"
+      ],
+      "science_time_mjd": 60442.888508478005,
+      "science_time_isot": "2024-05-12T21:19:27.132",
+      "file_count": 2,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024051402-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-13T23:40:21.432",
+        "opd_delta_days": 1.097850688660401
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024051402-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-13T23:40:21.432",
+        "opd_delta_days": 1.097850688660401
+      },
+      "ready_offline": true
+    },
+    {
+      "date": "2024-05-15",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4636/jw03055-o014_t014_nircam_clear-f090w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4636/jw03055-o014_t014_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "3055"
+      ],
+      "science_time_mjd": 60445.488381585645,
+      "science_time_isot": "2024-05-15T11:43:16.169",
+      "file_count": 2,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024051402-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-13T23:40:21.432",
+        "opd_delta_days": -1.5020224189793225
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024051402-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-13T23:40:21.432",
+        "opd_delta_days": -1.5020224189793225
+      },
+      "ready_offline": true
+    },
+    {
+      "date": "2024-05-26",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 3379/jw03055-o013_t013_nircam_clear-f090w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 3379/jw03055-o013_t013_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4621/jw03055-o009_t009_nircam_clear-f090w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4621/jw03055-o009_t009_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "3055"
+      ],
+      "science_time_mjd": 60456.81078413194,
+      "science_time_isot": "2024-05-26T19:27:31.749",
+      "file_count": 4,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -0.4999781597216497
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -0.4999781597216497
+      },
+      "ready_offline": true
+    },
+    {
+      "date": "2024-05-30",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4406/jw03055-o005_t005_nircam_clear-f090w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4406/jw03055-o005_t005_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "3055"
+      ],
+      "science_time_mjd": 60460.43325902778,
+      "science_time_isot": "2024-05-30T10:23:53.580",
+      "file_count": 2,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -4.122453055555525
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -4.122453055555525
+      },
+      "ready_offline": true
+    },
+    {
+      "date": "2024-06-09",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4472/jw03055-o006_t006_nircam_clear-f090w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4472/jw03055-o006_t006_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "3055"
+      ],
+      "science_time_mjd": 60470.314509658565,
+      "science_time_isot": "2024-06-09T07:32:53.635",
+      "file_count": 2,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -14.003703686343215
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -14.003703686343215
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2024-06-26",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4486/jw03055-o007_t007_nircam_clear-f090w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4486/jw03055-o007_t007_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4552/jw03055-o008_t008_nircam_clear-f090w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4552/jw03055-o008_t008_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4649/jw03055-o010_t010_nircam_clear-f090w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4697/jw03055-o011_t011_nircam_clear-f090w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4697/jw03055-o011_t011_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "3055"
+      ],
+      "science_time_mjd": 60487.77295859954,
+      "science_time_isot": "2024-06-26T18:33:03.623",
+      "file_count": 7,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -31.462152627318574
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -31.462152627318574
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2024-06-27",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4649/jw03055-o010_t010_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "3055"
+      ],
+      "science_time_mjd": 60488.069201516206,
+      "science_time_isot": "2024-06-27T01:39:39.011",
+      "file_count": 1,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -31.75839554398408
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -31.75839554398408
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2024-08-24",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1549/jw03055-o012_t012_nircam_clear-f090w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 1549/jw03055-o012_t012_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "3055"
+      ],
+      "science_time_mjd": 60546.85781407986,
+      "science_time_isot": "2024-08-24T20:35:15.137",
+      "file_count": 2,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -90.54700810764189
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -90.54700810764189
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2026-05-17",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4429/jw07763-o005_t005_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4429/jw07763-o005_t005_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4473/jw07763-o004_t004_nircam_clear-f150w_i2d.fits.part",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4473/jw07763-o004_t004_nircam_clear-f115w_i2d.fits.part"
+      ],
+      "programs": [
+        "7763"
+      ],
+      "science_time_mjd": 61177.91404440394,
+      "science_time_isot": "2026-05-17T21:56:13.437",
+      "file_count": 4,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -721.603238431715
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -721.603238431715
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2026-06-01",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4388/jw07763-o013_t013_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4388/jw07763-o013_t013_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4442/jw07763-o012_t012_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4442/jw07763-o012_t012_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4459/jw07763-o009_t009_nircam_clear-f150w_i2d.fits.part",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4459/jw07763-o009_t009_nircam_clear-f115w_i2d.fits.part"
+      ],
+      "programs": [
+        "7763"
+      ],
+      "science_time_mjd": 61192.881702841434,
+      "science_time_isot": "2026-06-01T21:09:39.125",
+      "file_count": 6,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -736.5708968692124
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -736.5708968692124
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2026-06-02",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4313/jw07763-o019_t019_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4313/jw07763-o019_t019_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4452/jw07763-o033_t033_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4452/jw07763-o033_t033_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "7763"
+      ],
+      "science_time_mjd": 61193.080830659725,
+      "science_time_isot": "2026-06-02T01:56:23.769",
+      "file_count": 4,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -736.7700246875029
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -736.7700246875029
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2026-06-05",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4387/jw07763-o023_t023_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4387/jw07763-o023_t023_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4402/jw07763-o022_t022_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4402/jw07763-o022_t022_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4474/jw07763-o020_t020_nircam_clear-f150w_i2d.fits.part",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4474/jw07763-o020_t020_nircam_clear-f115w_i2d.fits.part"
+      ],
+      "programs": [
+        "7763"
+      ],
+      "science_time_mjd": 61196.51298161458,
+      "science_time_isot": "2026-06-05T12:18:41.611",
+      "file_count": 6,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -740.2021756423565
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -740.2021756423565
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2026-06-07",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3381/jw07763-o043_t043_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3381/jw07763-o043_t043_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4294/jw07763-o025_t025_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4294/jw07763-o025_t025_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4299/jw07763-o032_t032_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4299/jw07763-o032_t032_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4306/jw07763-o038_t038_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4306/jw07763-o038_t038_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4351/jw07763-o039_t039_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4351/jw07763-o039_t039_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "7763"
+      ],
+      "science_time_mjd": 61198.62192497107,
+      "science_time_isot": "2026-06-07T14:55:34.318",
+      "file_count": 10,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -742.3111189988485
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -742.3111189988485
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2026-06-15",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4438/jw07763-o006_t006_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4438/jw07763-o006_t006_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "7763"
+      ],
+      "science_time_mjd": 61206.94354221644,
+      "science_time_isot": "2026-06-15T22:38:42.048",
+      "file_count": 2,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -750.6327362442171
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -750.6327362442171
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2026-06-16",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4371/jw07763-o011_t011_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4371/jw07763-o011_t011_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4413/jw07763-o031_t031_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4413/jw07763-o031_t031_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4435/jw07763-o008_t008_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4435/jw07763-o008_t008_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4458/jw07763-o021_t021_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4458/jw07763-o021_t021_nircam_clear-f115w_i2d.fits.part",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4461/jw07763-o014_t014_nircam_clear-f150w_i2d.fits.part",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4461/jw07763-o014_t014_nircam_clear-f115w_i2d.fits.part"
+      ],
+      "programs": [
+        "7763"
+      ],
+      "science_time_mjd": 61207.212107141204,
+      "science_time_isot": "2026-06-16T05:05:26.057",
+      "file_count": 10,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -750.9013011689822
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -750.9013011689822
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2026-06-18",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4352/jw07763-o036_t036_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4352/jw07763-o036_t036_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "7763"
+      ],
+      "science_time_mjd": 61209.06559138889,
+      "science_time_isot": "2026-06-18T01:34:27.096",
+      "file_count": 2,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -752.7547854166696
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -752.7547854166696
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2026-06-19",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4431/jw07763-o042_t042_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4431/jw07763-o042_t042_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "7763"
+      ],
+      "science_time_mjd": 61210.09438659143,
+      "science_time_isot": "2026-06-19T02:15:55.001",
+      "file_count": 2,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -753.7835806192088
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -753.7835806192088
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2026-06-20",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4436/jw07763-o045_t045_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4436/jw07763-o045_t045_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/NGC 4476/jw07763-o024_t024_nircam_clear-f150w_i2d.fits.part"
+      ],
+      "programs": [
+        "7763"
+      ],
+      "science_time_mjd": 61211.36241395833,
+      "science_time_isot": "2026-06-20T08:41:52.566",
+      "file_count": 3,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -755.0516079861118
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -755.0516079861118
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2026-06-21",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 0794/jw07763-o048_t048_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 0794/jw07763-o048_t048_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3328/jw07763-o051_t051_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3328/jw07763-o051_t051_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3349/jw07763-o056_t056_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3349/jw07763-o056_t056_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3358/jw07763-o049_t049_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3358/jw07763-o049_t049_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3363/jw07763-o061_t061_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3363/jw07763-o061_t061_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3388/jw07763-o070_t070_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3388/jw07763-o070_t070_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3393/jw07763-o058_t058_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3393/jw07763-o058_t058_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3442/jw07763-o055_t055_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3442/jw07763-o055_t055_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3457/jw07763-o057_t057_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3457/jw07763-o057_t057_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "7763"
+      ],
+      "science_time_mjd": 61212.44987971065,
+      "science_time_isot": "2026-06-21T10:47:49.607",
+      "file_count": 18,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -756.1390737384281
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -756.1390737384281
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2026-06-23",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3468/jw07763-o046_t046_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3468/jw07763-o046_t046_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "7763"
+      ],
+      "science_time_mjd": 61214.720832997686,
+      "science_time_isot": "2026-06-23T17:17:59.971",
+      "file_count": 2,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -758.4100270254639
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -758.4100270254639
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2026-06-24",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3383/jw07763-o072_t072_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3383/jw07763-o072_t072_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3437/jw07763-o075_t075_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3437/jw07763-o075_t075_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3443/jw07763-o076_t076_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3443/jw07763-o076_t076_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "7763"
+      ],
+      "science_time_mjd": 61215.47423550347,
+      "science_time_isot": "2026-06-24T11:22:53.947",
+      "file_count": 6,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -759.163429531247
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -759.163429531247
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2026-06-27",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3461/jw07763-o059_t059_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3461/jw07763-o059_t059_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3470/jw07763-o054_t054_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3470/jw07763-o054_t054_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3475/jw07763-o047_t047_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3475/jw07763-o047_t047_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3486/jw07763-o060_t060_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3486/jw07763-o060_t060_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3492/jw07763-o065_t065_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3492/jw07763-o065_t065_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3501/jw07763-o053_t053_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3501/jw07763-o053_t053_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "7763"
+      ],
+      "science_time_mjd": 61218.66934257523,
+      "science_time_isot": "2026-06-27T16:03:51.198",
+      "file_count": 12,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -762.3585366030093
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -762.3585366030093
+      },
+      "ready_offline": false
+    },
+    {
+      "date": "2026-06-28",
+      "files": [
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3466/jw07763-o068_t068_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3466/jw07763-o068_t068_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3509/jw07763-o067_t067_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3509/jw07763-o067_t067_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3586/jw07763-o052_t052_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3586/jw07763-o052_t052_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3631/jw07763-o050_t050_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3631/jw07763-o050_t050_nircam_clear-f150w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3635/jw07763-o069_t069_nircam_clear-f115w_i2d.fits",
+        "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/IC 3635/jw07763-o069_t069_nircam_clear-f150w_i2d.fits"
+      ],
+      "programs": [
+        "7763"
+      ],
+      "science_time_mjd": 61219.69427842014,
+      "science_time_isot": "2026-06-28T16:39:45.655",
+      "file_count": 10,
+      "local_before": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -763.3834724479166
+      },
+      "download_attempted": false,
+      "downloaded_path": null,
+      "error": null,
+      "local_after": {
+        "opd_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/data/wss_opd/R2024052602-NRCA3_FP1-1.fits",
+        "opd_time_isot": "2024-05-26T07:27:33.636",
+        "opd_delta_days": -763.3834724479166
+      },
+      "ready_offline": false
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+[2026-07-18 14:49:44] FileNotFoundError(2, 'No such file or directory')
+
+Traceback (most recent call last):
+  File "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/run_sbf_batch.py", line 3236, in run_parent
+    returncode = _run_parent_impl(args)
+  File "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/run_sbf_batch.py", line 2595, in _run_parent_impl
+    targets = load_manifest_targets(
+        raw_target_csv,
+        data_root,
+        raw_extra_target_csv,
+    )
+  File "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/run_sbf_batch.py", line 895, in load_manifest_targets
+    targets.extend(read_targets_from_csv(path, data_root))
+                   ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/run_sbf_batch.py", line 696, in read_targets_from_csv
+    with Path(csv_path).open() as handle:
+         ~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/code/targets_go3055_manifest.csv'

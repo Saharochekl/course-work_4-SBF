@@ -1,0 +1,7 @@
+phase,dataset,n_finite,start_sma_px,minsma_px,maxsma_requested_px,step_px,linear,fix_center,fix_pa,fix_eps,status,error,n_isophotes,max_sma_px,center_delta_px,x0_median,y0_median,eps_median,pa_median_rad,last_stop_code,stop_codes
+bootstrap,real_only,15310626,40.0,5.0,200.0,10.0,True,False,False,False,working,,19,190.0,2.710793329617763,1076.322815603575,2998.479239831309,0.1445793098955375,2.2674902246350364,0.0,0;2;5
+bootstrap,real_only,15310626,50.0,5.0,200.0,10.0,True,False,False,False,too_short_or_shifted,,0,,,,,,,,
+bootstrap,real_only,15310626,50.0,5.0,200.0,20.0,True,False,False,False,too_short_or_shifted,,0,,,,,,,,
+bootstrap,real_only,15310626,60.0,5.0,200.0,10.0,True,False,False,False,working,,19,190.0,0.5022200640502276,1077.9443117206063,3000.2075298549285,0.13538161957682754,2.236915777346341,0.0,0;2
+bootstrap,real_only,15310626,70.0,5.0,200.0,10.0,True,False,False,False,working,,19,190.0,1.4520937016962636,1077.6142351922579,2998.9750061228688,0.14415494937164566,2.306059151460239,2.0,0;2;5
+full,real_only,15310626,60.0,5.0,2000.0,10.0,True,False,False,False,working,,199,1990.0,27.44143195900965,1096.8746605023846,3020.49768069705,0.15608714016513803,2.2433973613115277,4.0,0;1;2;4;5

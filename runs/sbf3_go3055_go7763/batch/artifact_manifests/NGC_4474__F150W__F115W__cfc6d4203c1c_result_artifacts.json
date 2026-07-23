@@ -1,0 +1,69 @@
+{
+  "artifacts": [
+    {
+      "exists": true,
+      "fits_valid": true,
+      "mtime_ns": 1784654504900350521,
+      "mtime_utc": "2026-07-21T17:21:44.900+00:00",
+      "name": "clean_model_fits",
+      "ok": true,
+      "path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/products/NGC_4474/F150W__F115W/cfc6d4203c1c/jw07763-o020_t020_nircam_clear-f150w_i2d_01_модель_чистая.fits",
+      "relative_path": "jw07763-o020_t020_nircam_clear-f150w_i2d_01_модель_чистая.fits",
+      "sha256": "158a3c9bf611bf13cd2b356fa07b32a739f254caa20546e73589c645195cba88",
+      "size_bytes": 173701440
+    },
+    {
+      "exists": true,
+      "fits_valid": true,
+      "mtime_ns": 1784654505105425027,
+      "mtime_utc": "2026-07-21T17:21:45.105+00:00",
+      "name": "clean_isophotes_fits",
+      "ok": true,
+      "path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/products/NGC_4474/F150W__F115W/cfc6d4203c1c/jw07763-o020_t020_nircam_clear-f150w_i2d_02_изофоты_чистые.fits",
+      "relative_path": "jw07763-o020_t020_nircam_clear-f150w_i2d_02_изофоты_чистые.fits",
+      "sha256": "f063b7d5a06d3a7247bf6402c0e92503f2d7b17c704c459b5bfa64aa8e9eb2ac",
+      "size_bytes": 173701440
+    },
+    {
+      "exists": true,
+      "fits_valid": true,
+      "mtime_ns": 1784654505306982015,
+      "mtime_utc": "2026-07-21T17:21:45.306+00:00",
+      "name": "full_residual_fits",
+      "ok": true,
+      "path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/products/NGC_4474/F150W__F115W/cfc6d4203c1c/jw07763-o020_t020_nircam_clear-f150w_i2d_03_остатки_общие.fits",
+      "relative_path": "jw07763-o020_t020_nircam_clear-f150w_i2d_03_остатки_общие.fits",
+      "sha256": "5de7eaa482d8a90617781b3a392bd220f59cc3b96fca81756fbdef23a4ca12a9",
+      "size_bytes": 173701440
+    },
+    {
+      "exists": true,
+      "fits_valid": true,
+      "mtime_ns": 1784654505492781884,
+      "mtime_utc": "2026-07-21T17:21:45.492+00:00",
+      "name": "working_residual_fits",
+      "ok": true,
+      "path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/products/NGC_4474/F150W__F115W/cfc6d4203c1c/jw07763-o020_t020_nircam_clear-f150w_i2d_04_остатки_общие_рабочие.fits",
+      "relative_path": "jw07763-o020_t020_nircam_clear-f150w_i2d_04_остатки_общие_рабочие.fits",
+      "sha256": "77cb5a27378a8edce511fa1c6c1ca4316bec6de7ea9b1760359c99a6d794b956",
+      "size_bytes": 173701440
+    },
+    {
+      "exists": true,
+      "fits_valid": true,
+      "mtime_ns": 1784657647571317355,
+      "mtime_utc": "2026-07-21T18:14:07.571+00:00",
+      "name": "working_annuli_residual_fits",
+      "ok": true,
+      "path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/products/NGC_4474/F150W__F115W/cfc6d4203c1c/jw07763-o020_t020_nircam_clear-f150w_i2d_05_остатки_общие_рабочие_два_кольца.fits",
+      "relative_path": "jw07763-o020_t020_nircam_clear-f150w_i2d_05_остатки_общие_рабочие_два_кольца.fits",
+      "sha256": "f9fc6d5ffc1b01fc7694bcc0fdeeced1968d8360d6817841c507155eacb8121b",
+      "size_bytes": 173701440
+    }
+  ],
+  "base_dir": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf3_go3055_go7763/products/NGC_4474/F150W__F115W/cfc6d4203c1c",
+  "count": 5,
+  "created_at_utc": "2026-07-21T18:14:09.285+00:00",
+  "ok": true,
+  "schema_version": 1
+}

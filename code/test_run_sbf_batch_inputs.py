@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import csv
 import json
+import os
 import tempfile
 import unittest
 from argparse import Namespace
@@ -16,37 +17,155 @@ PROJECT_ROOT = CODE_DIR.parent
 
 
 class BatchInputContractTests(unittest.TestCase):
-    def test_sbf3_standalone_defaults_and_stage_dump_contract(self):
+    def test_sbf3_standalone_defaults_and_five_fits_contract(self):
         notebook = json.loads((CODE_DIR / "sbf-3.ipynb").read_text())
         code = "\n".join(
             "".join(cell.get("source", []))
             for cell in notebook["cells"]
             if cell.get("cell_type") == "code"
         )
-        self.assertIn("NGC 1380", code)
-        self.assertIn("jw03055-o001_t001_nircam_clear-f356w_i2d.fits", code)
-        self.assertIn("jw03055-o001_t001_nircam_clear-f277w_i2d.fits", code)
+        self.assertIn("NGC 1404", code)
+        self.assertIn("jw03055-o003_t003_nircam_clear-f356w_i2d.fits", code)
+        self.assertIn("jw03055-o003_t003_nircam_clear-f277w_i2d.fits", code)
         self.assertIn("PROJECT_ROOT = PYTHON_EXECUTABLE.parents[2]", code)
         self.assertIn("DATA_ROOT = PROJECT_ROOT / \"data\"", code)
         self.assertIn(
             "out_dir = resolve_project_path(globals().get(\"out_dir\", signal_path.parent))",
             code,
         )
-        for stage in (
-            "00_input",
-            "01_background",
-            "02_premask",
-            "03_sersic",
-            "04_cutout",
-            "05_isophote_input",
-            "06_isophote_cutout",
-            "07_isophotes",
-            "10_psf",
-            "11_sbf",
-            "12_summary",
-            "13_color",
+        for fits_name in (
+            "01_модель_чистая",
+            "02_изофоты_чистые",
+            "03_остатки_общие",
+            "04_остатки_общие_рабочие",
+            "05_остатки_общие_рабочие_два_кольца",
         ):
-            self.assertIn(stage, code)
+            self.assertIn(fits_name, code)
+        self.assertNotIn("save_stage_fits", code)
+        self.assertNotIn("save_stage_image", code)
+
+    def test_sbf3_runner_tracks_exactly_five_calibration_fits(self):
+        paths = batch.result_paths(Path("products"), "signal", pipeline_label="sbf3")
+        fits_paths = {key: path for key, path in paths.items() if path.suffix == ".fits"}
+        self.assertEqual(
+            set(fits_paths),
+            {
+                "clean_model_fits",
+                "clean_isophotes_fits",
+                "full_residual_fits",
+                "working_residual_fits",
+                "working_annuli_residual_fits",
+            },
+        )
+        self.assertEqual(
+            [path.name for path in fits_paths.values()],
+            [
+                "signal_01_модель_чистая.fits",
+                "signal_02_изофоты_чистые.fits",
+                "signal_03_остатки_общие.fits",
+                "signal_04_остатки_общие_рабочие.fits",
+                "signal_05_остатки_общие_рабочие_два_кольца.fits",
+            ],
+        )
+
+    def test_sbf2_runner_paths_remain_unchanged(self):
+        paths = batch.result_paths(Path("products"), "signal", pipeline_label="sbf2")
+        self.assertEqual(
+            paths["science_residual_fits"].name,
+            "signal_sbf_resid_full_science.fits",
+        )
+        self.assertIn("inner_usable_residual_fits", paths)
+        self.assertIn("outer_usable_residual_fits", paths)
+
+    def test_sbf3_result_json_records_five_fits_existence(self):
+        fits_keys = {
+            "clean_model_fits",
+            "clean_isophotes_fits",
+            "full_residual_fits",
+            "working_residual_fits",
+            "working_annuli_residual_fits",
+        }
+        notebook = {
+            "metadata": {"sbf_pipeline": {"family": "sbf3"}},
+            "cells": [
+                {
+                    "cell_type": "code",
+                    "source": [
+                        "from pathlib import Path\n",
+                        "import numpy as np\n",
+                        "from astropy.io import fits\n",
+                        "stem = Path(signal_path).stem\n",
+                        "names = [\n",
+                        "    '01_модель_чистая',\n",
+                        "    '02_изофоты_чистые',\n",
+                        "    '03_остатки_общие',\n",
+                        "    '04_остатки_общие_рабочие',\n",
+                        "    '05_остатки_общие_рабочие_два_кольца',\n",
+                        "]\n",
+                        "for name in names:\n",
+                        "    fits.writeto(out_dir / f'{stem}_{name}.fits', np.zeros((2, 2)), overwrite=True)\n",
+                        "recommended_sbf = {'mbar_weighted': 1.23}\n",
+                    ],
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            template = root / "renamed.ipynb"
+            template.write_text(json.dumps(notebook))
+            result = batch.execute_template_for_target(
+                template,
+                "test galaxy",
+                root / "signal.fits",
+                root / "color.fits",
+                root / "batch",
+                output_dir=root / "products",
+            )
+            saved_result = json.loads(
+                next((root / "batch").glob("*_result.json")).read_text()
+            )
+
+        for key in fits_keys:
+            self.assertTrue(result[f"{key}_exists"])
+            self.assertTrue(saved_result[f"{key}_exists"])
+        self.assertEqual(
+            {key.removesuffix("_exists") for key in saved_result if key.endswith("_fits_exists")},
+            fits_keys,
+        )
+
+    def test_sbf3_residual_links_use_two_working_products(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            full = root / "03.fits"
+            working = root / "04.fits"
+            annuli = root / "05.fits"
+            for path in (full, working, annuli):
+                path.write_bytes(b"fits")
+            batch.link_residuals(
+                [
+                    {
+                        "status": "ok",
+                        "galaxy": "NGC 1404",
+                        "template_family": batch.SBF3_NOTEBOOK_FAMILY,
+                        "full_residual_fits": str(full),
+                        "working_residual_fits": str(working),
+                        "working_annuli_residual_fits": str(annuli),
+                    }
+                ],
+                root / "batch",
+            )
+            links = sorted((root / "batch" / "residuals").iterdir())
+            self.assertEqual(
+                [path.name for path in links],
+                [
+                    "NGC_1404_working_annuli_residual_fits.fits",
+                    "NGC_1404_working_residual_fits.fits",
+                ],
+            )
+            self.assertEqual(
+                {path.resolve() for path in links},
+                {working.resolve(), annuli.resolve()},
+            )
 
     def test_additional_manifest_snapshot_and_runner_boundary(self):
         manifest = CODE_DIR / "targets_additional_manifest.csv"
@@ -78,6 +197,99 @@ class BatchInputContractTests(unittest.TestCase):
             (m104["signal_filter"], m104["color_filter"]),
             ("F200W", "F090W"),
         )
+
+    def test_live_consumer_loads_both_programs_and_their_own_filter_pairs(self):
+        targets = batch.load_manifest_targets(
+            CODE_DIR / "targets_go3055_manifest.csv",
+            PROJECT_ROOT / "data",
+            [CODE_DIR / "targets_additional_manifest.csv"],
+        )
+        selected = batch.select_targets(
+            targets,
+            galaxies=None,
+            programs=["GO-3055", "07763"],
+            allow_bulk_targets=True,
+        )
+        self.assertEqual(len(selected), 88)
+        self.assertEqual(
+            Counter(target["program"] for target in selected),
+            Counter({"3055": 14, "7763": 74}),
+        )
+        self.assertEqual(
+            Counter(
+                (target["signal_filter"], target["color_filter"])
+                for target in selected
+            ),
+            Counter({("F150W", "F090W"): 14, ("F150W", "F115W"): 74}),
+        )
+        self.assertEqual(selected[0]["name"], "NGC 1380")
+
+    def test_live_consumer_cli_keeps_the_second_manifest_and_program_filter(self):
+        args = batch.parse_args(
+            [
+                "--target-csv",
+                "first.csv",
+                "--extra-target-csv",
+                "second.csv",
+                "--programs",
+                "3055",
+                "7763",
+                "--no-download",
+                "--prefetch-targets",
+                "0",
+            ]
+        )
+        self.assertEqual(args.target_csv, "first.csv")
+        self.assertEqual(args.extra_target_csv, ["second.csv"])
+        self.assertEqual(args.programs, ["3055", "7763"])
+        self.assertTrue(args.no_download)
+        self.assertEqual(args.prefetch_targets, 0)
+
+    def test_project_relative_paths_are_independent_of_shell_working_directory(self):
+        args = batch.parse_args(
+            [
+                "--template",
+                "code/sbf-3.ipynb",
+                "--target-csv",
+                "code/targets_go3055_manifest.csv",
+                "--extra-target-csv",
+                "code/targets_additional_manifest.csv",
+                "--data-root",
+                "data",
+                "--batch-root",
+                "runs/test/batch",
+            ]
+        )
+        previous = Path.cwd()
+        try:
+            os.chdir(CODE_DIR)
+            batch.normalize_cli_paths(args)
+        finally:
+            os.chdir(previous)
+
+        self.assertEqual(Path(args.template), CODE_DIR / "sbf-3.ipynb")
+        self.assertEqual(
+            Path(args.target_csv), CODE_DIR / "targets_go3055_manifest.csv"
+        )
+        self.assertEqual(
+            [Path(path) for path in args.extra_target_csv],
+            [CODE_DIR / "targets_additional_manifest.csv"],
+        )
+        self.assertEqual(Path(args.data_root), PROJECT_ROOT / "data")
+        self.assertEqual(
+            Path(args.batch_root), PROJECT_ROOT / "runs" / "test" / "batch"
+        )
+
+    def test_program_filter_is_applied_before_bulk_guard(self):
+        targets = [
+            {"name": f"A-{index}", "program": "1"} for index in range(20)
+        ] + [{"name": "B", "program": "2"}]
+        self.assertEqual(
+            batch.select_targets(targets, None, programs=["2"]),
+            [{"name": "B", "program": "2"}],
+        )
+        with self.assertRaisesRegex(ValueError, "absent"):
+            batch.select_targets(targets, None, programs=["999"])
 
     def test_download_manager_receives_only_parent_selected_targets(self):
         args = Namespace(
@@ -145,6 +357,28 @@ class BatchInputContractTests(unittest.TestCase):
                     required_bytes=512 * 1024**2,
                 )
             )
+
+    def test_live_consumer_disk_budget_subtracts_existing_partial_bytes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = batch.normalize_target(
+                {
+                    "name": "PARTIAL",
+                    "signal_product": "signal.fits",
+                    "color_product": "color.fits",
+                    "signal_size": 1000,
+                    "color_size": 2000,
+                }
+            )
+            target_dir = root / "PARTIAL"
+            target_dir.mkdir()
+            (target_dir / "signal.fits.part").write_bytes(b"x" * 400)
+            (target_dir / "color.fits.restart.part").write_bytes(b"x" * 750)
+
+            growth = batch.remaining_input_growth([target], root)
+
+        self.assertEqual(growth["remaining_bytes"], 1850)
+        self.assertEqual(growth["unknown_product_count"], 0)
 
     def test_extended_manifest_skips_disabled_rows(self):
         columns = [
@@ -337,7 +571,7 @@ class BatchInputContractTests(unittest.TestCase):
             self.assertEqual(result["stem"], "signal")
             self.assertEqual(Path(result["out_dir"]), output_dir.resolve())
 
-    def test_result_reuse_requires_matching_identity(self):
+    def test_result_reuse_ignores_template_sha_for_same_inputs(self):
         target = {
             "name": "test",
             "signal_filter": "F150W",
@@ -362,7 +596,7 @@ class BatchInputContractTests(unittest.TestCase):
             changed_identity = batch.expected_run_identity(
                 template, target, signal, color, products_root=root / "products"
             )
-            self.assertIsNone(
+            self.assertIsNotNone(
                 batch.final_result_for(target, root, identity=changed_identity)
             )
 

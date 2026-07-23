@@ -37,7 +37,45 @@ is actionable. A false row remains visible in the planning table but is skipped
 before product validation or download. The reason is recorded in
 `availability_status` and `notes`; do not bulk-change these flags.
 
-Always select a first target explicitly. The selected names are propagated to
+### Offline input collection for GO-3055 + GO-7763
+
+`download_go3055_go7763.py` is the standalone collector for the complete
+offline processing set. Its default invocation is a local dry run: it reads the
+two manifests, validates existing FITS files and reports only the missing or
+incomplete queue without opening a network connection:
+
+```bash
+astro_env/bin/python code/download_go3055_go7763.py
+```
+
+The current contract contains 14 enabled GO-3055 targets and 74 enabled
+GO-7763 targets (176 products in total). Five additional GO-7763 rows stay
+disabled because no target-level F150W signal product exists. A real run is:
+
+```bash
+astro_env/bin/python code/download_go3055_go7763.py --download
+```
+
+That command processes all missing products from both programmes with four
+concurrent downloads. Use `--workers 1` for strict sequential operation or
+`--workers 6` only if four streams still do not saturate the connection. It does
+not start galaxy processing. Every transfer is written as
+`<name>.fits.part`, resumed with HTTP Range after interruption, checked against
+the remote byte count and FITS structure, hashed with SHA-256, and only then
+atomically published as `<name>.fits`. Transient errors are retried; a permanent
+failure is recorded and the next product is attempted. The machine-readable
+state is updated after every file in
+`data/download_go3055_go7763_status.json`.
+
+The default disk reserve is 40 GiB. The script checks the whole planned growth
+before starting and checks the remaining bytes again before every response.
+Use `--program 3055` or `--program 7763` only for a deliberately restricted
+repair run. Repeating the same command is safe: structurally valid products are
+skipped and `.part` files are resumed.
+
+### Downloading while processing
+
+For `run_sbf_batch.py`, always select a first target explicitly. The selected names are propagated to
 the separate download worker, so this command downloads and processes only
 NGC 4889:
 
@@ -64,13 +102,69 @@ reserve (`--min-free-gb`, 30 GiB by default) and the remaining file bytes. It
 waits instead of crossing that boundary.
 
 By default, a low-space run may remove the original signal/color FITS belonging
-to already successful results. `--no-cleanup-inputs` forbids that deletion; the
-downloader will then remain blocked until space is freed. The child download
-worker is stopped when the parent exits normally and is also registered for
-interpreter-exit cleanup.
+to already successful results, but only after all five mandatory SBF-3 FITS
+have been reopened successfully and recorded with sizes and SHA-256 hashes.
+`status=ok` by itself is not permission to delete an input. `--no-cleanup-inputs`
+forbids deletion entirely; the downloader will then remain blocked until space
+is freed.
 
-Add `--no-download` only when every explicitly selected FITS pair already exists
-under `data/<target>/`.
+The parent downloads the current target and preloads at most one future target
+(`--prefetch-targets 1`). It never starts an archive-wide background fetch.
+Use `--prefetch-targets 0` to disable preloading. Child download workers are
+stopped on normal exit and on an interrupt. Internally they receive an exact
+manifest-row key (including URI and filters), not merely a possibly duplicated
+galaxy name. Inputs shared with any still-pending filter pair are protected
+from low-space cleanup.
+
+With `--no-download`, the runner never writes an input FITS. If a selected pair
+is absent, it waits and rechecks the two final paths. This is the safe mode for
+consuming files from the already-running standalone collector: `.part` and
+`.restart.part` files are reported as transfer progress but are never passed to
+the notebook.
+
+### Consuming the live GO-3055 + GO-7763 download
+
+Do not start the integrated download worker beside
+`download_go3055_go7763.py`: the two downloaders use different locks. Keep the
+standalone collector as the only writer and start a read-only consumer in a
+second terminal:
+
+All relative path arguments are resolved against the project root, not the
+current terminal directory. Therefore the same command works both from the
+project root and from `code/`.
+
+```bash
+astro_env/bin/python code/run_sbf_batch.py \
+  --template code/sbf-3.ipynb \
+  --target-csv code/targets_go3055_manifest.csv \
+  --extra-target-csv code/targets_additional_manifest.csv \
+  --programs 3055 7763 \
+  --data-root data \
+  --batch-root runs/sbf3_go3055_go7763/batch \
+  --products-root runs/sbf3_go3055_go7763/products \
+  --campaign-root runs/sbf3_go3055_go7763/campaign \
+  --external-download-status data/download_go3055_go7763_status.json \
+  --no-download \
+  --prefetch-targets 0 \
+  --no-cleanup-inputs \
+  --allow-bulk-targets \
+  --external-download-reserve-gb 40 \
+  --estimated-worker-output-gb 1 \
+  --min-processing-free-gb 40 \
+  --wall-time-hours 48 \
+  --soft-stop-minutes 30
+```
+
+Manifest order is preserved: the 14 GO-3055 rows are consumed first, followed
+by the 74 enabled GO-7763 rows. Filter roles are read per row. Thus GO-3055 uses
+F150W signal + F090W color, while GO-7763 uses F150W signal + F115W color; there
+is no F090W fallback for the generic GO-7763 rows.
+
+The disk admission check is based on the remaining bytes of every unfinished
+selected product, including resumable partial sizes. While inputs remain, a new
+notebook starts only if free space covers those bytes, the standalone
+downloader's 40-GiB reserve, and the estimated next five-FITS result. Once all
+input pairs are complete, the external reserve is released automatically.
 
 Required columns for an enabled row are:
 
@@ -103,8 +197,54 @@ are matched through WCS and bilinear color sampling rather than array-index
 cropping.
 
 Every `sbf-3` run requires isolated batch and product roots. Result reuse also
-requires a matching notebook SHA256, input fingerprints, filters and output
-directory, so different filter pairs cannot silently overwrite one another.
+requires a matching stable `job_id`, notebook SHA256 and verified artifact
+manifest, so different filter pairs cannot silently overwrite one another.
+The `job_id` is built from program, obsid, archive product URIs, filters,
+notebook SHA256 and processing-contract SHA256; local paths, `mtime` and inode
+do not affect it. Local input fingerprints are still saved as attempt
+provenance and detect a replaced source file.
+
+## Autonomous campaign state
+
+Normal parent runs now have a 48-hour hard limit and stop starting new galaxies
+30 minutes before it. Change these with `--wall-time-hours` and
+`--soft-stop-minutes`; set `--worker-timeout-hours` for an additional per-galaxy
+limit. `SIGINT`, `SIGTERM` and `SIGHUP` stop the active process group with a
+TERM-to-KILL grace period and leave the job resumable.
+
+The durable state is stored by default under
+`<batch-root>/campaign/campaign_state.sqlite` in WAL mode. It contains the
+queue, attempts, events, resource samples and artifact records. A human-readable
+`queue_snapshot.json`, atomic batch summaries, per-worker logs and artifact
+manifests are written beside it/in the batch root. The campaign directory also
+contains `campaign.log`, `campaign_events.jsonl`, `run_provenance.json`, manifest
+and notebook snapshots, `invocations.jsonl`, and `campaign_report.txt`. Each
+worker records the complete cell output in its target log and writes a separate
+`*_cell_timings.jsonl`; source inputs and the five required output FITS receive
+SHA-256 hashes. Repeating the same command resumes the newest compatible
+unfinished run; `--new-run` forces a fresh run. An OS-level `parent.lock`
+prevents two parent processes from resuming and mutating the same campaign
+simultaneously.
+
+RAM and free disk are sampled during workers and download waits. New workers
+wait below `--min-available-ram-gb`; active workers are terminated after a
+persistent low-RAM condition, immediately below
+`--emergency-available-ram-gb`, above `--max-worker-rss-gb` (when nonzero), or
+below `--critical-free-gb`.
+
+A bounded example is:
+
+```bash
+astro_env/bin/python code/run_sbf_batch.py \
+  --template code/sbf-3.ipynb \
+  --target-csv code/targets_additional_manifest.csv \
+  --data-root data \
+  --batch-root code/sbf3_runs/batch \
+  --products-root code/sbf3_runs/products \
+  --wall-time-hours 48 \
+  --soft-stop-minutes 30 \
+  --galaxies "NGC 4889" "NGC 4874"
+```
 
 This is not an HST or Legacy Survey image pipeline. Those instruments still
 need separate PSF and photometric adapters. A new JWST band also needs its own

@@ -1,0 +1,3 @@
+region,rin_arcsec,rout_arcsec,n_raw,n_clip,signal_filter,color_filter,color_name,sampling_mode,signal_median,color_median,color_index,color_scatter,color_sem_proxy,notes
+circular_inner_lit,8.2,16.4,649437,643369,F150W,F115W,F115W-F150W,wcs_bilinear,11.991587092487626,9.735137256760604,0.2263364673202832,0.020501542801241612,2.5559742761292756e-05,"same circular annulus as SBF; wcs_bilinear color sampling; scatter is pixel-color diagnostic, not full calibration error"
+circular_outer_lit,16.4,32.8,2438307,2397268,F150W,F115W,F115W-F150W,wcs_bilinear,4.050096773683941,3.315070264416385,0.21743165634084555,0.030371227123237195,1.961571059638243e-05,"same circular annulus as SBF; wcs_bilinear color sampling; scatter is pixel-color diagnostic, not full calibration error"
