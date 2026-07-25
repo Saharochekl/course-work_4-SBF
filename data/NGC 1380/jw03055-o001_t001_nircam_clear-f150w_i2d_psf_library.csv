@@ -1,0 +1,6 @@
+psf_id,kind,opd_path,shape,sum
+stpsf_R2023111002-NRCA3_FP1-1,model,/Users/zuha/data/stpsf-data/MAST_JWST_WSS_OPDs/R2023111002-NRCA3_FP1-1.fits,"(129, 129)",0.9999999999999998
+stpsf_field_1280_1024,model_field_variation,/Users/zuha/data/stpsf-data/MAST_JWST_WSS_OPDs/R2023111002-NRCA3_FP1-1.fits,"(129, 129)",1.0
+stpsf_field_768_1024,model_field_variation,/Users/zuha/data/stpsf-data/MAST_JWST_WSS_OPDs/R2023111002-NRCA3_FP1-1.fits,"(129, 129)",1.0
+stpsf_field_1024_1280,model_field_variation,/Users/zuha/data/stpsf-data/MAST_JWST_WSS_OPDs/R2023111002-NRCA3_FP1-1.fits,"(129, 129)",1.0
+stpsf_field_1024_768,model_field_variation,/Users/zuha/data/stpsf-data/MAST_JWST_WSS_OPDs/R2023111002-NRCA3_FP1-1.fits,"(129, 129)",1.0
