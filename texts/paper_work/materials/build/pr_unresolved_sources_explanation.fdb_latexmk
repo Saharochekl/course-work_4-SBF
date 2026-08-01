@@ -1,6 +1,7 @@
 # Fdb version 4
-["pdflatex"] 1785166277.65636 "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/texts/paper_work/materials/pr_unresolved_sources_explanation.tex" "build/pr_unresolved_sources_explanation.pdf" "pr_unresolved_sources_explanation" 1785166278.63343 0
-  "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/texts/paper_work/materials/pr_unresolved_sources_explanation.tex" 1785166275.41019 57544 2bc7666ce5f65d88238a9d8cda241ba3 ""
+["pdflatex"] 1785263391.10869 "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/texts/paper_work/materials/pr_unresolved_sources_explanation.tex" "build/pr_unresolved_sources_explanation.pdf" "pr_unresolved_sources_explanation" 1785263392.08547 0
+  "../../../runs/sbf2_go3055/analysis/tables/go3055_distances_mpc.tex" 1785261863.99797 2032 b65138b8f9c3877c4c8d2ff9a3832952 ""
+  "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/texts/paper_work/materials/pr_unresolved_sources_explanation.tex" 1785263390.98828 58958 d4ac929cf8755b8a10a61fc60ce62972 ""
   "/Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/labx1095.tfm" 1749868804.26831 3336 216c27338cb0f11f0d2908d69ce3de23 ""
   "/Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/labx1200.tfm" 1748385537.0196 3308 eee81981029f67083258db36df06e523 ""
   "/Users/zuha/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/labx1440.tfm" 1748383375.79491 3304 6a543c07045572737981351171e0505e ""
@@ -124,6 +125,7 @@
   "/usr/local/texlive/2025/texmf-dist/tex/latex/graphics-def/pdftex.def" 1713382759 19440 9da9dcbb27470349a580fca7372d454b ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/color.sty" 1730496337 7245 57f7defed4fb41562dc4b6ca13958ca9 ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/graphics.sty" 1730496337 18363 dee506cb8d56825d8a4d020f5d5f8704 ""
+  "/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/graphicx.sty" 1717359999 8010 6f2ad8c2b2ffbd607af6475441c7b5e4 ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/keyval.sty" 1717359999 2671 70891d50dac933918b827d326687c6e8 ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/lscape.sty" 1717359999 1822 ce7e39e35ea3027d24b527bd5c5034d5 ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/mathcolor.ltx" 1667332637 2885 9c645d672ae17285bba324998918efd8 ""
@@ -150,10 +152,10 @@
   "/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1748372261 5467155 19efa205003f9ecad95fbbaa6ff24da1 ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1748372131 3345732 aabcaff7470c5d83b70fd5840d3a83d5 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
-  "build/pr_unresolved_sources_explanation.aux" 1785166278.47588 8699 352c56dc3cc4a0cf8ad5cb3883d2e977 "pdflatex"
-  "build/pr_unresolved_sources_explanation.out" 1785166278.47726 9600 758a17bb3d78b7a1225b6c7c53485577 "pdflatex"
-  "build/pr_unresolved_sources_explanation.toc" 1785166278.47754 3881 65acb9ed9ea9bdc0b93ecf65811e6baa "pdflatex"
-  "pr_unresolved_sources_explanation.tex" 1785166275.41019 57544 2bc7666ce5f65d88238a9d8cda241ba3 ""
+  "build/pr_unresolved_sources_explanation.aux" 1785263391.92588 9503 d53d21a31fa2a4493fafb445ee7793d3 "pdflatex"
+  "build/pr_unresolved_sources_explanation.out" 1785263391.92707 9860 942ee3acc10ccb4373fa62db782cf578 "pdflatex"
+  "build/pr_unresolved_sources_explanation.toc" 1785263391.9273 3997 1d90e9cbe691ccadfac776875fb5bcd7 "pdflatex"
+  "pr_unresolved_sources_explanation.tex" 1785263390.98828 58958 d4ac929cf8755b8a10a61fc60ce62972 ""
   (generated)
   "build/pr_unresolved_sources_explanation.aux"
   "build/pr_unresolved_sources_explanation.log"

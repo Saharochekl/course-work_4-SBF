@@ -1,48 +1,48 @@
-SBF campaign report: run-20260726T090527Z-485f0e793321-c3e42809
-Generated: 2026-07-26 14:33:43
+SBF campaign report: run-20260729T011326Z-519ea014326f-3d130739
+Generated: 2026-07-29 06:43:13
 State: COMPLETED
 Counts: {"SUCCEEDED": 14}
 
 Targets:
 - NGC 1380 | GO-3055 | F150W+F090W | SUCCEEDED | job_id=job-02257cca1dd4d5b3a35750bac155296aed4cef973db27d56879b85dacb37fa72
   artifacts: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/artifact_manifests/NGC_1380_result_artifacts.json
-  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_1380/F150W__F090W/run_20260726T090527Z_485f0e793321_c3e42809__attempt_1__1785056728/cell_timings.jsonl
+  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_1380/F150W__F090W/run_20260729T011326Z_519ea014326f_3d130739__attempt_1__1785287608/cell_timings.jsonl
 - NGC 1399 | GO-3055 | F150W+F090W | SUCCEEDED | job_id=job-7441a28247dab0dd6549d43b4749fc34e6a055eab04a894e0929b9276e115803
   artifacts: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/artifact_manifests/NGC_1399_result_artifacts.json
-  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_1399/F150W__F090W/run_20260726T090527Z_485f0e793321_c3e42809__attempt_1__1785058050/cell_timings.jsonl
+  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_1399/F150W__F090W/run_20260729T011326Z_519ea014326f_3d130739__attempt_1__1785289020/cell_timings.jsonl
 - NGC 1404 | GO-3055 | F150W+F090W | SUCCEEDED | job_id=job-79a3e0ebf28e837843fee91c6070115e66ac72c65ef36981d49aad91144a20b9
   artifacts: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/artifact_manifests/NGC_1404_result_artifacts.json
-  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_1404/F150W__F090W/run_20260726T090527Z_485f0e793321_c3e42809__attempt_1__1785058921/cell_timings.jsonl
+  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_1404/F150W__F090W/run_20260729T011326Z_519ea014326f_3d130739__attempt_1__1785289892/cell_timings.jsonl
 - NGC 4472 | GO-3055 | F150W+F090W | SUCCEEDED | job_id=job-c13c03dc4a43dd63016bf9ecad820a251d77f63ff8f2d9c266488f2fd18a1083
   artifacts: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/artifact_manifests/NGC_4472_result_artifacts.json
-  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4472/F150W__F090W/run_20260726T090527Z_485f0e793321_c3e42809__attempt_1__1785059763/cell_timings.jsonl
+  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4472/F150W__F090W/run_20260729T011326Z_519ea014326f_3d130739__attempt_1__1785290733/cell_timings.jsonl
 - NGC 4552 | GO-3055 | F150W+F090W | SUCCEEDED | job_id=job-3634f40b5f19d2c0917671f5760671932f8f5e37f4b05f239591b3d1c0dcc630
   artifacts: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/artifact_manifests/NGC_4552_result_artifacts.json
-  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4552/F150W__F090W/run_20260726T090527Z_485f0e793321_c3e42809__attempt_1__1785060034/cell_timings.jsonl
+  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4552/F150W__F090W/run_20260729T011326Z_519ea014326f_3d130739__attempt_1__1785291005/cell_timings.jsonl
 - NGC 4636 | GO-3055 | F150W+F090W | SUCCEEDED | job_id=job-e1e58a5d3187e2b28a1358a4a00b0455d75ecf0f06a38a09939e1a18d82e2f7e
   artifacts: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/artifact_manifests/NGC_4636_result_artifacts.json
-  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4636/F150W__F090W/run_20260726T090527Z_485f0e793321_c3e42809__attempt_1__1785060365/cell_timings.jsonl
+  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4636/F150W__F090W/run_20260729T011326Z_519ea014326f_3d130739__attempt_1__1785291336/cell_timings.jsonl
 - NGC 4649 | GO-3055 | F150W+F090W | SUCCEEDED | job_id=job-17ca5ccdbc5a35e5a809587c34c2aa4d8eeb332d38f372d48a47ff9f7d5d6168
   artifacts: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/artifact_manifests/NGC_4649_result_artifacts.json
-  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4649/F150W__F090W/run_20260726T090527Z_485f0e793321_c3e42809__attempt_1__1785060697/cell_timings.jsonl
+  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4649/F150W__F090W/run_20260729T011326Z_519ea014326f_3d130739__attempt_1__1785291667/cell_timings.jsonl
 - NGC 4697 | GO-3055 | F150W+F090W | SUCCEEDED | job_id=job-859ab8c3fc392dbd1b8c361b7e410c7a56c1e5e1b2f834f08c7dd3279c05d83d
   artifacts: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/artifact_manifests/NGC_4697_result_artifacts.json
-  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4697/F150W__F090W/run_20260726T090527Z_485f0e793321_c3e42809__attempt_1__1785061028/cell_timings.jsonl
+  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4697/F150W__F090W/run_20260729T011326Z_519ea014326f_3d130739__attempt_1__1785291998/cell_timings.jsonl
 - NGC 4486 | GO-3055 | F150W+F090W | SUCCEEDED | job_id=job-40594e432fd4530f698c118f5fb4ff416e42b570b307142984b6b3308b8613e7
   artifacts: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/artifact_manifests/NGC_4486_result_artifacts.json
-  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4486/F150W__F090W/run_20260726T090527Z_485f0e793321_c3e42809__attempt_1__1785061359/cell_timings.jsonl
+  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4486/F150W__F090W/run_20260729T011326Z_519ea014326f_3d130739__attempt_1__1785292329/cell_timings.jsonl
 - NGC 4374 | GO-3055 | F150W+F090W | SUCCEEDED | job_id=job-56cf21c8f49af016254301ef165770c230a9ae705ee9520f6da0784f397aedf3
   artifacts: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/artifact_manifests/NGC_4374_result_artifacts.json
-  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4374/F150W__F090W/run_20260726T090527Z_485f0e793321_c3e42809__attempt_1__1785061690/cell_timings.jsonl
+  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4374/F150W__F090W/run_20260729T011326Z_519ea014326f_3d130739__attempt_1__1785292660/cell_timings.jsonl
 - NGC 4406 | GO-3055 | F150W+F090W | SUCCEEDED | job_id=job-b841860d848479f07e18c7ebf4da6ad1293dcb19c0288a7dd032d7d5f2d09c44
   artifacts: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/artifact_manifests/NGC_4406_result_artifacts.json
-  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4406/F150W__F090W/run_20260726T090527Z_485f0e793321_c3e42809__attempt_1__1785062350/cell_timings.jsonl
+  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4406/F150W__F090W/run_20260729T011326Z_519ea014326f_3d130739__attempt_1__1785293351/cell_timings.jsonl
 - NGC 4621 | GO-3055 | F150W+F090W | SUCCEEDED | job_id=job-24e962a5ad045fc1e9e145d0d888904bcc03057d27402dfe6948aeddeac6f85a
   artifacts: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/artifact_manifests/NGC_4621_result_artifacts.json
-  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4621/F150W__F090W/run_20260726T090527Z_485f0e793321_c3e42809__attempt_1__1785062681/cell_timings.jsonl
+  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_4621/F150W__F090W/run_20260729T011326Z_519ea014326f_3d130739__attempt_1__1785293681/cell_timings.jsonl
 - NGC 1549 | GO-3055 | F150W+F090W | SUCCEEDED | job_id=job-d8753c417d7409ac45e1712ae8d45e3bc9efcd40b0748aa9ff5c55446be4ca27
   artifacts: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/artifact_manifests/NGC_1549_result_artifacts.json
-  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_1549/F150W__F090W/run_20260726T090527Z_485f0e793321_c3e42809__attempt_1__1785064122/cell_timings.jsonl
+  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_1549/F150W__F090W/run_20260729T011326Z_519ea014326f_3d130739__attempt_1__1785295062/cell_timings.jsonl
 - NGC 3379 | GO-3055 | F150W+F090W | SUCCEEDED | job_id=job-7e5fa2d7eccdbafb4240c7b37451797e698d2589b2f83c5b86359930d43d53c8
   artifacts: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/artifact_manifests/NGC_3379_result_artifacts.json
-  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_3379/F150W__F090W/run_20260726T090527Z_485f0e793321_c3e42809__attempt_1__1785065293/cell_timings.jsonl
+  cell timings: /Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/products/NGC_3379/F150W__F090W/run_20260729T011326Z_519ea014326f_3d130739__attempt_1__1785296263/cell_timings.jsonl

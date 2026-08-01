@@ -1,0 +1,2 @@
+sample,x_color,y_color,n,pearson_r,pearson_p,spearman_rho,spearman_p,ols_slope,ols_slope_stderr,ols_intercept
+8 общих галактик,F090W−F150W,Pan-STARRS g−z,8,0.8686722593166132,0.005119430941350036,0.880952380952381,0.0038503204637324014,0.9556159405521878,0.22248288798155932,0.7796049188018171

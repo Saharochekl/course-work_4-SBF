@@ -3,12 +3,12 @@
   "counts": {
     "SUCCEEDED": 14
   },
-  "generated_at": 1785065623.4900448,
+  "generated_at": 1785296593.8613498,
   "jobs": [
     {
       "attempt_count": 1,
-      "created_at": 1785056727.501472,
-      "ended_at": 1785058049.249223,
+      "created_at": 1785287607.108993,
+      "ended_at": 1785289019.33311,
       "filters": {
         "color": "F090W",
         "signal": "F150W"
@@ -64,16 +64,16 @@
       },
       "program": "3055",
       "queue_position": 0,
-      "run_id": "run-20260726T090527Z-485f0e793321-c3e42809",
-      "started_at": 1785056728.884316,
+      "run_id": "run-20260729T011326Z-519ea014326f-3d130739",
+      "started_at": 1785287608.803915,
       "state": "SUCCEEDED",
       "target": "NGC 1380",
-      "updated_at": 1785058049.249223
+      "updated_at": 1785289019.33311
     },
     {
       "attempt_count": 1,
-      "created_at": 1785056727.501611,
-      "ended_at": 1785058920.746002,
+      "created_at": 1785287607.109159,
+      "ended_at": 1785289891.0410721,
       "filters": {
         "color": "F090W",
         "signal": "F150W"
@@ -125,16 +125,16 @@
       },
       "program": "3055",
       "queue_position": 1,
-      "run_id": "run-20260726T090527Z-485f0e793321-c3e42809",
-      "started_at": 1785058050.562474,
+      "run_id": "run-20260729T011326Z-519ea014326f-3d130739",
+      "started_at": 1785289020.649824,
       "state": "SUCCEEDED",
       "target": "NGC 1399",
-      "updated_at": 1785058920.746002
+      "updated_at": 1785289891.0410721
     },
     {
       "attempt_count": 1,
-      "created_at": 1785056727.501673,
-      "ended_at": 1785059762.379101,
+      "created_at": 1785287607.10923,
+      "ended_at": 1785290732.6122172,
       "filters": {
         "color": "F090W",
         "signal": "F150W"
@@ -190,16 +190,16 @@
       },
       "program": "3055",
       "queue_position": 2,
-      "run_id": "run-20260726T090527Z-485f0e793321-c3e42809",
-      "started_at": 1785058921.990466,
+      "run_id": "run-20260729T011326Z-519ea014326f-3d130739",
+      "started_at": 1785289892.280586,
       "state": "SUCCEEDED",
       "target": "NGC 1404",
-      "updated_at": 1785059762.379101
+      "updated_at": 1785290732.6122172
     },
     {
       "attempt_count": 1,
-      "created_at": 1785056727.5017338,
-      "ended_at": 1785060033.6676211,
+      "created_at": 1785287607.109303,
+      "ended_at": 1785291003.986804,
       "filters": {
         "color": "F090W",
         "signal": "F150W"
@@ -251,16 +251,16 @@
       },
       "program": "3055",
       "queue_position": 3,
-      "run_id": "run-20260726T090527Z-485f0e793321-c3e42809",
-      "started_at": 1785059763.5045161,
+      "run_id": "run-20260729T011326Z-519ea014326f-3d130739",
+      "started_at": 1785290733.7882822,
       "state": "SUCCEEDED",
       "target": "NGC 4472",
-      "updated_at": 1785060033.6676211
+      "updated_at": 1785291003.986804
     },
     {
       "attempt_count": 1,
-      "created_at": 1785056727.501785,
-      "ended_at": 1785060364.94299,
+      "created_at": 1785287607.109361,
+      "ended_at": 1785291335.27403,
       "filters": {
         "color": "F090W",
         "signal": "F150W"
@@ -312,16 +312,16 @@
       },
       "program": "3055",
       "queue_position": 4,
-      "run_id": "run-20260726T090527Z-485f0e793321-c3e42809",
-      "started_at": 1785060034.6953988,
+      "run_id": "run-20260729T011326Z-519ea014326f-3d130739",
+      "started_at": 1785291005.066454,
       "state": "SUCCEEDED",
       "target": "NGC 4552",
-      "updated_at": 1785060364.94299
+      "updated_at": 1785291335.27403
     },
     {
       "attempt_count": 1,
-      "created_at": 1785056727.501833,
-      "ended_at": 1785060696.104539,
+      "created_at": 1785287607.1094148,
+      "ended_at": 1785291666.456519,
       "filters": {
         "color": "F090W",
         "signal": "F150W"
@@ -373,16 +373,16 @@
       },
       "program": "3055",
       "queue_position": 5,
-      "run_id": "run-20260726T090527Z-485f0e793321-c3e42809",
-      "started_at": 1785060365.933836,
+      "run_id": "run-20260729T011326Z-519ea014326f-3d130739",
+      "started_at": 1785291336.266782,
       "state": "SUCCEEDED",
       "target": "NGC 4636",
-      "updated_at": 1785060696.104539
+      "updated_at": 1785291666.456519
     },
     {
       "attempt_count": 1,
-      "created_at": 1785056727.5018811,
-      "ended_at": 1785061027.247766,
+      "created_at": 1785287607.109501,
+      "ended_at": 1785291997.5694988,
       "filters": {
         "color": "F090W",
         "signal": "F150W"
@@ -434,16 +434,16 @@
       },
       "program": "3055",
       "queue_position": 6,
-      "run_id": "run-20260726T090527Z-485f0e793321-c3e42809",
-      "started_at": 1785060697.048071,
+      "run_id": "run-20260729T011326Z-519ea014326f-3d130739",
+      "started_at": 1785291667.3712041,
       "state": "SUCCEEDED",
       "target": "NGC 4649",
-      "updated_at": 1785061027.247766
+      "updated_at": 1785291997.5694988
     },
     {
       "attempt_count": 1,
-      "created_at": 1785056727.5019279,
-      "ended_at": 1785061358.47899,
+      "created_at": 1785287607.109686,
+      "ended_at": 1785292328.628974,
       "filters": {
         "color": "F090W",
         "signal": "F150W"
@@ -495,16 +495,16 @@
       },
       "program": "3055",
       "queue_position": 7,
-      "run_id": "run-20260726T090527Z-485f0e793321-c3e42809",
-      "started_at": 1785061028.2534258,
+      "run_id": "run-20260729T011326Z-519ea014326f-3d130739",
+      "started_at": 1785291998.418622,
       "state": "SUCCEEDED",
       "target": "NGC 4697",
-      "updated_at": 1785061358.47899
+      "updated_at": 1785292328.628974
     },
     {
       "attempt_count": 1,
-      "created_at": 1785056727.5019782,
-      "ended_at": 1785061689.4465668,
+      "created_at": 1785287607.109771,
+      "ended_at": 1785292659.543243,
       "filters": {
         "color": "F090W",
         "signal": "F150W"
@@ -556,16 +556,16 @@
       },
       "program": "3055",
       "queue_position": 8,
-      "run_id": "run-20260726T090527Z-485f0e793321-c3e42809",
-      "started_at": 1785061359.240119,
+      "run_id": "run-20260729T011326Z-519ea014326f-3d130739",
+      "started_at": 1785292329.3611252,
       "state": "SUCCEEDED",
       "target": "NGC 4486",
-      "updated_at": 1785061689.4465668
+      "updated_at": 1785292659.543243
     },
     {
       "attempt_count": 1,
-      "created_at": 1785056727.502025,
-      "ended_at": 1785062350.388682,
+      "created_at": 1785287607.109836,
+      "ended_at": 1785293350.608259,
       "filters": {
         "color": "F090W",
         "signal": "F150W"
@@ -617,16 +617,16 @@
       },
       "program": "3055",
       "queue_position": 9,
-      "run_id": "run-20260726T090527Z-485f0e793321-c3e42809",
-      "started_at": 1785061690.112639,
+      "run_id": "run-20260729T011326Z-519ea014326f-3d130739",
+      "started_at": 1785292660.260275,
       "state": "SUCCEEDED",
       "target": "NGC 4374",
-      "updated_at": 1785062350.388682
+      "updated_at": 1785293350.608259
     },
     {
       "attempt_count": 1,
-      "created_at": 1785056727.5020711,
-      "ended_at": 1785062681.134858,
+      "created_at": 1785287607.1098938,
+      "ended_at": 1785293681.377447,
       "filters": {
         "color": "F090W",
         "signal": "F150W"
@@ -678,16 +678,16 @@
       },
       "program": "3055",
       "queue_position": 10,
-      "run_id": "run-20260726T090527Z-485f0e793321-c3e42809",
-      "started_at": 1785062350.945767,
+      "run_id": "run-20260729T011326Z-519ea014326f-3d130739",
+      "started_at": 1785293351.1894,
       "state": "SUCCEEDED",
       "target": "NGC 4406",
-      "updated_at": 1785062681.134858
+      "updated_at": 1785293681.377447
     },
     {
       "attempt_count": 1,
-      "created_at": 1785056727.5021162,
-      "ended_at": 1785064122.1801212,
+      "created_at": 1785287607.10995,
+      "ended_at": 1785295062.430778,
       "filters": {
         "color": "F090W",
         "signal": "F150W"
@@ -739,16 +739,16 @@
       },
       "program": "3055",
       "queue_position": 11,
-      "run_id": "run-20260726T090527Z-485f0e793321-c3e42809",
-      "started_at": 1785062681.614846,
+      "run_id": "run-20260729T011326Z-519ea014326f-3d130739",
+      "started_at": 1785293681.873118,
       "state": "SUCCEEDED",
       "target": "NGC 4621",
-      "updated_at": 1785064122.1801212
+      "updated_at": 1785295062.430778
     },
     {
       "attempt_count": 1,
-      "created_at": 1785056727.5021608,
-      "ended_at": 1785065292.899232,
+      "created_at": 1785287607.110006,
+      "ended_at": 1785296263.298711,
       "filters": {
         "color": "F090W",
         "signal": "F150W"
@@ -800,16 +800,16 @@
       },
       "program": "3055",
       "queue_position": 12,
-      "run_id": "run-20260726T090527Z-485f0e793321-c3e42809",
-      "started_at": 1785064122.585867,
+      "run_id": "run-20260729T011326Z-519ea014326f-3d130739",
+      "started_at": 1785295062.854728,
       "state": "SUCCEEDED",
       "target": "NGC 1549",
-      "updated_at": 1785065292.899232
+      "updated_at": 1785296263.298711
     },
     {
       "attempt_count": 1,
-      "created_at": 1785056727.502207,
-      "ended_at": 1785065623.4302862,
+      "created_at": 1785287607.1100612,
+      "ended_at": 1785296593.802229,
       "filters": {
         "color": "F090W",
         "signal": "F150W"
@@ -861,15 +861,15 @@
       },
       "program": "3055",
       "queue_position": 13,
-      "run_id": "run-20260726T090527Z-485f0e793321-c3e42809",
-      "started_at": 1785065293.22734,
+      "run_id": "run-20260729T011326Z-519ea014326f-3d130739",
+      "started_at": 1785296263.6170828,
       "state": "SUCCEEDED",
       "target": "NGC 3379",
-      "updated_at": 1785065623.4302862
+      "updated_at": 1785296593.802229
     }
   ],
   "run": {
-    "campaign_key": "485f0e79332128e872a6bdef7e275bb5b9b435d2fb936d0f3ed4235da1ba935f",
+    "campaign_key": "519ea014326fde9af52babdf5843639daa72d304c6e9799c9602b6b09d99a3a7",
     "config": {
       "job_identity_version": 2,
       "notebook_family": "sbf2",
@@ -883,9 +883,9 @@
       "schema_version": 2
     },
     "config_sha256": "397e9cc6d5f6109d8defc337fbe0eaf892d4e6ab2caa1c76b8bd40be0459b12f",
-    "created_at": 1785056727.398665,
-    "deadline_at": 1785229527.398665,
-    "ended_at": 1785065623.488236,
+    "created_at": 1785287606.962996,
+    "deadline_at": 1785460406.962996,
+    "ended_at": 1785296593.8597271,
     "last_error": null,
     "metadata": {
       "batch_root": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch",
@@ -901,14 +901,14 @@
       ],
       "template": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/code/sbf-2.ipynb"
     },
-    "owner_host": "MacBook-Pro-2.local",
-    "owner_pid": 70127,
+    "owner_host": "MagicMBP.local",
+    "owner_pid": 94411,
     "resume_count": 0,
-    "run_id": "run-20260726T090527Z-485f0e793321-c3e42809",
-    "soft_stop_at": 1785225927.398665,
-    "started_at": 1785056727.398665,
+    "run_id": "run-20260729T011326Z-519ea014326f-3d130739",
+    "soft_stop_at": 1785456806.962996,
+    "started_at": 1785287606.962996,
     "state": "COMPLETED",
-    "template_sha256": "515ad22816f7f621635483938741efc95a48424ade537aac00a5f485a8b6a83a",
-    "updated_at": 1785065623.488236
+    "template_sha256": "a1828d2d8d975c193707df9ff95516750e8a410623fe7a2f1eb149fef17bcd4a",
+    "updated_at": 1785296593.8597271
   }
 }

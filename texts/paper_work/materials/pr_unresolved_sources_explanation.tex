@@ -8,6 +8,7 @@
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
+\usepackage{graphicx}
 \usepackage{pdflscape}
 \usepackage{geometry}
 \usepackage{hyperref}
@@ -977,6 +978,34 @@ NGC~1380, NGC~3379, NGC~4552, NGC~4649 и NGC~4697.
 галактик физически непригодны для SBF; это означает, что их
 нельзя использовать как безусловно чистые калибраторы без
 просмотра промежуточных FITS.
+
+\subsection{Итоговые расстояния в Мпк}
+
+В таблице~\ref{tab:go3055_distances_mpc} собраны расстояния
+TRGB, leave-one-out оценки SBF для четырёх проверяемых
+цветовых законов и внешнее сравнение с реконструированными
+HST/F160W SBF-расстояниями Jensen et al. (2015). Значения
+Jensen существуют только для пяти пересекающихся галактик;
+для остальных объектов в исходной таблице стоит
+\texttt{NaN}. Ошибки SBF в этой версии являются внутренними:
+они ещё не включают неопределённость коэффициентов
+калибровки, неба и галактического поглощения.
+
+\begin{landscape}
+\begin{table}[p]
+\centering
+\caption{Расстояния до галактик GO-3055 в Мпк. Для SBF
+показаны leave-one-out результаты постоянной, линейной,
+квадратичной и ломаной цветовых моделей.}
+\label{tab:go3055_distances_mpc}
+\begingroup
+\catcode`\_=12
+\resizebox{\linewidth}{!}{%
+\input{../../../runs/sbf2_go3055/analysis/tables/go3055_distances_mpc.tex}%
+}
+\endgroup
+\end{table}
+\end{landscape}
 
 \section{Сравнение калибровок}
 

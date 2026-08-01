@@ -1,0 +1,569 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{siunitx}
+\usepackage{xcolor}
+
+\geometry{margin=22mm}
+\hypersetup{colorlinks=true, linkcolor=blue!50!black, citecolor=blue!50!black,
+            urlcolor=blue!50!black}
+\sisetup{separate-uncertainty=true}
+
+\newcommand{\mbar}{\overline{m}}
+\newcommand{\Mbar}{\overline{M}}
+\newcommand{\paperfigure}[2]{%
+  \IfFileExists{#1}{%
+    \includegraphics[width=#2]{#1}%
+  }{%
+    \fbox{\parbox[c][48mm][c]{0.92\linewidth}{\centering
+      Figure not generated yet.\\Run the corresponding cell in
+      \texttt{code/sbf-2-graph.ipynb}.\\[1mm]
+      \texttt{\detokenize{#1}}}}%
+  }%
+}
+
+\title{A Direct JWST/NIRCam F150W Surface Brightness Fluctuation
+Calibration from the GO-3055 TRGB Sample}
+\author{Author list and affiliations to be agreed}
+\date{Draft of 29 July 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We present a direct empirical calibration of surface brightness fluctuation
+(SBF) magnitudes measured with JWST/NIRCam in F150W.  The sample comprises the
+14 early-type galaxies observed in JWST program GO-3055 for the
+TRGB--SBF distance-ladder project.  We follow the analysis geometry of
+Jensen et al. (2025, arXiv:2502.15935), measuring SBF and color in two
+concentric circular annuli spanning 8.2--16.4 and 16.4--32.8 arcsec and
+combining the two measurements with inverse-variance weights.  F090W--F150W
+colors are measured in the same annuli as the SBF signal.  Absolute
+fluctuation magnitudes are anchored by the revised, color-dependent JWST TRGB
+distances of Chazov et al. (2026, arXiv:2603.11160).  For the full sample we
+obtain the preliminary relation
+\[
+ \Mbar_{150}=(-3.173\pm0.023)
+ +(0.666^{+0.423}_{-0.476})[C_{090-150}-0.5907],
+\]
+with an inferred intrinsic scatter of 0.069 mag.  Leave-one-out
+cross-validation against TRGB gives a mean residual of $+0.008$ mag and an
+RMS of 0.099 mag, corresponding to approximately 4.7 per cent in distance.
+A color-independent model is statistically competitive
+($\Delta{\rm AICc}=1.71$ relative to the linear relation), so the present
+sample does not yet provide decisive evidence for the color slope.
+Measurements in the inner and outer annuli show materially different trends,
+including a highly significant 0.168 mag radial difference in NGC 3379 despite
+an exceptionally uniform residual image.  We discuss the implications for
+stellar-population corrections and for transferring the TRGB zero point to
+future JWST SBF samples.
+\end{abstract}
+
+\section{Introduction}
+
+Surface brightness fluctuations arise from Poisson variations in the number
+and luminosity of unresolved stars within each resolution element
+\cite{TonrySchneider1988}.  For old stellar populations the near-infrared SBF
+signal is strong, allowing efficient distance measurements to early-type
+galaxies well beyond the reach of resolved-star methods.  Its absolute
+amplitude, however, depends on the luminosity function of the evolved stellar
+population and therefore must be calibrated as a function of a population
+proxy, normally an integrated optical or near-infrared color.
+
+The TRGB--SBF project is constructing a Population-II distance ladder in
+which a geometrically calibrated tip of the red giant branch (TRGB) zero point
+is transferred to SBF measurements.  Jensen et al. \cite{Jensen2025}
+(hereafter Paper III) used JWST TRGB distances for the GO-3055 galaxies to
+recalibrate the existing HST/WFC3-IR F110W SBF scale.  Their analysis retained
+the established HST SBF measurements and used DECam or Pan-STARRS $g-z$
+colors.  With cluster-mean TRGB distances for Virgo and Fornax, they obtained
+\[
+ \Mbar_{110}=(1.86\pm0.16)[(g-z)_{\rm PS}-1.30]
+             -(2.760\pm0.016).
+\]
+The revised calibration produced
+$H_0=73.8\pm0.7\ ({\rm stat})\pm2.3\ ({\rm sys})$
+\si{km.s^{-1}.Mpc^{-1}}.
+
+The present study takes the next direct step: both the fluctuation signal and
+the population color are measured from the JWST GO-3055 images themselves.
+F150W provides the SBF signal and F090W--F150W the color.  The TRGB anchors are
+the thin-slice distance moduli in Chazov et al. \cite{Chazov2026}
+(hereafter Paper IV), who calibrated the color dependence of the F090W TRGB
+using the NGC 4258 maser distance.  Paper IV found
+$M_{\rm F090W}^{\rm TRGB}=-4.398\pm0.017$ mag for
+$(F090W-F150W)_0<1.65$ mag, followed by a polynomial decline at redder color.
+Their thin-slice distances are on average $0.028\pm0.008$ mag shorter than
+the earlier literature values derived from the same imaging.  That revision
+must be kept explicit when comparing our F150W zero point with Paper III.
+
+Our goals are to (1) reproduce the Paper III annular measurement geometry,
+(2) establish a direct JWST F150W SBF calibration, (3) cross-validate SBF
+distances against the independent TRGB measurements, and (4) test whether
+radial population variations and host-galaxy luminosity explain part of the
+remaining scatter.
+
+\section{Data}
+\subsection{GO-3055 sample}
+
+The sample contains 14 galaxies: three in the Fornax cluster, nine in the
+Virgo region, and two in nearby groups.  Each target has NIRCam F090W and
+F150W imaging.  F150W is used for the fluctuation measurement and F090W is
+combined with it to form the population-sensitive color
+$C_{090-150}=F090W-F150W$.  The adopted TRGB distance moduli are the
+thin-slice values from Paper IV.  These distances are tied to the
+NGC 4258 maser modulus of 29.397 mag.
+
+\begin{table*}
+\centering
+\caption{GO-3055 F150W SBF calibration measurements.  The final column is the
+leave-one-out SBF distance residual relative to the adopted Paper IV TRGB
+modulus.  Quoted values are preliminary and exclude a complete systematic
+error budget.}
+\label{tab:measurements}
+\resizebox{\textwidth}{!}{%
+\input{go3055_jwst_sbf_article_measurements.tex}}
+\end{table*}
+
+\subsection{Direct comparison with Papers III and IV}
+
+Table~\ref{tab:method-comparison} separates differences forced by the
+instrument and filter set from genuine methodological choices.  The most
+important choice still requiring a submission-level sensitivity test is the
+use of individual Paper IV TRGB distances here, whereas Paper III adopted
+cluster means for most Virgo and Fornax calibrators to reduce scatter and
+increase the color baseline.
+
+\begin{table*}
+\centering
+\caption{Relationship of the present analysis to Papers III and IV.}
+\label{tab:method-comparison}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{p{0.18\textwidth}p{0.25\textwidth}p{0.25\textwidth}p{0.25\textwidth}}
+\toprule
+Element & Paper III: Jensen et al. (2025) & Paper IV: Chazov et al. (2026) &
+Present work \\
+\midrule
+Primary quantity &
+HST/WFC3-IR F110W SBF &
+JWST/NIRCam F090W TRGB &
+JWST/NIRCam F150W SBF \\
+Population color &
+DECam or Pan-STARRS $g-z$ &
+Resolved-star F090W--F150W &
+Integrated F090W--F150W in the SBF annuli \\
+Distance anchor &
+JWST TRGB; mainly Virgo/Fornax cluster means &
+NGC 4258 maser; individual thin/thick-slice TRGB distances &
+Individual Paper IV thin-slice TRGB distances \\
+Radial regions &
+8.2--16.4 and 16.4--32.8 arcsec; weighted mean &
+Outer-halo resolved-star fields &
+Same two SBF annuli as Paper III; weighted mean and ring-by-ring tests \\
+Color fit &
+Bayesian fit accounting for both-axis uncertainties &
+Piecewise TRGB color law with a break at 1.65 mag &
+Likelihood fit with intrinsic scatter; color error disabled in the current
+default fit \\
+Calibration size &
+14 cluster-calibrated objects; eight direct TRGB overlaps &
+16 distance targets, 12 high-quality color-relation galaxies &
+14 direct SBF--TRGB pairs \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}
+
+\begin{table}
+\centering
+\caption{Paper IV TRGB quantities relevant to the present SBF calibration.}
+\label{tab:paper4-anchor}
+\begin{tabular}{lc}
+\toprule
+Quantity & Paper IV value \\
+\midrule
+Blue TRGB zero point & $-4.398\pm0.017$ mag \\
+Color break & $F090W-F150W=1.65$ mag \\
+Red-branch coefficients $(A,B,C,D)$ &
+$(-4.398,\,0.431,\,0.712,\,-0.293)$ \\
+Thin minus literature modulus & $-0.028\pm0.008$ mag \\
+Thick minus literature modulus & $-0.037\pm0.009$ mag \\
+Mean thin--thick difference & 0.007 mag \\
+Common zero-point systematic & 0.047 mag \\
+Choice adopted here & thin-slice moduli \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{SBF analysis}
+
+\subsection{Galaxy model, masks, and residual image}
+
+A scalar sky level is estimated outside the science annuli and subtracted from
+the F150W image.  A first mask removes invalid pixels, detector gaps, foreground
+objects, and compact sources.  Isophotes are fitted to the usable galaxy light
+and interpolated to form a full-frame smooth model.  Detector gaps are filled
+only for the purpose of obtaining a stable isophotal solution; they do not
+contribute to the SBF measurement.
+
+The smooth model is subtracted from the background-corrected image.  Compact
+sources detected in the residual image are then masked, and the residual is
+normalized by the square root of the smooth galaxy model.  A symmetric
+$3.5\sigma$ clipping of extreme residual pixels is retained as a deliberate
+modification to the historical pipeline.  Its effect on the final zero point
+must be reported as a sensitivity test rather than silently absorbed into the
+method.
+
+\subsection{Power spectrum and unresolved sources}
+
+For each annulus the azimuthally averaged residual power spectrum is fitted
+over the adopted frequency interval $0.04\leq k\leq0.25$ using
+\[
+ P(k)=P_0 E(k)+P_1 .
+\]
+Here $E(k)$ is the expectation power spectrum obtained from the PSF convolved
+with the annular mask/window, $P_0$ is the fitted amplitude of the
+PSF-shaped component, and $P_1$ is a constant white-noise term.  The
+fluctuation power attributed to the stellar population is
+\[
+ P_{\rm SBF}=P_0-P_r,
+\]
+where $P_r$ is the estimated contribution of unresolved globular clusters and
+background galaxies below the masking threshold.  The apparent fluctuation
+magnitude follows from the photometric zero point and the mean galaxy model
+level in the annulus.
+
+All current annular fits return negative $P_1$.  Because this behavior is
+nearly universal rather than confined to individual galaxies, it is treated
+as evidence that the constant-noise component is an imperfect description of
+the correlated noise in the drizzled images, not as an automatic rejection of
+all $P_0$ estimates.  A final paper must quantify the sensitivity to the
+adopted frequency window and to a noise-template extension of the model.
+
+\subsection{Matched colors and uncertainties}
+
+F090W is PSF-matched and registered to F150W, and the integrated color is
+measured in exactly the same usable pixels and annuli as the SBF signal.  This
+implements the central warning in Paper III that colors measured in the
+high-signal galaxy core can be biased relative to the regions used for SBF.
+The two ring measurements are retained separately and are also combined with
+inverse-variance weights.
+
+The present internal error includes the fitting uncertainty, stability across
+the adopted $k_{\min}$ choices, the difference between the two annuli, PSF
+scatter, and a working uncertainty in $P_r$.  Foreground-extinction,
+large-scale sky, and common TRGB zero-point uncertainties are not yet complete;
+the quoted error bars must therefore not be described as the final total error
+budget.
+
+\section{Results}
+\subsection{F150W calibration}
+
+Using all 14 individual Paper IV TRGB distances, the preliminary linear
+calibration at the median color $C_0=0.5907$ is
+\begin{equation}
+ \Mbar_{150}=(-3.1726)
+ +(0.6656)(C_{090-150}-0.5907),
+ \label{eq:f150-calibration}
+\end{equation}
+with an intrinsic scatter of 0.0695 mag.  Bootstrap 16th--84th percentiles are
+$[-3.193,-3.147]$ mag for the intercept and $[0.190,1.089]$ for the slope.
+The broad slope interval is a direct consequence of the narrow color range and
+the small sample.
+
+\begin{figure*}
+\centering
+\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_f150w_sbf_calibration.png}{0.78\textwidth}
+\caption{Direct JWST F150W SBF calibration for GO-3055.  This is the JWST
+counterpart of the HST F110W calibration shown in Fig.~2 of Paper III.
+The vertical axis is inverted so that brighter SBF is upward.  Before
+submission the secondary ``clean'' fit must use the residual-structure flag
+rather than radial annulus disagreement.}
+\label{fig:calibration}
+\end{figure*}
+
+A constant absolute SBF magnitude has
+${\rm AICc}=-22.83$, compared with $-21.11$ for the linear relation.
+The difference $\Delta{\rm AICc}=1.71$ is not decisive, while leave-one-out
+RMS values are 0.0984 and 0.0987 mag respectively.  Quadratic and broken-line
+fits reduce the raw RMS slightly but are disfavored after accounting for model
+complexity.  We therefore report the linear calibration for direct comparison
+with Paper III but do not claim a secure detection of its color slope.
+
+\subsection{Observed color correlations}
+
+Paper III found a well-constrained F110W slope after enlarging the
+calibration set with cluster-mean distances and a broader color baseline.  We
+compare unweighted Pearson and Spearman coefficients for our 14 objects, our
+measurements of the eight objects overlapping Table~1 of Paper III, and all
+14 Paper III calibration points.  For Paper III we compute
+$\Mbar_{110}^{\rm obs}=\mbar_{110}-\mu_{\rm cluster}$ rather than correlating
+color with a magnitude already produced by their published color law.
+For our full sample, the unweighted coefficients are
+$r=0.30$ ($p=0.297$) and $\rho=0.24$ ($p=0.401$).  Restricting our data to
+the eight Paper-III-overlap galaxies gives $r=0.49$ ($p=0.220$), whereas the
+14 observed Paper III calibration points give $r=0.97$
+($p<10^{-8}$) and $\rho=0.96$.  Thus the current F150W data do not show a
+statistically significant raw color correlation, while the Paper III F110W
+relation is strong over its broader color baseline and cluster-augmented
+sample.  The two color indices themselves are nevertheless strongly correlated
+for the eight common galaxies: F090W--F150W versus Pan-STARRS $g-z$ gives
+$r=0.87$ ($p=0.005$) and $\rho=0.88$ ($p=0.004$).  The weak F150W
+SBF--color relation therefore cannot be dismissed as a complete failure of
+our infrared color to track the optical stellar-population sequence.
+
+\begin{figure*}
+\centering
+\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_color_correlation_vs_jensen.png}{0.96\textwidth}
+\caption{Observed SBF--color correlations in the present GO-3055 sample and
+in the 14 F110W calibration galaxies from Table~1 of Paper III, followed by
+a direct comparison of F090W--F150W and $g-z$ for the eight common galaxies.
+The filters and color indices differ, so slopes are not numerically
+interchangeable.  The purpose is to compare the strength and robustness of
+the observed correlations without building the published color law into the
+dependent variable.}
+\label{fig:jensen-correlation}
+\end{figure*}
+
+\subsection{Radial measurements}
+
+The inner annuli give a slope of approximately 1.36 with intrinsic scatter
+0.066 mag, whereas the outer annuli give a much weaker slope of approximately
+0.28 and a larger scatter of 0.091 mag.  The two measurements for a galaxy are
+correlated and must not be treated as 28 independent calibrators.  Their
+difference is nevertheless a useful diagnostic of stellar-population
+gradients and residual modeling systematics.
+
+\begin{figure*}
+\centering
+\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_annulus_local_color_sbf.png}{0.82\textwidth}
+\caption{Annulus-matched local color and absolute F150W SBF magnitude.
+Circles and squares denote the inner and outer annuli, respectively; grey
+segments connect measurements of the same galaxy.  Unlike Paper III, which
+reports the weighted annular means in its calibration table, we retain this
+ring-by-ring view to test whether the population correction is radially
+stable.}
+\label{fig:annuli}
+\end{figure*}
+
+NGC 3379 has the most spatially uniform normalized residual in the sample, but
+its annuli differ by 0.168 mag.  The outer annulus is bluer by approximately
+0.031 mag and has fainter SBF, in the opposite direction and at much larger
+amplitude than predicted by the global color relation.  The unresolved-source
+correction is negligible in the inner annulus and below one per cent of $P_0$
+in the outer annulus.  NGC 3379 is therefore retained as a high-quality
+measurement and treated as evidence that annulus disagreement is not
+equivalent to poor residual structure.
+
+\subsection{Cross-validation against TRGB}
+
+For each galaxy, the color relation is refitted after excluding that galaxy,
+and the excluded SBF distance is compared with its Paper IV thin-slice TRGB
+distance.  The mean residual is
+\[
+ \langle\mu_{\rm SBF,LOO}-\mu_{\rm TRGB}\rangle=+0.0077~{\rm mag},
+\]
+with RMS 0.0987 mag and median absolute residual 0.0919 mag.  The largest
+absolute residuals occur for NGC 3379, NGC 4552, NGC 1399, NGC 4472, and
+NGC 4649.
+
+\begin{figure*}
+\centering
+\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_sbf_vs_trgb_leave_one_out.png}{0.72\textwidth}
+\caption{Leave-one-out F150W SBF distance moduli compared with the revised
+thin-slice TRGB moduli in Table~2 of Paper IV.  This is the direct
+cross-validation of the JWST SBF rung against its resolved-star anchor rather
+than an in-sample reconstruction.}
+\label{fig:loo}
+\end{figure*}
+
+\subsection{Dependence on host-galaxy luminosity}
+
+We test whether the F150W SBF magnitude correlates with the ordinary
+aperture luminosity of the host.  The available quantity is the absolute
+F150W magnitude of the smooth galaxy model inside 32.8 arcsec, not a total
+galaxy magnitude.  We therefore present both the direct correlation and the
+correlation of the residual about Eq.~\ref{eq:f150-calibration}.  The latter
+tests whether host luminosity carries information beyond the integrated color.
+The direct Pearson coefficient is $r=0.36$ ($p=0.203$).  After subtracting the
+linear color relation it increases to $r=0.52$ ($p=0.056$), with Spearman
+$\rho=0.50$ ($p=0.069$).  This is not a formal detection, but it is sufficiently
+close to significance to motivate replacement of the fixed-aperture magnitude
+with homogeneous total photometry or stellar-mass estimates.
+
+\begin{figure*}
+\centering
+\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_sbf_vs_host_luminosity.png}{0.96\textwidth}
+\caption{Absolute F150W SBF magnitude and color-corrected residual versus the
+absolute F150W magnitude of the smooth host model within 32.8 arcsec.  A
+correlation in the left panel alone may reflect the usual color--luminosity
+relation of early-type galaxies; persistence in the right panel would
+indicate that luminosity adds independent predictive information.}
+\label{fig:luminosity}
+\end{figure*}
+
+\section{Comparison with the published calibrations}
+
+\begin{table}
+\centering
+\caption{Numerical comparison of the published and preliminary calibrations.
+The slopes are not directly interchangeable because both the SBF band and
+the color index differ.}
+\label{tab:numerical-comparison}
+\begin{tabular}{lcc}
+\toprule
+Quantity & Paper III & Present work \\
+\midrule
+SBF band & HST F110W & JWST F150W \\
+Color & PS $g-z$ & F090W--F150W \\
+Pivot color & 1.30 & 0.5907 \\
+Slope & $1.86\pm0.16$ & $0.67^{+0.42}_{-0.48}$ \\
+Zero point & $-2.760\pm0.016$ & $-3.173\pm0.023$ \\
+Calibration size & 14 & 14 \\
+LOO RMS & not reported & 0.099 mag \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The present work is deliberately close to Paper III in measurement geometry:
+both use the same two annuli and their weighted mean, and both require the
+color to correspond to the SBF region.  The comparison is not a literal
+repeat, because NIRCam F150W and F090W--F150W respond differently to stellar
+population age and metallicity than WFC3/IR F110W and optical $g-z$.
+
+The distance-anchor treatment is also different.  Paper III shows that using
+cluster means can reduce calibration scatter when individual measurement
+uncertainties are comparable to cluster depth.  Our use of the individual
+Paper IV thin-slice distances is the stricter leave-one-galaxy-out test, but it
+also preserves line-of-sight depth and individual TRGB noise.  Before
+submission, Eq.~\ref{eq:f150-calibration} must be recomputed using the exact
+Paper III cluster-mean prescription.  The individual-distance and
+cluster-mean results should be reported side by side rather than selecting the
+one with smaller scatter after seeing the answer.
+
+Paper IV introduces a second controlled difference: its updated thin-slice
+moduli are on average $0.028\pm0.008$ mag below the earlier measurements.
+Consequently, an F150W zero point calibrated with Paper IV cannot be compared
+to the Paper III zero point without identifying the TRGB version.  The anchor
+revision alone would shift an absolute SBF zero point at approximately the
+same 0.03 mag level, even if the measured apparent SBF magnitudes were
+unchanged.
+
+\section{Discussion}
+
+\subsection{Is a color term detected?}
+
+The full-sample linear slope is positive and its bootstrap 16th percentile is
+above zero.  This statement by itself is insufficient evidence for a physical
+law: a constant model has slightly better AICc and essentially identical
+leave-one-out performance.  The fitted slope is also sensitive to the
+Virgo--Fornax balance, the radial annulus chosen, and the narrow color range.
+The correct conclusion is therefore that a Paper-III-like linear law is
+consistent with the data, but a color-independent F150W zero point is not
+excluded.
+
+A tentative Virgo--Fornax offset of approximately $-0.12$ mag is visible.
+Although its bootstrap interval does not cross zero, adding the group step
+worsens AICc by approximately 0.98 because only three Fornax galaxies are
+available.  It should be presented as an exploratory population/environment
+test, not as a detected second zero point.
+
+\subsection{Radial behavior and residual structure}
+
+The annular comparison is the most important diagnostic added beyond the
+Paper III presentation.  A large annulus difference can occur in an
+exceptionally clean residual image, while a visually structured residual can
+have similar weighted SBF values in both annuli.  Quality control must
+therefore separate model coverage, large-scale residual structure, and radial
+SBF gradients.  NGC 4472, NGC 4486, NGC 4636, and NGC 4649 show the strongest
+large-scale residual structure in the current sector-based diagnostic.
+NGC 1380 and NGC 4697 have incomplete outer-annulus model coverage.
+
+\subsection{Current limitations}
+
+Three issues prevent the present draft from being submission-ready.
+First, the total systematic error budget must include foreground extinction,
+large-scale background uncertainty, the common NGC 4258/TRGB zero point, and
+the effect of the Paper IV thin/thick choice.  Second, the universal negative
+$P_1$ values require a controlled correlated-noise test, ideally using a
+noise-template extension of the power-spectrum model.  Third, the
+compact-source mask and $P_r$ completeness model require injection or
+threshold sensitivity tests.  These tests should be reported as changes in
+the final zero point and slope rather than as qualitative statements.
+
+\section{Conclusions}
+
+\begin{enumerate}
+\item All 14 GO-3055 galaxies completed the F150W SBF measurement and artifact
+verification in the two Paper III annuli; all currently retain review-level
+quality flags, dominated by non-positive fitted $P_1$.
+\item The preliminary full-sample calibration has zero point
+$-3.173$ mag at $F090W-F150W=0.5907$, slope 0.666, and intrinsic scatter
+0.069 mag.
+\item Leave-one-out comparison with the revised Paper IV TRGB distances gives
+an RMS of 0.099 mag, equivalent to approximately 4.7 per cent in distance,
+with negligible mean bias.
+\item The present sample does not decisively distinguish a linear color
+correction from a constant F150W absolute fluctuation magnitude.
+\item Inner and outer annuli do not follow the same empirical color trend.
+NGC 3379 demonstrates that a significant radial SBF difference can coexist
+with an exceptionally clean residual image.
+\item A direct comparison with Paper III requires a second calibration using
+their cluster-mean distance prescription and an explicit accounting of the
+Paper IV TRGB zero-point revision.
+\end{enumerate}
+
+\appendix
+\section{Distance comparison in Mpc}
+
+The complete machine-readable table is
+\nolinkurl{runs/sbf2_go3055/analysis/tables/go3055_distances_mpc.csv}.
+It contains TRGB distances, leave-one-out F150W distances for each tested
+color law, and the available Jensen F160W values for the five overlapping
+galaxies.  It is kept external to the main article table because including all
+four exploratory color laws obscures the adopted result.
+
+\section{Reproducibility}
+
+The measurement notebook is \nolinkurl{code/sbf-2.ipynb}; the dedicated GO-3055
+runner is \nolinkurl{code/run_sbf_2_batch.py}; and all analysis tables and
+figures are generated by \nolinkurl{code/sbf-2-graph.ipynb}.  The graph notebook
+reads the completed batch products and does not repeat the SBF measurement.
+Every figure is both saved as PNG/PDF and displayed inline for interactive
+inspection.
+
+\begin{thebibliography}{99}
+\bibitem{TonrySchneider1988}
+Tonry, J. L., \& Schneider, D. P. 1988, AJ, 96, 807.
+
+\bibitem{Jensen2015}
+Jensen, J. B., Blakeslee, J. P., Ma, C.-P., et al. 2015,
+ApJ, 808, 91, arXiv:1505.00400.
+
+\bibitem{Jensen2021}
+Jensen, J. B., Blakeslee, J. P., Ma, C.-P., et al. 2021,
+ApJS, 255, 21.
+
+\bibitem{Jensen2025}
+Jensen, J. B., Blakeslee, J. P., Cantiello, M., et al. 2025,
+\emph{The TRGB--SBF Project. III. Refining the HST Surface Brightness
+Fluctuation Distance Scale Calibration with JWST},
+ApJ, arXiv:2502.15935v2.
+
+\bibitem{Chazov2026}
+Chazov, M. I., Makarov, D. I., Tully, R. B., et al. 2026,
+\emph{The TRGB--SBF Project. IV. A Color Calibration of the TRGB in the
+JWST F090W+F150W Filters}, arXiv:2603.11160v1.
+
+\bibitem{SchlaflyFinkbeiner2011}
+Schlafly, E. F., \& Finkbeiner, D. P. 2011, ApJ, 737, 103.
+\end{thebibliography}
+
+\end{document}
