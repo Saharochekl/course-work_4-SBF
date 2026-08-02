@@ -1,0 +1,4 @@
+pipeline,crds,context,file_count
+1.19.1,12.1.11,jwst_1413.pmap,2
+1.20.2,13.0.6,jwst_1464.pmap,22
+2.0.1,13.1.13,jwst_1535.pmap,4

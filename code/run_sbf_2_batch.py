@@ -65,6 +65,7 @@ DEFAULT_BATCH_ROOT = DEFAULT_RUN_ROOT / "batch"
 DEFAULT_PRODUCTS_ROOT = DEFAULT_RUN_ROOT / "products"
 DEFAULT_CAMPAIGN_ROOT = DEFAULT_RUN_ROOT / "campaign"
 DEFAULT_TARGET_CSV = SCRIPT_DIR / "targets_go3055_manifest.csv"
+DEFAULT_PAPER_IV_METADATA = DEFAULT_DATA_ROOT / "go3055_paper_iv_metadata.csv"
 DEFAULT_WSS_OPD_DIR = DEFAULT_DATA_ROOT / "wss_opd"
 DEFAULT_STPSF_DATA_DIR = Path.home() / "data" / "stpsf-data"
 TARGET_STATUS_FILENAME = "target_status.csv"
@@ -1099,6 +1100,45 @@ def override_target_namespace(
     )
     namespace["stem"] = signal_path.stem
     namespace["out_dir"].mkdir(parents=True, exist_ok=True)
+    apply_paper_iv_metadata(namespace, galaxy)
+
+
+def apply_paper_iv_metadata(namespace, galaxy, metadata_path=DEFAULT_PAPER_IV_METADATA):
+    """Inject Paper IV extinction and quality metadata for one GO-3055 target."""
+    metadata_path = Path(metadata_path)
+    if not metadata_path.is_file():
+        raise FileNotFoundError(
+            f"GO-3055 Paper IV metadata is missing: {metadata_path}"
+        )
+
+    with metadata_path.open(newline="", encoding="utf-8") as handle:
+        rows = {
+            row["galaxy"].strip(): row
+            for row in csv.DictReader(handle)
+            if row.get("galaxy")
+        }
+    if galaxy not in rows:
+        raise KeyError(f"{galaxy}: no Paper IV metadata row in {metadata_path}")
+
+    row = rows[galaxy]
+    numeric = (
+        "A_F090W",
+        "E_BV",
+        "A_F150W",
+        "sigma_E_BV",
+        "sigma_A_F090W",
+        "sigma_A_F150W",
+        "sigma_color_extinction",
+    )
+    for key in numeric:
+        namespace[key] = float(row[key])
+    namespace["PAPER_IV_HIGH_QUALITY"] = (
+        str(row.get("paper_iv_high_quality", "")).strip().lower()
+        in {"1", "true", "yes", "y"}
+    )
+    namespace["PAPER_IV_NAME"] = row.get("paper_iv_name", galaxy)
+    namespace["EXTINCTION_SOURCE"] = row.get("source", "Paper IV Table 2")
+    namespace["EXTINCTION_METADATA_PATH"] = str(metadata_path.resolve())
 
 
 def result_paths(
@@ -1142,6 +1182,7 @@ def result_paths(
         "df_sbf_csv": out_dir / f"{stem}_{pipeline_label}_df_sbf.csv",
         "annulus_summary_csv": out_dir
         / f"{stem}_{pipeline_label}_annulus_summary.csv",
+        "power_spectrum_csv": out_dir / f"{stem}_sbf_power_spectra.csv",
     }
 
 
@@ -2046,6 +2087,17 @@ def execute_template_for_target(
         "selected_sbf_region": "selected_sbf_region",
         "selected_sbf_selection_method": "selected_sbf_selection_method",
         "selected_color_index": "selected_color",
+        "A_F090W": "A_F090W",
+        "A_F150W": "A_F150W",
+        "E_BV": "E_BV",
+        "sigma_E_BV": "sigma_E_BV",
+        "sigma_A_F090W": "sigma_A_F090W",
+        "sigma_A_F150W": "sigma_A_F150W",
+        "sigma_color_extinction": "sigma_color_extinction",
+        "paper_iv_high_quality": "PAPER_IV_HIGH_QUALITY",
+        "paper_iv_name": "PAPER_IV_NAME",
+        "extinction_source": "EXTINCTION_SOURCE",
+        "extinction_metadata_path": "EXTINCTION_METADATA_PATH",
     }
     for result_key, namespace_key in namespace_metadata.items():
         if namespace_key in namespace:
@@ -2099,6 +2151,15 @@ def execute_template_for_target(
             result["color_name"] = row0.get("color_name", result["color_name"])
             result[f"color_{color_filter}_{signal_filter}"] = color_value
             result["color_sigma_proxy"] = as_builtin(row0.get("sigma_proxy"))
+            for column in (
+                "color_F090W_F150W_observed",
+                "color_F090W_F150W_extinction_corrected",
+                "sigma_color_measurement",
+                "sigma_color_extinction",
+                "extinction_applied",
+            ):
+                if column in row0:
+                    result[column] = as_builtin(row0.get(column))
         except Exception:
             pass
 

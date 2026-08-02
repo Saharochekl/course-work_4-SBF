@@ -1,0 +1,2 @@
+galaxy,candidate_count,accepted_stack_count,ee_model_r5,ee_empirical_r5,ee_model_r10,ee_empirical_r10,fitted_empirical_to_model_power_ratio,diagnostic_delta_mbar_mag,dq_extension_available,status
+NGC 3379,6,6,0.8627589399259553,0.7082764129046691,0.9306553340896305,0.7870311259188274,0.7667628518710943,0.28834733996159967,False,diagnostic_only; candidates are not confirmed stars; i2d has no DQ extension

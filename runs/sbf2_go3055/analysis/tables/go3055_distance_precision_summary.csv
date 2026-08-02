@@ -1,0 +1,2 @@
+model,n,loo_bias_mag,loo_rmse_mag,loo_median_abs_mag,fractional_rmse_percent,median_abs_fraction_percent,median_internal_prediction_sigma_mag,median_internal_prediction_sigma_percent,common_absolute_scale_sigma_mag,common_absolute_scale_sigma_percent
+constant,14,-0.0004285767022622622,0.09552468125202293,0.07659491820927755,4.4081470803780265,3.5239731769121208,0.09024589229446459,4.2435471332538,0.047,2.1880236888440097

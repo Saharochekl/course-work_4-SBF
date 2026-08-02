@@ -1,15 +1,15 @@
-galaxy,coverage_warning,radial_gradient_warning,residual_structure_score,residual_amplitude_span,residual_structure_warning,include_main,include_good_coverage,include_residual_clean
-NGC 1380,True,False,0.3981046010298823,0.09324833036961967,False,True,False,True
-NGC 1399,False,False,0.05022057948055487,0.044477641690261076,False,True,True,True
-NGC 1404,False,False,0.12018680565445697,0.04582721210623854,False,True,True,True
-NGC 1549,False,False,0.17622107514402294,0.05742077958316994,False,True,True,True
-NGC 3379,False,True,0.2574495371943585,0.03800917445703463,False,True,True,True
-NGC 4374,False,False,0.14930621435077823,0.04268056482178486,False,True,True,True
-NGC 4406,False,False,0.6352539868046846,0.06591285412055112,False,True,True,True
-NGC 4472,False,False,1.6116068291224372,0.1381461303970464,True,True,True,False
-NGC 4486,False,False,1.4714437566370617,0.16105870971855088,True,True,True,False
-NGC 4552,False,True,0.20498858762564653,0.057549862376006594,False,True,True,True
-NGC 4621,False,False,0.354652310616579,0.11621093156999424,False,True,True,True
-NGC 4636,False,False,0.9696590736923685,0.07243479277313267,True,True,True,False
-NGC 4649,False,True,1.4004875161501358,0.059557344167655124,True,True,True,False
-NGC 4697,True,True,0.40430716540970535,0.08777800035427948,False,True,False,True
+galaxy,visual_score,paper_iv_high_quality,coverage_warning,radial_gradient_warning,residual_structure_score,residual_amplitude_span,residual_structure_warning,include_main,include_visual_clean,include_residual_clean,include_paper_iv_high_quality
+NGC 1380,7.0,True,True,False,0.3981046010298823,0.09324833036961967,False,True,True,True,True
+NGC 1399,9.5,False,False,False,0.05022057948055487,0.044477641690261076,False,True,True,True,False
+NGC 1404,8.0,True,False,False,0.12018680565445697,0.04582721210623854,False,True,True,True,True
+NGC 1549,9.0,False,False,False,0.17622107514402294,0.05742077958316994,False,True,True,True,False
+NGC 3379,10.0,True,False,True,0.2574495371943585,0.03800917445703463,False,True,True,True,True
+NGC 4374,8.0,True,False,False,0.14930621435077823,0.04268056482178486,False,True,True,True,True
+NGC 4406,8.0,True,False,False,0.6352539868046846,0.06591285412055112,False,True,True,True,True
+NGC 4472,4.0,False,False,False,1.6116068291224372,0.1381461303970464,True,True,False,False,False
+NGC 4486,3.0,False,False,False,1.4714437566370617,0.16105870971855088,True,True,False,False,False
+NGC 4552,9.0,True,False,True,0.20498858762564653,0.057549862376006594,False,True,True,True,True
+NGC 4621,7.0,True,False,False,0.354652310616579,0.11621093156999424,False,True,True,True,True
+NGC 4636,6.0,True,False,False,0.9696590736923685,0.07243479277313267,True,True,True,False,True
+NGC 4649,5.0,False,False,True,1.4004875161501358,0.059557344167655124,True,True,False,False,False
+NGC 4697,6.0,True,True,True,0.40430716540970535,0.08777800035427948,False,True,True,True,True

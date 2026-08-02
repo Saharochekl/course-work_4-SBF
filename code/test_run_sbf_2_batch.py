@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import csv
 import json
 import tempfile
 import unittest
@@ -8,6 +9,33 @@ import run_sbf_2_batch as batch
 
 
 class DedicatedGo3055RunnerTests(unittest.TestCase):
+    def test_paper_iv_metadata_has_14_targets_and_9_high_quality(self):
+        with batch.DEFAULT_PAPER_IV_METADATA.open(
+            newline="", encoding="utf-8"
+        ) as handle:
+            rows = list(csv.DictReader(handle))
+
+        self.assertEqual(len(rows), 14)
+        self.assertEqual(len({row["galaxy"] for row in rows}), 14)
+        high_quality = {
+            row["galaxy"] for row in rows
+            if row["paper_iv_high_quality"].casefold() == "true"
+        }
+        self.assertEqual(
+            high_quality,
+            {
+                "NGC 1380", "NGC 1404", "NGC 3379", "NGC 4374",
+                "NGC 4406", "NGC 4552", "NGC 4621", "NGC 4636",
+                "NGC 4697",
+            },
+        )
+
+        namespace = {}
+        batch.apply_paper_iv_metadata(namespace, "NGC 1380")
+        self.assertAlmostEqual(namespace["A_F090W"], 0.021)
+        self.assertAlmostEqual(namespace["A_F150W"], 0.00893197)
+        self.assertTrue(namespace["PAPER_IV_HIGH_QUALITY"])
+
     def test_defaults_are_offline_isolated_and_go3055_only(self):
         args = batch.parse_args([])
         self.assertEqual(args.programs, ["3055"])

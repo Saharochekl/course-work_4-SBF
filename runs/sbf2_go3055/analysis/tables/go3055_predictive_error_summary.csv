@@ -1,0 +1,17 @@
+model,component,column,median_sigma_mag,min_sigma_mag,max_sigma_mag
+constant,Apparent SBF measurement,sigma_mbar_internal,0.01675553385148315,0.0122556015403766,0.0482179223097122
+constant,Color propagated through calibration,sigma_color_prediction_mag,0.0,0.0,0.0
+constant,Foreground-extinction propagation,sigma_extinction_prediction_mag,0.00299593515768285,0.0023303226494575,0.0040125742014773
+constant,Fitted intrinsic population scatter,sigma_intrinsic_mag,0.08484045587151184,0.0769733386158712,0.0873007763688427
+constant,Finite 13-galaxy LOO calibration,sigma_calibration_prediction_mag,0.02445221110200195,0.0222558299724637,0.0277466740276475
+constant,Total internal SBF distance,sigma_mu_sbf_internal,0.09024589229446456,0.0823729809292547,0.1024392190455498
+constant,Total including common TRGB scale,sigma_mu_sbf_absolute,0.10175132514037105,0.0948383255185969,0.1127066706041046
+constant,SBF--TRGB validation residual,sigma_validation_residual_internal,0.09365046240635144,0.0867665954570053,0.1052637346411007
+linear,Apparent SBF measurement,sigma_mbar_internal,0.01675553385148315,0.0122556015403766,0.0482179223097122
+linear,Color propagated through calibration,sigma_color_prediction_mag,1.7548015338364817e-05,5.0834867066652855e-06,3.198536369459075e-05
+linear,Foreground-extinction propagation,sigma_extinction_prediction_mag,0.00104870416150495,0.0001173996540176,0.0020806499960065
+linear,Fitted intrinsic population scatter,sigma_intrinsic_mag,0.08107526298400025,0.0730196738835995,0.0843671759344807
+linear,Finite 13-galaxy LOO calibration,sigma_calibration_prediction_mag,0.036332563059820855,0.0242698018279532,0.0650199319669853
+linear,Total internal SBF distance,sigma_mu_sbf_internal,0.0907712129900138,0.0795441878851107,0.1160131696479782
+linear,Total including common TRGB scale,sigma_mu_sbf_absolute,0.10221768043286544,0.0923919792314343,0.1251721036484191
+linear,SBF--TRGB validation residual,sigma_validation_residual_internal,0.0945842315009279,0.0842905299861786,0.118650976365809

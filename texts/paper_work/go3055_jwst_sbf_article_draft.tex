@@ -1,20 +1,33 @@
-\documentclass[11pt]{article}
+\documentclass[10pt,a4paper,twocolumn]{article}
 
-\usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
 \usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{array}
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{geometry}
 \usepackage{hyperref}
 \usepackage{microtype}
-\usepackage{siunitx}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{placeins}
 \usepackage{xcolor}
 
-\geometry{margin=22mm}
-\hypersetup{colorlinks=true, linkcolor=blue!50!black, citecolor=blue!50!black,
-            urlcolor=blue!50!black}
-\sisetup{separate-uncertainty=true}
+\geometry{
+  top=17mm,
+  bottom=19mm,
+  left=17mm,
+  right=17mm,
+  columnsep=7mm
+}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!45!black,
+  citecolor=blue!45!black,
+  urlcolor=blue!45!black
+}
 
 \newcommand{\mbar}{\overline{m}}
 \newcommand{\Mbar}{\overline{M}}
@@ -22,548 +35,1167 @@
   \IfFileExists{#1}{%
     \includegraphics[width=#2]{#1}%
   }{%
-    \fbox{\parbox[c][48mm][c]{0.92\linewidth}{\centering
-      Figure not generated yet.\\Run the corresponding cell in
+    \fbox{\parbox[c][42mm][c]{0.90\linewidth}{\centering
+      Figure not generated.\\
+      Run the corresponding cell in
       \texttt{code/sbf-2-graph.ipynb}.\\[1mm]
       \texttt{\detokenize{#1}}}}%
   }%
 }
 
-\title{A Direct JWST/NIRCam F150W Surface Brightness Fluctuation
-Calibration from the GO-3055 TRGB Sample}
-\author{Author list and affiliations to be agreed}
-\date{Draft of 29 July 2026}
+\title{JWST/NIRCam F150W Surface Brightness Fluctuation Distances
+from GO-3055: A TRGB-Anchored Calibration and Internal Accuracy Test}
+\author{I. A. Bukanov\\[-1mm]
+\small Lomonosov Moscow State University, Faculty of Space Research,\\[-1mm]
+\small Moscow, Russia\\[1mm]
+\small Co-author list to be agreed}
+\date{Draft of 1 August 2026}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-We present a direct empirical calibration of surface brightness fluctuation
-(SBF) magnitudes measured with JWST/NIRCam in F150W.  The sample comprises the
-14 early-type galaxies observed in JWST program GO-3055 for the
-TRGB--SBF distance-ladder project.  We follow the analysis geometry of
-Jensen et al. (2025, arXiv:2502.15935), measuring SBF and color in two
-concentric circular annuli spanning 8.2--16.4 and 16.4--32.8 arcsec and
-combining the two measurements with inverse-variance weights.  F090W--F150W
-colors are measured in the same annuli as the SBF signal.  Absolute
-fluctuation magnitudes are anchored by the revised, color-dependent JWST TRGB
-distances of Chazov et al. (2026, arXiv:2603.11160).  For the full sample we
-obtain the preliminary relation
-\[
- \Mbar_{150}=(-3.173\pm0.023)
- +(0.666^{+0.423}_{-0.476})[C_{090-150}-0.5907],
-\]
-with an inferred intrinsic scatter of 0.069 mag.  Leave-one-out
-cross-validation against TRGB gives a mean residual of $+0.008$ mag and an
-RMS of 0.099 mag, corresponding to approximately 4.7 per cent in distance.
-A color-independent model is statistically competitive
-($\Delta{\rm AICc}=1.71$ relative to the linear relation), so the present
-sample does not yet provide decisive evidence for the color slope.
-Measurements in the inner and outer annuli show materially different trends,
-including a highly significant 0.168 mag radial difference in NGC 3379 despite
-an exceptionally uniform residual image.  We discuss the implications for
-stellar-population corrections and for transferring the TRGB zero point to
-future JWST SBF samples.
+We measure JWST/NIRCam F150W surface brightness fluctuation (SBF) distances
+for 14 early-type galaxies in program GO-3055 and calibrate them directly
+with the individual JWST tip of the red giant branch (TRGB) distances from
+Chazov et al. (2026). The primary experiment is fixed in advance: all 14
+galaxies, individual Paper IV thin-slice distances, no manual rejection, and
+one color-independent F150W zero point. A linear color term is tested before
+the distance analysis, but is not adopted because it does not improve either
+the information criterion or cross-validation. The resulting calibration is
+$\Mbar_{150,0}=-3.172$ mag with fitted intrinsic scatter 0.084 mag. Its
+leave-one-out (LOO) distance-modulus bias is $-0.0004$ mag and its RMS is
+0.0955 mag, corresponding to 4.4 per cent in distance. The median predicted
+internal uncertainty is 0.0902 mag (4.2 per cent); including the common TRGB
+absolute-scale uncertainty gives 0.1018 mag (4.8 per cent). The normalized
+LOO residuals have RMS 1.08; nine of 14 objects are within $1\sigma$ and all
+14 are within $2\sigma$. For comparison, a linear color law gives a worse
+LOO RMS of 0.0992 mag, is disfavored by $\Delta{\rm AICc}=2.58$, and has a
+bootstrap slope interval that includes zero. The data therefore do not
+require a color dependence, and all primary distances and uncertainties below
+use the constant zero point.
+Paper IV thick-slice distances and the Paper III cluster-mean prescription
+give consistent accuracy. The result is an internal cross-validation of the
+calibrators, not an independent external validation.
 \end{abstract}
+
+\noindent\textbf{Keywords:} distance scale; galaxies; surface brightness
+fluctuations; JWST; NIRCam; TRGB.
 
 \section{Introduction}
 
 Surface brightness fluctuations arise from Poisson variations in the number
 and luminosity of unresolved stars within each resolution element
-\cite{TonrySchneider1988}.  For old stellar populations the near-infrared SBF
-signal is strong, allowing efficient distance measurements to early-type
-galaxies well beyond the reach of resolved-star methods.  Its absolute
-amplitude, however, depends on the luminosity function of the evolved stellar
-population and therefore must be calibrated as a function of a population
-proxy, normally an integrated optical or near-infrared color.
+\citep{TonrySchneider1988}. Their apparent amplitude decreases with distance,
+so an absolute SBF magnitude calibrated for the stellar population provides a
+distance indicator. In the near-infrared, evolved stars produce a strong SBF
+signal, but the absolute amplitude may depend on age and metallicity. Color is
+therefore commonly used as a population correction; it is an optional
+improvement to the distance estimator, not the definition of the method.
 
-The TRGB--SBF project is constructing a Population-II distance ladder in
-which a geometrically calibrated tip of the red giant branch (TRGB) zero point
-is transferred to SBF measurements.  Jensen et al. \cite{Jensen2025}
-(hereafter Paper III) used JWST TRGB distances for the GO-3055 galaxies to
-recalibrate the existing HST/WFC3-IR F110W SBF scale.  Their analysis retained
-the established HST SBF measurements and used DECam or Pan-STARRS $g-z$
-colors.  With cluster-mean TRGB distances for Virgo and Fornax, they obtained
+The TRGB--SBF project is constructing a Population-II distance ladder that
+transfers a geometrically calibrated TRGB zero point to SBF. Jensen et al.
+\citep[Paper III;][]{Jensen2025} used JWST TRGB distances to recalibrate the
+existing HST/WFC3-IR F110W SBF scale. With mean Virgo and Fornax distances,
+they obtained
 \[
- \Mbar_{110}=(1.86\pm0.16)[(g-z)_{\rm PS}-1.30]
-             -(2.760\pm0.016).
+ \Mbar_{110}=(1.86\pm0.16)[(g-z)_{\rm PS}-1.30]-(2.760\pm0.016).
 \]
-The revised calibration produced
-$H_0=73.8\pm0.7\ ({\rm stat})\pm2.3\ ({\rm sys})$
-\si{km.s^{-1}.Mpc^{-1}}.
 
-The present study takes the next direct step: both the fluctuation signal and
-the population color are measured from the JWST GO-3055 images themselves.
-F150W provides the SBF signal and F090W--F150W the color.  The TRGB anchors are
-the thin-slice distance moduli in Chazov et al. \cite{Chazov2026}
-(hereafter Paper IV), who calibrated the color dependence of the F090W TRGB
-using the NGC 4258 maser distance.  Paper IV found
-$M_{\rm F090W}^{\rm TRGB}=-4.398\pm0.017$ mag for
-$(F090W-F150W)_0<1.65$ mag, followed by a polynomial decline at redder color.
-Their thin-slice distances are on average $0.028\pm0.008$ mag shorter than
-the earlier literature values derived from the same imaging.  That revision
-must be kept explicit when comparing our F150W zero point with Paper III.
+Here the SBF signal is measured from the JWST GO-3055 F150W images. The
+F090W--F150W color is measured independently only to test whether a population
+correction is required; it is not an input to the F150W power-spectrum
+measurement.
+The anchors are the revised JWST TRGB distances of Chazov et al.
+\citep[Paper IV;][]{Chazov2026}, tied to the NGC 4258 maser distance. Our main
+questions are deliberately ordered as follows: (1) is a color term required;
+(2) if not, how accurately does a single F150W SBF zero point recover the TRGB
+distances; and (3) is the propagated uncertainty consistent with the observed
+residuals?
 
-Our goals are to (1) reproduce the Paper III annular measurement geometry,
-(2) establish a direct JWST F150W SBF calibration, (3) cross-validate SBF
-distances against the independent TRGB measurements, and (4) test whether
-radial population variations and host-galaxy luminosity explain part of the
-remaining scatter.
+\section{Data and distance anchors}
 
-\section{Data}
 \subsection{GO-3055 sample}
 
-The sample contains 14 galaxies: three in the Fornax cluster, nine in the
-Virgo region, and two in nearby groups.  Each target has NIRCam F090W and
-F150W imaging.  F150W is used for the fluctuation measurement and F090W is
-combined with it to form the population-sensitive color
-$C_{090-150}=F090W-F150W$.  The adopted TRGB distance moduli are the
-thin-slice values from Paper IV.  These distances are tied to the
-NGC 4258 maser modulus of 29.397 mag.
+The sample contains 14 galaxies: three Fornax members, nine galaxies in or
+near the Virgo region, and two nearby group galaxies. Every target has NIRCam
+F090W and F150W imaging. The signal and color are measured in the same two
+circular annuli, $8.2$--$16.4$ and $16.4$--$32.8$ arcsec, following the
+geometry of Paper III. At the individual Paper IV distances, the outer
+$32.8$-arcsec radius spans 1.65--3.17 kpc. Consequently, radial differences
+cannot be interpreted as measurements at a common physical radius. Jensen
+et al. also used an auxiliary elliptical-annulus check for elongated
+galaxies; that secondary test is not reproduced here, and the limitation is
+kept explicit.
+
+The primary anchors are the individual Paper IV thin-slice TRGB moduli. This
+choice was fixed before inspection of the present SBF residuals and is kept to
+avoid selecting an anchor variant after seeing which gives less scatter.
+Paper IV prefers its thick-slice estimator because it uses a broader and more
+robust stellar sample on the blue side of the TRGB color break. We therefore
+treat thick-slice distances as a mandatory sensitivity experiment rather than
+silently ignoring that preference.
+
+Two Jensen comparisons are kept separate throughout. Paper III is the HST
+F110W calibration of 14 TRGB--SBF targets and is used for the color-law and
+cluster-mean comparisons. A legacy Jensen et al. (2015) F160W reconstruction
+exists for only five common galaxies and is reported only as a separately
+labelled distance column; it is never merged with the Paper III F110W sample.
 
 \begin{table*}
 \centering
-\caption{GO-3055 F150W SBF calibration measurements.  The final column is the
-leave-one-out SBF distance residual relative to the adopted Paper IV TRGB
-modulus.  Quoted values are preliminary and exclude a complete systematic
-error budget.}
+\caption{Extinction-corrected GO-3055 measurements. The penultimate column is
+the color-independent LOO SBF-minus-TRGB residual. HQ IV reproduces the high-quality flag
+in Table 2 of Paper IV. The quoted $\sigma_{\overline M}$ contains individual
+errors but excludes common zero points. The annular half-difference is shown
+as a physical/quality diagnostic and is not included as random noise.}
 \label{tab:measurements}
 \resizebox{\textwidth}{!}{%
-\input{go3055_jwst_sbf_article_measurements.tex}}
+\input{../../runs/sbf2_go3055/analysis/tables/go3055_article_measurements_constant.tex}}
 \end{table*}
 
-\subsection{Direct comparison with Papers III and IV}
+\subsection{Foreground extinction}
+\mbox{}\par
 
-Table~\ref{tab:method-comparison} separates differences forced by the
-instrument and filter set from genuine methodological choices.  The most
-important choice still requiring a submission-level sensitivity test is the
-use of individual Paper IV TRGB distances here, whereas Paper III adopted
-cluster means for most Virgo and Fornax calibrators to reduce scatter and
-increase the color baseline.
+Paper IV tabulates $A_{090}$. Using its coefficients, we adopt
+\begin{align}
+ E(B-V)&=A_{090}/1.4156,\\
+ A_{150}&=0.6021E(B-V),\\
+ C_0&=C_{\rm obs}-(A_{090}-A_{150}),\\
+ \mbar_{150,0}&=\mbar_{150,\rm obs}-A_{150}.
+\end{align}
+The corrections make the colors bluer by 0.008--0.029 mag and the F150W SBF
+magnitudes brighter by 0.006--0.022 mag. They do not materially change the
+distance RMS, but they are required for an unbiased zero point and covariance
+matrix.
+
+No separate internal-extinction correction is applied. The central
+$8.2$ arcsec are excluded, obvious non-elliptical features enter the object
+mask, and the sample contains no retained strong dust lane. As a quantitative
+sensitivity bound, an unrecognized screen with $A_V^{\rm int}\leq0.05$ mag
+would give $A_{150}^{\rm int}\lesssim0.01$ mag for a standard near-infrared
+extinction curve, well below the observed 0.0955-mag LOO scatter. This is a
+bound, not a measurement of internal dust.
+
+All targets have $z<0.007$. For a deliberately broad local spectral-slope
+range $|1+\alpha|\leq3$, where $f_\nu\propto\nu^\alpha$, the ordinary
+same-filter correction satisfies
+\begin{equation}
+ |K_{150}|=2.5|1+\alpha|\log_{10}(1+z)<0.023~{\rm mag}.
+\end{equation}
+It is not applied object by object because a consistent SBF spectral-energy
+model is unavailable and the bound is subdominant at the present precision.
+Likewise, cosmological surface-brightness dimming is not added as a separate
+SBF term: the common surface-brightness factor cancels in the variance divided
+by mean-galaxy-light normalization. Even the full Tolman term is bounded by
+$10\log_{10}(1+z)<0.030$ mag over the sample. These two bounds delimit, rather
+than conceal, the small-redshift approximation.
+
+\section{SBF measurement}
+
+\subsection{Sky, galaxy model, and masks}
+
+The input images are the public calibrated NIRCam i2d mosaics in
+MJy~sr$^{-1}$. A scalar sky is estimated outside the science annuli from
+independent background regions and subtracted. Invalid pixels, detector gaps,
+foreground objects, and compact sources form the primary mask. Initial compact
+sources require at least nine connected pixels above a local $3.5\sigma$
+threshold; after galaxy subtraction, a second catalogue uses four connected
+pixels above $2.5\sigma$, deblending, and a three-pixel morphological dilation.
+The mask is deliberately aggressive toward compact positive residuals while
+retaining diffuse galaxy structure.
+
+The centre is initialized from the image and checked against the WCS target
+position. Ellipticity and position angle remain free while isophotes are fitted
+from a starting semimajor axis of 50 pixels to at most 2000 pixels. Intensities
+and fitted geometry are linearly interpolated between consecutive isophotes;
+there is no piecewise constant filling between isophotal lines. A Sersic image
+is used only to fill detector gaps while solving the isophotes. The final model
+at every real science pixel comes from the measured isophotal profile. Filled
+gap pixels never enter a power spectrum.
+
+After subtraction, residual values in the science region are limited
+symmetrically to the robust median plus or minus $3.5$ robust standard
+deviations. Pixels are not rejected. This operation is therefore
+\emph{winsorization}, not sigma-clipping; sigma-clipped statistics are used only
+to estimate its centre and scale. The raw and winsorized residual products are
+both retained for diagnostics.
+
+\subsection{Normalized residual and expectation spectrum}
+
+For a smooth model $M_i$, sky-subtracted data $I_i$, and binary usable-pixel
+window $W_i$, the field entering the Fourier analysis is
+\begin{equation}
+ R_i=W_i\frac{I_i-M_i}{\sqrt{M_i}}.
+ \label{eq:normalized-residual}
+\end{equation}
+The division by $\sqrt{M_i}$ converts the Poisson stellar variance, which is
+proportional to local galaxy intensity, into an approximately stationary SBF
+amplitude. It does not measure a difference between the brightest and faintest
+pixels. SBF is the variance of the unresolved stellar luminosity function per
+unit mean light, recovered statistically from all usable pixels.
+
+For each annulus we subtract the mean of $R$, calculate the two-dimensional
+FFT, and use
+\begin{equation}
+ P(\boldsymbol{k})=\frac{|\mathcal{F}[R](\boldsymbol{k})|^2}{N_{\rm use}}.
+\end{equation}
+The spectrum is azimuthally averaged into 80 radial bins; the uncertainty of
+each bin is the standard error of its contributing Fourier modes. The expected
+SBF spectrum is not simply $|\widetilde{\rm PSF}|^2$. For each of five
+time- and position-matched, unit-normalized STPSF models, 64 independent unit
+white-noise fields are convolved with the PSF, multiplied by the exact annular
+window and source mask, mean-subtracted, Fourier transformed, and averaged:
+\begin{equation}
+ E_j(k)=\left\langle
+ \frac{|\mathcal{F}\{W[n*{\rm PSF}_j]\}|^2}{N_{\rm use}}
+ \right\rangle_{64}.
+ \label{eq:expectation-spectrum}
+\end{equation}
+Thus $E(k)$ includes PSF blurring, the finite annulus, holes in the source mask,
+and mode mixing by the window.
+
+\subsection{Power-spectrum fit and fluctuation magnitude}
+
+For every PSF realization we fit
+\begin{equation}
+ P(k)=P_{0,j}E_j(k)+P_{1,j}
+ \label{eq:power-fit}
+\end{equation}
+by weighted least squares, with weights equal to the inverse squared bin
+errors. The covariance is $(X^{\mathsf T}WX)^{-1}$ multiplied by
+$\max(\chi^2_\nu,1)$. The adopted $P_0$ and $P_1$ are the medians over the five
+PSFs. The primary normalized-frequency interval is $0.04\leq k\leq0.25$, with
+an additional lower bound of ten Fourier modes across the shorter crop axis.
+Fits beginning at $k_{\min}=0.01$ and 0.03, with the same $k_{\max}$, quantify
+low-frequency sensitivity but do not replace the primary fit.
+
+The PSF-shaped power contains both stellar SBF and unresolved compact sources:
+\begin{equation}
+ P_{\rm SBF}=P_0-P_r.
+ \label{eq:pr-subtraction}
+\end{equation}
+Here $P_r$ is specifically the contribution from unmasked globular clusters
+and background galaxies fainter than the catalogue limit. In each annulus the
+observed source luminosity function is modelled as a Gaussian globular-cluster
+luminosity function plus a power-law background-galaxy term. Its faint side is
+integrated with flux-squared weighting,
+\begin{equation}
+ P_r=\left\langle M^{-1}\right\rangle
+ \int_{m_{\rm cut}}^{m_{\rm cut}+12}
+ [\phi_{\rm GC}(m)+\phi_{\rm bg}(m)]f^2(m)\,dm,
+\end{equation}
+where $f(m)$ is the flux in image units and $\langle M^{-1}\rangle$ restores
+the normalization of Eq.~\ref{eq:normalized-residual}. The adopted GCLF width
+is 1.2 mag; widths of 1.35 mag for NGC 1399 and NGC 4472 are tested separately.
+
+Because Eq.~\ref{eq:normalized-residual} already divides the variance by mean
+galaxy light, $P_{\rm SBF}$ has units of fluctuation flux and is not divided by
+$M$ a second time. With pixel solid angle $\Omega_{\rm pix}$,
+\begin{align}
+ Z_{\rm AB,pix}&=-2.5\log_{10}\left(\frac{10^6\Omega_{\rm pix}}{3631}\right),\\
+ \mbar_{150}&=-2.5\log_{10}(P_0-P_r)+Z_{\rm AB,pix}.
+ \label{eq:mbar-from-power}
+\end{align}
+The inner and outer magnitudes are finally combined with inverse-variance
+weights. Their half-difference is retained as a radial diagnostic, not inserted
+as random measurement noise.
+
+All current annular fits give $P_1<0$. Corner regions of the original F150W
+i2d frames have a median logarithmic noise-spectrum slope of $-1.45$ over the
+fitted frequency range, so the data are not white. The fitted constant absorbs
+the local intercept of this misspecified noise spectrum and may be negative;
+it is not a claim of negative physical noise power.
+
+\subsection{Matched color}
+
+F090W is registered and PSF-matched to F150W. Color is measured in the same
+usable pixels and rings as the SBF signal. The two annular colors may differ
+because the stellar population changes with radius. Their half-difference is
+therefore retained as a radial diagnostic, not assigned as a statistical
+color error. Color does not enter the primary power-spectrum measurement or
+the adopted distance estimator; it is used only in the model-comparison test
+of a possible population correction.
+
+\section{Uncertainty model}
+\label{sec:errors}
+\mbox{}\par
+
+The uncertainty bookkeeping separates errors that vary from galaxy to galaxy,
+finite-calibration uncertainty, intrinsic population scatter, and common
+absolute zero points. This separation prevents a common systematic from being
+incorrectly used to down-weight an individual point.
+
+\subsection{Calibration-point errors}
+
+Let $r$ denote the inner or outer annulus. The non-PSF power-spectrum error is
+defined conservatively as
+\begin{align}
+ \sigma_{k,r}&=1.4826\,{\rm MAD}\{\mbar_r(k_{\min})\},\\
+ \sigma_{{\rm WLS},r}&=
+ \frac{1.085736\,\sigma_{P_0,{\rm WLS}}}{P_0-P_r},\\
+ \sigma_{{\rm PS},r}&=\max(\sigma_{k,r},\sigma_{{\rm WLS},r}).
+ \label{eq:ps-error}
+\end{align}
+where the MAD uses $k_{\min}=0.01,0.03,$ and 0.04 and the second term is the
+linear propagation of the WLS covariance. It is a maximum, not a quadrature
+sum, because both terms diagnose uncertainty in the same fitted amplitude.
+The factor $1.085736=2.5/\ln10$ converts fractional power error to magnitude.
+
+The five PSFs are then kept separate. Their robust scatter is
+\begin{equation}
+ \sigma_{{\rm PSF},r}=1.4826\,{\rm MAD}\{\mbar_{r,j}\}.
+\end{equation}
+The analysis notebook reconstructs Eq.~\ref{eq:ps-error} from the saved
+$\sigma_{P_0,{\rm WLS}}$ before adding this term; hence PSF scatter is not
+counted both inside and outside the fit error. With the same normalized
+inverse-variance annular weights $w_r$ used for the central magnitude,
+\begin{align}
+ \sigma_{\rm PS}^2&=\sum_r w_r^2\sigma_{{\rm PS},r}^2,\\
+ \sigma_{\rm PSF}&=\sum_r w_r\sigma_{{\rm PSF},r}.
+\end{align}
+The PSF terms are combined linearly because a single PSF mismatch moves both
+annuli coherently.
+
+The scalar-sky systematic $s$ is the scatter among independent background
+estimates in image units. Linearizing Eq.~\ref{eq:mbar-from-power} gives
+\begin{equation}
+ \sigma_{{\rm sky},r}=1.085736\frac{s}{\langle M\rangle_r},\qquad
+ \sigma_{\rm sky}=\sum_r w_r\sigma_{{\rm sky},r}.
+\end{equation}
+Again the annuli are correlated because the same scalar sky is subtracted from
+both. If $q_r=P_{r}/P_0$, assigning the stated 25 per cent fractional
+uncertainty to $P_r$ gives
+\begin{equation}
+ \sigma_{P_r,r}=1.085736\,(0.25)\frac{q_r}{1-q_r},\qquad
+ \sigma_{P_r}=\sum_r w_r\sigma_{P_r,r}.
+ \label{eq:pr-error}
+\end{equation}
+This term is small because $P_r/P_0<0.0067$ for every retained annulus; the
+0--$2P_r$ sensitivity experiment tests the stronger possibility that the
+working luminosity-function model itself is wrong.
+
+The internal apparent-SBF error is therefore
+\begin{equation}
+ \sigma^2_{\mbar,\rm int}=
+ \sigma^2_{\rm PS}+
+ \sigma^2_{\rm PSF}+
+ \sigma^2_{\rm sky}+
+ \sigma^2_{P_r}.
+ \label{eq:mbar-error}
+\end{equation}
+The radial half-difference does not appear in Eq.~\ref{eq:mbar-error}: it can
+be a real population gradient and the two rings share their sky, model, mask,
+and PSF.
+
+For foreground reddening we assign
+\begin{align}
+ \sigma_{A_{090}}^2&=(0.16A_{090})^2+0.005^2,\\
+ \sigma_{E(B-V)}&=\sigma_{A_{090}}/1.4156,\\
+ \sigma_{E(090-150)}&=(1.4156-0.6021)\sigma_{E(B-V)}.
+\end{align}
+The individual Paper IV modulus error already contains its $A_{090}$ term.
+We remove that contribution,
+$\sigma_{\mu,{\rm no\ red}}^2=\sigma_{\mu,{\rm IV}}^2-
+\sigma_{A_{090}}^2$, and then restore the single correct shared-reddening
+combination. The error of an absolute calibration point is
+\begin{equation}
+ \sigma^2_{\Mbar,i}=
+ \sigma^2_{\mbar,\rm int}+
+ \sigma^2_{\mu,\rm no\ red}+
+ \sigma^2_{E(090-150)}.
+ \label{eq:calibration-point-error}
+\end{equation}
+The same reddening moves corrected color and absolute SBF in opposite
+directions, giving
+\begin{equation}
+ {\rm Cov}(C_0,\Mbar_{150,0})=-\sigma^2_{E(090-150)}.
+\end{equation}
+
+The photometric color error in each ring is the standard error of the usable
+pixel-color distribution after WCS registration and PSF matching. The two
+ring errors are combined as $\sigma_{C,{\rm phot}}^2=\sum_r
+w_r^2\sigma_{C,r}^2$. The horizontal error used in the diagnostic linear regression is
+$\sigma_C^2=\sigma_{C,{\rm phot}}^2+\sigma_{E(090-150)}^2$. This is a
+photometric error; the observed inner--outer color difference remains a
+separate radial-gradient diagnostic. The standard error does not claim to
+include every image-wide F090W/F150W calibration or PSF-matching systematic.
+Adding a deliberately larger 0.01-mag independent color floor leaves the
+linear LOO RMS unchanged at the reported precision, so this omission cannot
+drive the present conclusion that the color term is not required.
+
+\subsection{Zero-point calibration and predictive distance errors}
+
+The adopted calibration is color independent,
+\begin{equation}
+ \Mbar_{150,0}=a,
+ \qquad
+ \mu_{\rm SBF}=\mbar_{150,0}-a.
+ \label{eq:primary-distance}
+\end{equation}
+Consequently, neither the measured color nor its uncertainty enters a primary
+distance. A color law $f(C)$ is fitted only as a model-comparison diagnostic.
+
+For a color law $f(C)$, the likelihood uses the effective variance
+\begin{equation}
+ V_i=\sigma^2_{\Mbar,i}+[f'(C_i)\sigma_{C,i}]^2
+ -2f'(C_i){\rm Cov}(C_i,\Mbar_i)+\sigma^2_{\rm int}.
+\end{equation}
+and maximizes the Gaussian likelihood including $\ln V_i$. For the adopted
+constant relation, $f'(C)=0$, so all color and color-covariance terms vanish.
+The intrinsic term
+$\sigma_{\rm int}$ is therefore fitted, not chosen to force reduced
+$\chi^2=1$. Fits with no horizontal error, an additional 0.01-mag
+object-to-object floor, and the historical half-ring proxy are reported as
+sensitivity tests.
+
+For a new target under the adopted constant calibration, the target-measurement
+component is simply
+\begin{equation}
+ \sigma^2_{{\rm target,const}}=
+ \sigma^2_{\mbar,{\rm int}}+\sigma^2_{A_{150}}.
+ \label{eq:constant-target-error}
+\end{equation}
+For completeness, the corresponding expression used only in the diagnostic
+color-law fit is
+\begin{align}
+ \sigma^2_{\rm target}={}&\sigma^2_{\mbar,\rm int}
+ +[f'(C)\sigma_{C,{\rm phot}}]^2\\
+ &+\sigma^2_{A_{150}}+[f'(C)\sigma_E]^2
+ -2f'(C)\sigma_{A_{150}}\sigma_E,
+\end{align}
+where $\sigma_E\equiv\sigma_{E(090-150)}$ and
+${\rm Cov}(C_0,\mbar_{150,0})=\sigma_{A_{150}}\sigma_E$ because both corrected observables move
+in the same direction when $E(B-V)$ changes. Its internal predictive variance
+then separates target measurement, population scatter, and finite calibration:
+\begin{equation}
+ \sigma^2_{\mu,\rm int}=
+ \sigma^2_{\rm target}+\sigma^2_{\rm int}+\sigma^2_{\rm cal}.
+\end{equation}
+The intrinsic term is the value fitted to the relevant 13-object LOO training
+sample. The finite-calibration term is the standard deviation of 300
+non-parametric bootstrap predictions from those same 13 galaxies. The absolute
+distance error adds
+the common Paper IV TRGB/NGC 4258 zero point of 0.047 mag. A common F150W
+photometric zero point and a common PSF-normalization shift cancel to first
+order between an apparent F150W SBF magnitude and an F150W absolute
+calibration measured with the same pipeline, so they are not added again as
+independent distance errors. They do affect the quoted absolute $\Mbar_{150}$
+zero point: the 0.047 mag TRGB, 0.0108 mag flux-scale, and 0.0167 mag
+PSF-stamp terms combine to 0.0510 mag. The common TRGB term does not enter the
+relative calibration fit.
+
+Explicitly, a one per cent common F150W flux-scale uncertainty becomes
+$\sigma_{\rm flux}=(2.5/\ln10)(0.01)=0.0108$ mag. The PSF-stamp term is the
+largest measured 129-versus-257-pixel spectral shift, 0.0167 mag. Therefore
+the common absolute-magnitude scale is
+\begin{equation}
+ \begin{split}
+ \sigma_{\Mbar,{\rm common}}
+ &=\sqrt{0.047^2+0.0108^2+0.0167^2}\\
+ &=0.0510~{\rm mag}.
+ \end{split}
+\end{equation}
+For a same-filter SBF distance, the last two terms shift apparent and
+calibrated absolute F150W magnitudes together and cancel; only the 0.047-mag
+anchor is retained. Any modulus uncertainty is converted to a fractional
+distance uncertainty with
+\begin{equation}
+ \frac{\sigma_D}{D}=\frac{\ln10}{5}\sigma_\mu,
+\end{equation}
+using the linear form for the quoted percentages (the exact asymmetric
+conversion is used in the machine-readable distance table).
+
+For the primary SBF-minus-TRGB validation residual, the shared extinction term
+is $\sigma_{E(090-150)}$. The general color-law diagnostic gives
+$(1+f')\sigma_{E(090-150)}$; this propagates shared reddening on the difference
+itself instead of counting it independently in both axes. The validation
+variance is the quadrature sum of target measurement, target color photometry,
+this shared-reddening response, individual TRGB error without reddening,
+intrinsic scatter, and finite-calibration error. LOO uses the same calibrator
+set and is consequently an internal cross-validation, not an external test on
+unseen anchors.
+
+Table~\ref{tab:individual-errors} reports the resulting object-to-object terms,
+not merely their definitions. The largest median calibration-point component
+is the individual TRGB error; the exceptional 0.0449-mag sky term belongs to
+NGC 4486. Table~\ref{tab:predictive-errors} then propagates those terms through
+an actual LOO distance prediction, and Table~\ref{tab:common-errors}
+separately lists coherent scale errors. Parentheses in the two summary tables
+give the full minimum--maximum range rather than an uncertainty on the median.
+
+\begin{table}
+\centering
+\caption{Galaxy-dependent statistical uncertainties in magnitudes. The range
+is the minimum--maximum across the 14 calibration points. Intrinsic and
+finite-calibration terms are prediction-specific and are shown in
+Fig.~\ref{fig:error-budget}.}
+\label{tab:individual-errors}
+\resizebox{\columnwidth}{!}{%
+\input{../../runs/sbf2_go3055/analysis/tables/go3055_individual_error_summary.tex}}
+\end{table}
 
 \begin{table*}
 \centering
-\caption{Relationship of the present analysis to Papers III and IV.}
-\label{tab:method-comparison}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{p{0.18\textwidth}p{0.25\textwidth}p{0.25\textwidth}p{0.25\textwidth}}
-\toprule
-Element & Paper III: Jensen et al. (2025) & Paper IV: Chazov et al. (2026) &
-Present work \\
-\midrule
-Primary quantity &
-HST/WFC3-IR F110W SBF &
-JWST/NIRCam F090W TRGB &
-JWST/NIRCam F150W SBF \\
-Population color &
-DECam or Pan-STARRS $g-z$ &
-Resolved-star F090W--F150W &
-Integrated F090W--F150W in the SBF annuli \\
-Distance anchor &
-JWST TRGB; mainly Virgo/Fornax cluster means &
-NGC 4258 maser; individual thin/thick-slice TRGB distances &
-Individual Paper IV thin-slice TRGB distances \\
-Radial regions &
-8.2--16.4 and 16.4--32.8 arcsec; weighted mean &
-Outer-halo resolved-star fields &
-Same two SBF annuli as Paper III; weighted mean and ring-by-ring tests \\
-Color fit &
-Bayesian fit accounting for both-axis uncertainties &
-Piecewise TRGB color law with a break at 1.65 mag &
-Likelihood fit with intrinsic scatter; color error disabled in the current
-default fit \\
-Calibration size &
-14 cluster-calibrated objects; eight direct TRGB overlaps &
-16 distance targets, 12 high-quality color-relation galaxies &
-14 direct SBF--TRGB pairs \\
-\bottomrule
-\end{tabular}
-}
+\caption{Decomposition of a predicted distance-modulus uncertainty. Entries
+are median (minimum--maximum) in magnitudes across the 14 LOO targets. The
+constant law has identically zero color propagation. ``Internal'' is the
+quadrature of target measurement, color, extinction, intrinsic scatter, and
+finite-calibration terms. ``Absolute'' then adds the common 0.047-mag TRGB
+scale. The final row additionally contains the individual target TRGB error
+and is used only when validating SBF against TRGB, not when quoting an SBF
+distance to a new galaxy.}
+\label{tab:predictive-errors}
+\resizebox{0.94\textwidth}{!}{%
+\input{../../runs/sbf2_go3055/analysis/tables/go3055_predictive_error_summary.tex}}
 \end{table*}
 
 \begin{table}
 \centering
-\caption{Paper IV TRGB quantities relevant to the present SBF calibration.}
-\label{tab:paper4-anchor}
-\begin{tabular}{lc}
-\toprule
-Quantity & Paper IV value \\
-\midrule
-Blue TRGB zero point & $-4.398\pm0.017$ mag \\
-Color break & $F090W-F150W=1.65$ mag \\
-Red-branch coefficients $(A,B,C,D)$ &
-$(-4.398,\,0.431,\,0.712,\,-0.293)$ \\
-Thin minus literature modulus & $-0.028\pm0.008$ mag \\
-Thick minus literature modulus & $-0.037\pm0.009$ mag \\
-Mean thin--thick difference & 0.007 mag \\
-Common zero-point systematic & 0.047 mag \\
-Choice adopted here & thin-slice moduli \\
-\bottomrule
-\end{tabular}
+\caption{Common systematic uncertainties. The combined absolute
+$\Mbar_{150}$ row is the quadrature of the preceding three calibration terms;
+the same-filter distance row is not added to it.}
+\label{tab:common-errors}
+\resizebox{\columnwidth}{!}{%
+\input{../../runs/sbf2_go3055/analysis/tables/go3055_common_systematics.tex}}
 \end{table}
 
-\section{SBF analysis}
+\section{Primary statistical experiment}
 
-\subsection{Galaxy model, masks, and residual image}
-
-A scalar sky level is estimated outside the science annuli and subtracted from
-the F150W image.  A first mask removes invalid pixels, detector gaps, foreground
-objects, and compact sources.  Isophotes are fitted to the usable galaxy light
-and interpolated to form a full-frame smooth model.  Detector gaps are filled
-only for the purpose of obtaining a stable isophotal solution; they do not
-contribute to the SBF measurement.
-
-The smooth model is subtracted from the background-corrected image.  Compact
-sources detected in the residual image are then masked, and the residual is
-normalized by the square root of the smooth galaxy model.  A symmetric
-$3.5\sigma$ clipping of extreme residual pixels is retained as a deliberate
-modification to the historical pipeline.  Its effect on the final zero point
-must be reported as a sensitivity test rather than silently absorbed into the
-method.
-
-\subsection{Power spectrum and unresolved sources}
-
-For each annulus the azimuthally averaged residual power spectrum is fitted
-over the adopted frequency interval $0.04\leq k\leq0.25$ using
-\[
- P(k)=P_0 E(k)+P_1 .
-\]
-Here $E(k)$ is the expectation power spectrum obtained from the PSF convolved
-with the annular mask/window, $P_0$ is the fitted amplitude of the
-PSF-shaped component, and $P_1$ is a constant white-noise term.  The
-fluctuation power attributed to the stellar population is
-\[
- P_{\rm SBF}=P_0-P_r,
-\]
-where $P_r$ is the estimated contribution of unresolved globular clusters and
-background galaxies below the masking threshold.  The apparent fluctuation
-magnitude follows from the photometric zero point and the mean galaxy model
-level in the annulus.
-
-All current annular fits return negative $P_1$.  Because this behavior is
-nearly universal rather than confined to individual galaxies, it is treated
-as evidence that the constant-noise component is an imperfect description of
-the correlated noise in the drizzled images, not as an automatic rejection of
-all $P_0$ estimates.  A final paper must quantify the sensitivity to the
-adopted frequency window and to a noise-template extension of the model.
-
-\subsection{Matched colors and uncertainties}
-
-F090W is PSF-matched and registered to F150W, and the integrated color is
-measured in exactly the same usable pixels and annuli as the SBF signal.  This
-implements the central warning in Paper III that colors measured in the
-high-signal galaxy core can be biased relative to the regions used for SBF.
-The two ring measurements are retained separately and are also combined with
-inverse-variance weights.
-
-The present internal error includes the fitting uncertainty, stability across
-the adopted $k_{\min}$ choices, the difference between the two annuli, PSF
-scatter, and a working uncertainty in $P_r$.  Foreground-extinction,
-large-scale sky, and common TRGB zero-point uncertainties are not yet complete;
-the quoted error bars must therefore not be described as the final total error
-budget.
+The primary result uses all 14 galaxies, individual Paper IV thin-slice
+distances, no manual rejection, and one color-independent absolute F150W SBF
+zero point. The linear relation is a pre-specified test of whether a population
+correction is needed; quadratic and broken-line relations are exploratory.
+NGC 1399 remains in the primary fit; its constant-zero-point LOO residual is
+$-0.157$ mag, or $1.81\sigma$ with the validation uncertainty, and does not
+justify post-hoc removal.
 
 \section{Results}
-\subsection{F150W calibration}
 
-Using all 14 individual Paper IV TRGB distances, the preliminary linear
-calibration at the median color $C_0=0.5907$ is
+\subsection{Test for color dependence}
+
+We first ask whether color is needed before constructing the primary distance
+estimator. The color-independent fit gives
 \begin{equation}
- \Mbar_{150}=(-3.1726)
- +(0.6656)(C_{090-150}-0.5907),
- \label{eq:f150-calibration}
+ \Mbar_{150,0}=-3.172,
+ \qquad \sigma_{\rm int}=0.084~{\rm mag}.
+ \label{eq:f150-constant-calibration}
 \end{equation}
-with an intrinsic scatter of 0.0695 mag.  Bootstrap 16th--84th percentiles are
-$[-3.193,-3.147]$ mag for the intercept and $[0.190,1.089]$ for the slope.
-The broad slope interval is a direct consequence of the narrow color range and
-the small sample.
+At the median corrected color $C_0=0.5675$, the alternative linear fit is
+\begin{equation}
+ \Mbar_{150,0}=-3.1756+0.4985(C_{090-150,0}-0.5675),
+ \label{eq:f150-linear-test}
+\end{equation}
+with intrinsic scatter 0.0809 mag. Bootstrap 16th--84th percentiles are
+$[-3.1975,-3.1486]$ mag for the intercept and $[-0.0576,0.9931]$ for the
+slope, so the slope interval includes zero.
+
+\begin{table}
+\centering
+\caption{Model comparison for all 14 galaxies. The linear relation tests a
+possible population correction; nonlinear models are exploratory.}
+\label{tab:model-comparison}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lrrrr}
+\toprule
+Model & $a$ & $b$ & $\sigma_{\rm int}$ & AICc / LOO RMS \\
+\midrule
+Constant & -3.172 & 0.000 & 0.084 & -22.83 / 0.0955 \\
+Linear & -3.176 & 0.498 & 0.081 & -20.26 / 0.0992 \\
+Quadratic & -3.147 & 0.838 & 0.074 & -18.28 / 0.0989 \\
+Broken line & -3.133 & 2.178 & 0.073 & -18.65 / 0.0974 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+The constant model is better than the linear relation by
+$\Delta{\rm AICc}=2.58$ and also has lower LOO RMS. Color therefore does not
+improve the distance estimate in the present sample. This conclusion is not
+caused by the treatment of horizontal errors: the linear LOO RMS is 0.09924
+mag with no color errors, with the measured errors, or after adding a 0.01-mag
+floor; using the old half-ring proxy gives 0.09960 mag. We consequently adopt
+Eq.~\ref{eq:f150-constant-calibration}; all subsequent primary distances and
+error budgets are color independent.
 
 \begin{figure*}
 \centering
-\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_f150w_sbf_calibration.png}{0.78\textwidth}
-\caption{Direct JWST F150W SBF calibration for GO-3055.  This is the JWST
-counterpart of the HST F110W calibration shown in Fig.~2 of Paper III.
-The vertical axis is inverted so that brighter SBF is upward.  Before
-submission the secondary ``clean'' fit must use the residual-structure flag
-rather than radial annulus disagreement.}
+\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_f150w_sbf_calibration.png}{0.74\textwidth}
+\caption{Extinction-corrected JWST F150W SBF calibration and the tested color
+dependence. The constant zero point is adopted; sloped and subset fits are
+diagnostics and do not define the primary distances. Marker shape gives
+environment and marker color the F150W aperture-luminosity proxy.}
 \label{fig:calibration}
 \end{figure*}
 
-A constant absolute SBF magnitude has
-${\rm AICc}=-22.83$, compared with $-21.11$ for the linear relation.
-The difference $\Delta{\rm AICc}=1.71$ is not decisive, while leave-one-out
-RMS values are 0.0984 and 0.0987 mag respectively.  Quadratic and broken-line
-fits reduce the raw RMS slightly but are disfavored after accounting for model
-complexity.  We therefore report the linear calibration for direct comparison
-with Paper III but do not claim a secure detection of its color slope.
+\subsection{Distance recovery and precision}
 
-\subsection{Observed color correlations}
+The adopted color-independent relation gives LOO bias $-0.0004$ mag and RMS
+0.0955 mag, corresponding to approximately 4.4 per cent scatter in distance.
+Its median predicted internal uncertainty is 0.0902 mag (4.2 per cent), and
+the median absolute uncertainty after the common zero point is 0.1018 mag
+(4.8 per cent).
 
-Paper III found a well-constrained F110W slope after enlarging the
-calibration set with cluster-mean distances and a broader color baseline.  We
-compare unweighted Pearson and Spearman coefficients for our 14 objects, our
-measurements of the eight objects overlapping Table~1 of Paper III, and all
-14 Paper III calibration points.  For Paper III we compute
-$\Mbar_{110}^{\rm obs}=\mbar_{110}-\mu_{\rm cluster}$ rather than correlating
-color with a magnitude already produced by their published color law.
-For our full sample, the unweighted coefficients are
-$r=0.30$ ($p=0.297$) and $\rho=0.24$ ($p=0.401$).  Restricting our data to
-the eight Paper-III-overlap galaxies gives $r=0.49$ ($p=0.220$), whereas the
-14 observed Paper III calibration points give $r=0.97$
-($p<10^{-8}$) and $\rho=0.96$.  Thus the current F150W data do not show a
-statistically significant raw color correlation, while the Paper III F110W
-relation is strong over its broader color baseline and cluster-augmented
-sample.  The two color indices themselves are nevertheless strongly correlated
-for the eight common galaxies: F090W--F150W versus Pan-STARRS $g-z$ gives
-$r=0.87$ ($p=0.005$) and $\rho=0.88$ ($p=0.004$).  The weak F150W
-SBF--color relation therefore cannot be dismissed as a complete failure of
-our infrared color to track the optical stellar-population sequence.
+The constant-zero-point validation pulls have RMS 1.08; nine of 14 objects lie within
+$1\sigma$ and all 14 within $2\sigma$. Thus the error model is not obviously
+underestimated or inflated. The empirical LOO RMS and the median predicted
+uncertainty are distinct quantities and agree at the expected level for this
+small sample.
 
 \begin{figure*}
 \centering
-\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_color_correlation_vs_jensen.png}{0.96\textwidth}
-\caption{Observed SBF--color correlations in the present GO-3055 sample and
-in the 14 F110W calibration galaxies from Table~1 of Paper III, followed by
-a direct comparison of F090W--F150W and $g-z$ for the eight common galaxies.
-The filters and color indices differ, so slopes are not numerically
-interchangeable.  The purpose is to compare the strength and robustness of
-the observed correlations without building the published color law into the
-dependent variable.}
-\label{fig:jensen-correlation}
-\end{figure*}
-
-\subsection{Radial measurements}
-
-The inner annuli give a slope of approximately 1.36 with intrinsic scatter
-0.066 mag, whereas the outer annuli give a much weaker slope of approximately
-0.28 and a larger scatter of 0.091 mag.  The two measurements for a galaxy are
-correlated and must not be treated as 28 independent calibrators.  Their
-difference is nevertheless a useful diagnostic of stellar-population
-gradients and residual modeling systematics.
-
-\begin{figure*}
-\centering
-\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_annulus_local_color_sbf.png}{0.82\textwidth}
-\caption{Annulus-matched local color and absolute F150W SBF magnitude.
-Circles and squares denote the inner and outer annuli, respectively; grey
-segments connect measurements of the same galaxy.  Unlike Paper III, which
-reports the weighted annular means in its calibration table, we retain this
-ring-by-ring view to test whether the population correction is radially
-stable.}
-\label{fig:annuli}
-\end{figure*}
-
-NGC 3379 has the most spatially uniform normalized residual in the sample, but
-its annuli differ by 0.168 mag.  The outer annulus is bluer by approximately
-0.031 mag and has fainter SBF, in the opposite direction and at much larger
-amplitude than predicted by the global color relation.  The unresolved-source
-correction is negligible in the inner annulus and below one per cent of $P_0$
-in the outer annulus.  NGC 3379 is therefore retained as a high-quality
-measurement and treated as evidence that annulus disagreement is not
-equivalent to poor residual structure.
-
-\subsection{Cross-validation against TRGB}
-
-For each galaxy, the color relation is refitted after excluding that galaxy,
-and the excluded SBF distance is compared with its Paper IV thin-slice TRGB
-distance.  The mean residual is
-\[
- \langle\mu_{\rm SBF,LOO}-\mu_{\rm TRGB}\rangle=+0.0077~{\rm mag},
-\]
-with RMS 0.0987 mag and median absolute residual 0.0919 mag.  The largest
-absolute residuals occur for NGC 3379, NGC 4552, NGC 1399, NGC 4472, and
-NGC 4649.
-
-\begin{figure*}
-\centering
-\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_sbf_vs_trgb_leave_one_out.png}{0.72\textwidth}
-\caption{Leave-one-out F150W SBF distance moduli compared with the revised
-thin-slice TRGB moduli in Table~2 of Paper IV.  This is the direct
-cross-validation of the JWST SBF rung against its resolved-star anchor rather
-than an in-sample reconstruction.}
+\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_sbf_vs_trgb_leave_one_out_constant.png}{0.68\textwidth}
+\caption{Color-independent LOO F150W SBF distance moduli compared with the individual
+Paper IV thin-slice TRGB moduli. Each target is excluded from its own
+calibration. Error bars are internal; the common absolute zero point is not
+shown.}
 \label{fig:loo}
 \end{figure*}
 
-\subsection{Dependence on host-galaxy luminosity}
+\begin{figure*}
+\centering
+\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_distance_accuracy_by_galaxy_constant.png}{0.94\textwidth}
+\caption{Top: color-independent LOO SBF-minus-TRGB residuals with the propagated
+validation uncertainty. Bottom: realized absolute distance residual,
+predicted internal uncertainty, and predicted uncertainty after the common
+absolute zero point, for every galaxy.}
+\label{fig:distance-accuracy}
+\end{figure*}
 
-We test whether the F150W SBF magnitude correlates with the ordinary
-aperture luminosity of the host.  The available quantity is the absolute
-F150W magnitude of the smooth galaxy model inside 32.8 arcsec, not a total
-galaxy magnitude.  We therefore present both the direct correlation and the
-correlation of the residual about Eq.~\ref{eq:f150-calibration}.  The latter
-tests whether host luminosity carries information beyond the integrated color.
-The direct Pearson coefficient is $r=0.36$ ($p=0.203$).  After subtracting the
-linear color relation it increases to $r=0.52$ ($p=0.056$), with Spearman
-$\rho=0.50$ ($p=0.069$).  This is not a formal detection, but it is sufficiently
-close to significance to motivate replacement of the fixed-aperture magnitude
-with homogeneous total photometry or stellar-mass estimates.
+Table~\ref{tab:distance-comparison} gives the requested distance comparison in
+physical units. The constant-zero-point F150W column is the adopted result;
+the linear column is retained only as the color-dependence test. Both columns
+are genuine LOO predictions: the listed
+galaxy was absent when its calibration was fitted. The Paper III F110W values
+are reconstructed for the eight overlapping objects from its Table 1 and
+Eq.~(2),
+$\Mbar_{110}=1.86[(g-z)_{\rm PS}-1.30]-2.760$. Their formal errors propagate
+the tabulated $\mbar_{110}$ and color errors and the published slope and
+intercept uncertainties as independent terms; common absolute-scale errors
+are excluded. The last column is the separate Jensen et al. (2015) F160W
+legacy comparison and has only five overlaps.
+
+\begin{table*}
+\centering
+\caption{Distances in Mpc. TRGB IV denotes the individual Paper IV thin-slice
+anchor. The primary JWST F150W SBF column uses the constant LOO calibration;
+the linear LOO column is diagnostic. Jensen III is the Paper III HST F110W reconstruction; Jensen
+2015 is the independently labelled HST F160W legacy result. Ellipses mean that
+the galaxy is absent from that comparison sample. Quoted errors exclude common
+absolute zero points.}
+\label{tab:distance-comparison}
+\resizebox{\textwidth}{!}{%
+\input{../../runs/sbf2_go3055/analysis/tables/go3055_distance_comparison_all_methods.tex}}
+\end{table*}
+
+\subsection{Error distribution by galaxy}
+
+Individual calibration-point errors are typically dominated by the TRGB
+anchor and power-spectrum measurement. NGC 4486 is exceptional because its
+background term is 0.045 mag. In the predictive distance budget, intrinsic
+scatter is the largest component, followed by finite-calibration uncertainty;
+improving the formal $P_0$ error alone cannot reduce the total distance error
+below the present 4--5 per cent floor.
 
 \begin{figure*}
 \centering
-\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_sbf_vs_host_luminosity.png}{0.96\textwidth}
-\caption{Absolute F150W SBF magnitude and color-corrected residual versus the
-absolute F150W magnitude of the smooth host model within 32.8 arcsec.  A
-correlation in the left panel alone may reflect the usual color--luminosity
-relation of early-type galaxies; persistence in the right panel would
-indicate that luminosity adds independent predictive information.}
-\label{fig:luminosity}
+\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_error_budget_by_galaxy_constant.png}{0.96\textwidth}
+\caption{Top: individual calibration-point error components. The PSF bar is
+propagated separately from the power-spectrum measurement. Bottom:
+color-independent LOO distance-error components. Black circles are total
+internal errors and horizontal ticks include the common absolute zero point.}
+\label{fig:error-budget}
 \end{figure*}
 
-\section{Comparison with the published calibrations}
+\subsection{Measurement-pipeline systematics}
 
-\begin{table}
+The local STPSF library contains five unit-normalized models per galaxy. Four
+offsets around the nominal detector position change the inferred spectral
+normalization by at most 0.0043 mag. Stamp size matters more: relative to the
+129-pixel model, truncation to 97, 65, and 33 pixels can shift the fitted
+amplitude by as much as 0.0127, 0.0433, and 0.1248 mag, respectively. More
+importantly, independently generated 257-pixel STPSFs show that the central
+129 pixels miss 0.69--0.77 per cent of the 257-pixel flux and imply a common
+spectral shift of 0.0151--0.0167 mag over the fitted $k$ range. We retain
+0.0167 mag as a common absolute-$\Mbar_{150}$ systematic. Including it with
+the TRGB and NIRCam terms gives a 0.0510-mag absolute zero-point uncertainty;
+it does not change the internal LOO residuals.
+
+An empirical check was attempted with six bright, isolated compact sources in
+the NGC 3379 i2d frame. Their median stack is broader than STPSF and gives a
+formal 0.288-mag spectral difference. This number is \emph{not} adopted as a
+PSF correction: the objects are not confirmed single stars, the i2d product
+has no DQ extension, and residual host/background structure broadens the
+stack. Thus the model-internal normalization is constrained, but an absolute
+empirical PSF zero point remains open until an isolated classified star is
+available. The detailed PSF diagnostics are shown in
+Appendix~\ref{app:pipeline-diagnostics}; they are numerical validation plots,
+not additional astrophysical measurements.
+
+The unresolved-source correction is negligible at the present precision.
+Across all galaxies, replacing the adopted $P_r$ by either zero or $2P_r$
+changes an individual weighted SBF magnitude by at most 0.0053 mag. The
+constant-model LOO RMS ranges only from 0.0950 to 0.0961 mag, and the linear
+value from 0.0985 to 0.1001 mag. Re-fitting NGC 1399 and NGC 4472 with the
+Jensen-specific GCLF width of 1.35 mag changes any weighted magnitude by at
+most 0.00046 mag. Artificial-source completeness remains desirable, but it
+cannot alter the present calibration at a scientifically relevant level
+unless the current $P_r$ estimate is wrong by far more than a factor of two.
+
+A synthetic FFT-stage test passes a known normalized SBF field, mask, PSF,
+and white-noise term through the FFT and $P_0E(k)+P_1$ fit. Over 32
+realizations the recovered magnitude has mean bias
+$0.0078\pm0.0067$ mag (standard error of the mean), consistent with zero; the
+trial-to-trial RMS is 0.0382 mag. The test validates the core unit conversion
+and spectral normalization, but not isophotal modelling, source detection, or
+the correlated i2d noise. The $P_r$ and FFT-stage diagnostic plots are also
+collected in Appendix~\ref{app:pipeline-diagnostics}.
+
+\subsection{Distance-anchor sensitivity}
+
+Table~\ref{tab:anchor-sensitivity} compares the pre-specified thin-slice
+analysis, the Paper IV preferred thick-slice values, and a Paper-III-style
+experiment. The latter assigns the published Paper III means
+$\mu_{\rm Fornax}=31.424\pm0.057$ mag and
+$\mu_{\rm Virgo}=31.055\pm0.086$ mag to cluster members; NGC 1549,
+NGC 3379, and foreground NGC 4697 retain individual anchors.
+
+\begin{table*}
 \centering
-\caption{Numerical comparison of the published and preliminary calibrations.
-The slopes are not directly interchangeable because both the SBF band and
-the color index differ.}
-\label{tab:numerical-comparison}
-\begin{tabular}{lcc}
+\caption{Sensitivity to the TRGB distance prescription. The final column
+always evaluates LOO predictions against the primary individual Paper IV
+thin-slice distances. Cluster-mean LOO values are not an independent
+galaxy-by-galaxy validation because different galaxies share an anchor.}
+\label{tab:anchor-sensitivity}
+\begin{tabular}{llrrrrr}
 \toprule
-Quantity & Paper III & Present work \\
+Anchor & Model & $a$ & $b$ & $\sigma_{\rm int}$ &
+LOO RMS vs anchor & LOO RMS vs thin \\
 \midrule
-SBF band & HST F110W & JWST F150W \\
-Color & PS $g-z$ & F090W--F150W \\
-Pivot color & 1.30 & 0.5907 \\
-Slope & $1.86\pm0.16$ & $0.67^{+0.42}_{-0.48}$ \\
-Zero point & $-2.760\pm0.016$ & $-3.173\pm0.023$ \\
-Calibration size & 14 & 14 \\
-LOO RMS & not reported & 0.099 mag \\
+Paper IV thin & constant & -3.172 & 0.000 & 0.084 & 0.0955 & 0.0955 \\
+Paper IV thin & linear & -3.176 & 0.498 & 0.081 & 0.0992 & 0.0992 \\
+Paper IV thick & constant & -3.166 & 0.000 & 0.083 & 0.0953 & 0.0956 \\
+Paper IV thick & linear & -3.170 & 0.597 & 0.079 & 0.0988 & 0.1000 \\
+Paper III cluster means & constant & -3.196 & 0.000 & 0.068 & 0.0931 & 0.0980 \\
+Paper III cluster means & linear & -3.194 & 0.570 & 0.065 & 0.0937 & 0.0970 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
-The present work is deliberately close to Paper III in measurement geometry:
-both use the same two annuli and their weighted mean, and both require the
-color to correspond to the SBF region.  The comparison is not a literal
-repeat, because NIRCam F150W and F090W--F150W respond differently to stellar
-population age and metallicity than WFC3/IR F110W and optical $g-z$.
+For the adopted constant calibration, the thin/thick choice changes the zero
+point by only 0.006 mag and the LOO RMS by less than 0.001 mag. Cluster means
+reduce the fitted intrinsic scatter, as expected when depth and individual
+TRGB noise are suppressed, yet the gain against individual thin-slice
+distances is small. No conclusion depends on selecting the thin variant over
+the Paper IV preferred thick estimator. Linear rows are retained in the table
+only to show that the rejected color correction does not become necessary
+under another anchor prescription.
 
-The distance-anchor treatment is also different.  Paper III shows that using
-cluster means can reduce calibration scatter when individual measurement
-uncertainties are comparable to cluster depth.  Our use of the individual
-Paper IV thin-slice distances is the stricter leave-one-galaxy-out test, but it
-also preserves line-of-sight depth and individual TRGB noise.  Before
-submission, Eq.~\ref{eq:f150-calibration} must be recomputed using the exact
-Paper III cluster-mean prescription.  The individual-distance and
-cluster-mean results should be reported side by side rather than selecting the
-one with smaller scatter after seeing the answer.
+\subsection{Comparison with Paper III colors}
 
-Paper IV introduces a second controlled difference: its updated thin-slice
-moduli are on average $0.028\pm0.008$ mag below the earlier measurements.
-Consequently, an F150W zero point calibrated with Paper IV cannot be compared
-to the Paper III zero point without identifying the TRGB version.  The anchor
-revision alone would shift an absolute SBF zero point at approximately the
-same 0.03 mag level, even if the measured apparent SBF magnitudes were
-unchanged.
+For our 14 galaxies, the correlation of $\Mbar_{150,0}$ with
+$(F090W-F150W)_0$ is weak. The 14 observed Paper III F110W calibration
+points show a much stronger correlation with $g-z$ over their wider color
+range. The two colors themselves agree well for the eight common galaxies:
+Pearson $r=0.89$ ($p=0.003$) and Spearman $\rho=0.88$ ($p=0.004$). Thus the
+weak F150W slope cannot be attributed to a complete failure of the infrared
+color as a population tracer; the sample and wavelength response differ.
 
+\begin{figure*}
+\centering
+\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_color_correlation_vs_jensen.png}{0.94\textwidth}
+\caption{SBF--color relations in GO-3055 and Paper III, followed by the
+direct color-to-color comparison for eight common galaxies. Slopes are not
+numerically interchangeable because both the SBF band and color index differ.}
+\label{fig:jensen-color}
+\end{figure*}
+
+\subsection{Radial behavior and environment}
+
+The inner annuli give slope 1.24 and intrinsic scatter 0.068 mag; the outer
+annuli give slope 0.08 and scatter 0.089 mag. The two points per galaxy are
+correlated and are not 28 independent calibrators. NGC 3379 has an
+exceptionally uniform residual image but a 0.168 mag annular SBF difference,
+demonstrating why the annular difference cannot be treated automatically as
+random measurement noise.
+
+\begin{figure*}
+\centering
+\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_annulus_local_color_sbf.png}{0.78\textwidth}
+\caption{Local color and absolute F150W SBF magnitude in matched annuli.
+Grey segments connect the two measurements of each galaxy.}
+\label{fig:annuli}
+\end{figure*}
+
+For the strict Virgo/Fornax subset (7+3 galaxies), a fitted Fornax shift is
+$-0.150$ mag. However, an exact permutation test gives $p=0.183$, color and
+cluster membership are strongly confounded, and the step model is worse by
+$\Delta{\rm AICc}=1.76$. The step is a diagnostic, not a detection. Foreground
+extinction does not remove this pattern.
+
+\subsection{Structural quality and aperture magnitude}
+
+Quality flags were declared independently of the calibration fit. NGC 4486
+contains the jet and strong large-scale structure; NGC 4472, NGC 4636, and
+NGC 4649 have strong residual structure; and NGC 1380 and NGC 4697 have
+incomplete outer model coverage. The primary sample nevertheless remains
+14/14. Restricting it to the 11 visually acceptable or 10 automatically clean
+objects does not improve cross-validation: the constant-model LOO RMS becomes
+0.0983 and 0.1034 mag, respectively, compared with 0.0955 mag for all 14. The
+test supports retaining the full sample while reporting the flags rather than
+using image appearance for post-hoc rejection.
+
+The plotted host quantity is the absolute F150W magnitude of the smooth model
+within $32.8$ arcsec, not a total galaxy luminosity. The fixed angular aperture
+subtends different physical radii and therefore can generate an apparent
+Virgo--Fornax offset. No direct correlation is detected for all 14 objects
+(Pearson $p=0.220$), for Virgo alone ($p=0.910$), or for the three Fornax
+objects ($p=0.954$). After subtracting the rejected linear color relation as a
+diagnostic, the corresponding $p$ values are 0.083, 0.514, and 0.836. The
+residual panel is therefore an exploratory partial-correlation diagnostic,
+not part of the adopted distance estimator.
+
+\begin{figure*}
+\centering
+\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_sbf_vs_aperture_magnitude.png}{0.86\textwidth}
+\caption{F150W SBF versus the smooth-model magnitude inside the fixed
+$32.8$-arcsec aperture. The right panel subtracts the rejected linear color
+relation as a diagnostic; it does not subtract the regression drawn in the
+left panel and is not used for distances. Neither trend is statistically
+detected.}
+\label{fig:aperture-magnitude}
+\end{figure*}
+
+\FloatBarrier
 \section{Discussion}
 
-\subsection{Is a color term detected?}
+\subsection{Accuracy of the method}
 
-The full-sample linear slope is positive and its bootstrap 16th percentile is
-above zero.  This statement by itself is insufficient evidence for a physical
-law: a constant model has slightly better AICc and essentially identical
-leave-one-out performance.  The fitted slope is also sensitive to the
-Virgo--Fornax balance, the radial annulus chosen, and the narrow color range.
-The correct conclusion is therefore that a Paper-III-like linear law is
-consistent with the data, but a color-independent F150W zero point is not
-excluded.
+The central empirical result is a cross-validated F150W SBF precision of
+approximately 4.4 per cent in distance for this 14-galaxy sample using one
+color-independent F150W zero point. The tested color correction does not
+improve this result and is not used in the adopted distances.
 
-A tentative Virgo--Fornax offset of approximately $-0.12$ mag is visible.
-Although its bootstrap interval does not cross zero, adding the group step
-worsens AICc by approximately 0.98 because only three Fornax galaxies are
-available.  It should be presented as an exploratory population/environment
-test, not as a detected second zero point.
+The uncertainty model passes a useful internal calibration check: the LOO
+pull RMS is close to unity and no target exceeds $2\sigma$. This does not
+prove the absence of shared pipeline systematics. LOO galaxies reuse the same
+instrument, reduction, PSF construction, and TRGB scale; only a separate
+galaxy sample can provide an external accuracy test.
 
-\subsection{Radial behavior and residual structure}
+\subsection{Remaining limitations}
 
-The annular comparison is the most important diagnostic added beyond the
-Paper III presentation.  A large annulus difference can occur in an
-exceptionally clean residual image, while a visually structured residual can
-have similar weighted SBF values in both annuli.  Quality control must
-therefore separate model coverage, large-scale residual structure, and radial
-SBF gradients.  NGC 4472, NGC 4486, NGC 4636, and NGC 4649 show the strongest
-large-scale residual structure in the current sector-based diagnostic.
-NGC 1380 and NGC 4697 have incomplete outer-annulus model coverage.
-
-\subsection{Current limitations}
-
-Three issues prevent the present draft from being submission-ready.
-First, the total systematic error budget must include foreground extinction,
-large-scale background uncertainty, the common NGC 4258/TRGB zero point, and
-the effect of the Paper IV thin/thick choice.  Second, the universal negative
-$P_1$ values require a controlled correlated-noise test, ideally using a
-noise-template extension of the power-spectrum model.  Third, the
-compact-source mask and $P_r$ completeness model require injection or
-threshold sensitivity tests.  These tests should be reported as changes in
-the final zero point and slope rather than as qualitative statements.
+Three measurement systematics remain physically important. First, i2d noise is
+correlated and has not yet been fitted with an explicit $N(k)$ template.
+Second, the retained $3.5\sigma$ winsorization changes a median 3.35 per cent
+of inner-ring pixels and shifts a full-variance proxy by $-0.092$ mag. That
+proxy is not the fitted $P_0$; exact refits without winsorization and at several
+limits are required before treating the operation as negligible. Third, the
+empirical PSF comparison is not closed by a
+confirmed isolated star. The compact-source completeness and $P_r$ model also
+remain approximate; however, the explicit $0$--$2P_r$ test bounds their impact
+on this calibration, so artificial-source injection can be deferred without
+claiming that completeness itself has been measured.
 
 \section{Conclusions}
 
 \begin{enumerate}
-\item All 14 GO-3055 galaxies completed the F150W SBF measurement and artifact
-verification in the two Paper III annuli; all currently retain review-level
-quality flags, dominated by non-positive fitted $P_1$.
-\item The preliminary full-sample calibration has zero point
-$-3.173$ mag at $F090W-F150W=0.5907$, slope 0.666, and intrinsic scatter
-0.069 mag.
-\item Leave-one-out comparison with the revised Paper IV TRGB distances gives
-an RMS of 0.099 mag, equivalent to approximately 4.7 per cent in distance,
-with negligible mean bias.
-\item The present sample does not decisively distinguish a linear color
-correction from a constant F150W absolute fluctuation magnitude.
-\item Inner and outer annuli do not follow the same empirical color trend.
-NGC 3379 demonstrates that a significant radial SBF difference can coexist
-with an exceptionally clean residual image.
-\item A direct comparison with Paper III requires a second calibration using
-their cluster-mean distance prescription and an explicit accounting of the
-Paper IV TRGB zero-point revision.
+\item All 14 GO-3055 galaxies are retained in the primary analysis with
+individual Paper IV thin-slice TRGB anchors and no manual exclusions.
+\item A constant F150W absolute SBF magnitude recovers the TRGB distances with
+0.0955 mag LOO RMS (4.4 per cent) and negligible mean bias.
+\item The median predicted color-independent precision is 4.2 per cent
+internally and 4.8 per cent after the common TRGB zero point. The observed pull
+distribution is consistent with the adopted errors.
+\item The data do not require a color dependence: a linear color law worsens
+the LOO RMS to 0.0992 mag, its AICc is worse by 2.58, and its slope interval
+includes zero. It is therefore retained only as a diagnostic and is not used
+for the primary distances.
+\item Paper IV thick-slice distances and Paper III cluster means do not
+materially change the recovered accuracy. Thin slices remain primary only
+because that experiment was pre-specified, not because they give a better
+answer.
+\item The Virgo--Fornax step and NGC 1399 exclusion remain diagnostics; neither
+is promoted to a detected effect or used to define the main sample.
+\item The $P_r$ sensitivity and synthetic FFT tests are negligible at the
+current distance precision. The 129-pixel PSF stamp instead introduces a
+0.015--0.017 mag common absolute-calibration term.
+\item The result is an internal LOO cross-validation. Correlated noise,
+winsorization, and a confirmed empirical stellar PSF are still required before
+claiming final external accuracy.
 \end{enumerate}
 
+\clearpage
 \appendix
-\section{Distance comparison in Mpc}
+\onecolumn
 
-The complete machine-readable table is
+\section{Measurement-pipeline diagnostic plots}
+\label{app:pipeline-diagnostics}
+
+The following plots document numerical sensitivity tests requested during
+pipeline validation. They support the systematic-error bounds quoted in the
+main text and do not enter the adopted color-independent distance estimator as
+additional data.
+
+\begin{figure}[!ht]
+\centering
+\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_psf_normalization_sensitivity.png}{0.96\textwidth}
+\caption{Internal PSF tests. Left: STPSF encircled-energy curves for all 70
+models. Middle: spectral shifts caused by truncating the saved 129-pixel
+model. Right: shifts from the four detector-position variants.}
+\label{fig:psf-internal}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering
+\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_psf_129_vs_257_sensitivity.png}{0.78\textwidth}
+\caption{Absolute stamp-size test for three representative targets. The
+left panel gives flux outside the central 129 pixels relative to a 257-pixel
+STPSF; the right panel translates the shape mismatch over the fitted
+frequency range into an SBF-magnitude shift.}
+\label{fig:psf-large}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.49\textwidth]{../../runs/sbf2_go3055/analysis/figures/go3055_Pr_sensitivity.png}
+\includegraphics[width=0.49\textwidth]{../../runs/sbf2_go3055/analysis/figures/go3055_synthetic_fft_normalization.png}
+\caption{Left: calibration and color-independent LOO metric under the $P_r$
+sensitivity experiments. Right: recovery of known $P_0$ and SBF magnitude in
+the synthetic FFT-stage test.}
+\label{fig:pr-synthetic}
+\end{figure}
+
+\FloatBarrier
+\clearpage
+\twocolumn
+
+\section{Machine-readable products}
+
+The full distance table is
 \nolinkurl{runs/sbf2_go3055/analysis/tables/go3055_distances_mpc.csv}.
-It contains TRGB distances, leave-one-out F150W distances for each tested
-color law, and the available Jensen F160W values for the five overlapping
-galaxies.  It is kept external to the main article table because including all
-four exploratory color laws obscures the adopted result.
+The joined TRGB/F150W/F110W/F160W comparison is
+\nolinkurl{runs/sbf2_go3055/analysis/tables/go3055_distance_comparison_all_methods.csv}.
+The predictive errors are in
+\nolinkurl{runs/sbf2_go3055/analysis/tables/go3055_distance_predictions_full_errors.csv};
+the component table is
+\nolinkurl{runs/sbf2_go3055/analysis/tables/go3055_error_budget.csv}; anchor
+tests are in
+\nolinkurl{runs/sbf2_go3055/analysis/tables/go3055_distance_anchor_sensitivity.csv}.
+
+\begin{table*}
+\centering
+\caption{Predeclared structural-quality diagnostics. The automatic flag is
+set at a structure score of 0.80; the visual score is on the user-defined
+0--10 scale. These flags define sensitivity samples and do not remove any
+galaxy from the primary 14-object calibration.}
+\label{tab:structural-quality}
+\resizebox{\textwidth}{!}{%
+\input{../../runs/sbf2_go3055/analysis/tables/go3055_structural_quality_table.tex}}
+\end{table*}
+
+Additional machine-readable systematics products are
+\nolinkurl{runs/sbf2_go3055/analysis/tables/go3055_psf_129_vs_257_sensitivity.csv},
+\nolinkurl{runs/sbf2_go3055/analysis/tables/go3055_psf_detector_position_sensitivity.csv},
+\nolinkurl{runs/sbf2_go3055/analysis/tables/go3055_Pr_calibration_sensitivity.csv},
+\nolinkurl{runs/sbf2_go3055/analysis/tables/go3055_synthetic_fft_summary.csv},
+and
+\nolinkurl{runs/sbf2_go3055/analysis/tables/go3055_structural_quality_and_physical_annuli.csv}.
+The compact uncertainty summaries printed in the article are also available
+as
+\nolinkurl{runs/sbf2_go3055/analysis/tables/go3055_individual_error_summary.csv},
+\nolinkurl{runs/sbf2_go3055/analysis/tables/go3055_predictive_error_summary.csv},
+and
+\nolinkurl{runs/sbf2_go3055/analysis/tables/go3055_common_systematics.csv}.
+
+\section{Data and code availability}
+
+The calibrated JWST observations are public through MAST under GO-3055;
+the archive collection is accessible through DOI
+\href{https://doi.org/10.17909/z9ch-wk24}{10.17909/z9ch-wk24}. No proprietary
+data are used. The machine-readable derived products required to reproduce the
+tables and figures are listed above and retained with this working paper.
+
+The measurement and analysis code is presently the version-controlled project
+copy described below. A public archival release and permanent code DOI have
+not yet been assigned; they must be added before submission. This statement
+does not falsely claim that an unarchived local repository is publicly
+available.
 
 \section{Reproducibility}
 
-The measurement notebook is \nolinkurl{code/sbf-2.ipynb}; the dedicated GO-3055
-runner is \nolinkurl{code/run_sbf_2_batch.py}; and all analysis tables and
-figures are generated by \nolinkurl{code/sbf-2-graph.ipynb}.  The graph notebook
-reads the completed batch products and does not repeat the SBF measurement.
-Every figure is both saved as PNG/PDF and displayed inline for interactive
-inspection.
+The measurement notebook is \nolinkurl{code/sbf-2.ipynb}; the dedicated
+GO-3055 runner is \nolinkurl{code/run_sbf_2_batch.py}. Exploratory fits and
+diagnostic figures are generated and displayed inline by
+\nolinkurl{code/sbf-2-graph.ipynb}, which reads completed batch products and
+does not repeat the SBF measurement. The adopted constant-calibration tables,
+distance-recovery figures, error-budget figure, comparison tables, and
+provenance records are generated from those saved products by
+\nolinkurl{code/build_sbf2_article_tables.py}.
 
+\begin{table*}
+\centering
+\caption{Fixed processing configuration for the reported run. Values not
+listed here remain recorded in the executed notebook snapshot.}
+\label{tab:processing-parameters}
+\begin{tabular}{p{0.25\textwidth}p{0.67\textwidth}}
+\toprule
+Stage & Adopted configuration \\
+\midrule
+Input and bands & JWST/NIRCam i2d; F150W SBF signal; F090W--F150W color; native pixel scale $\simeq0.03123$ arcsec \\
+Science regions & circular $8.2$--$16.4$ and $16.4$--$32.8$ arcsec annuli \\
+Isophotes & initial semimajor axis 50 pixels; free ellipticity and position angle; 10-pixel sampling; maximum 2000 pixels; real-pixel fit with filled-gap fallback \\
+Compact masks & primary $3.5\sigma$, 9 connected pixels, 2-pixel dilation; residual catalogue $2.5\sigma$, 4 connected pixels, deblending, 3-pixel dilation \\
+Residual limiting & symmetric $3.5\sigma$ winsorization; raw residual retained \\
+PSF & STPSF; nearest time-matched WSS OPD; nominal plus four detector offsets; 129 pixels; 7 wavelengths; unit normalization \\
+Fourier model & 80 radial bins; 64 Monte Carlo realizations per $E(k)$ and PSF; $P_0E(k)+P_1$; primary $k=0.04$--0.25; $k_{\min}=0.01,0.03$ sensitivity windows \\
+Unresolved sources & Gaussian GCLF plus background-galaxy power law; 12-mag faint integration; 25 per cent $P_r$ uncertainty; $0$, $P_r$, and $2P_r$ tests \\
+Calibration & all 14 primary; individual Paper IV thin-slice anchors; constant zero point with fitted intrinsic scatter; 300 LOO prediction bootstraps. The linear errors-in-variables fit with reddening covariance and 2000 fit bootstraps is diagnostic only \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table}
+\centering
+\caption{Software and immutable identifiers. Long hashes are abbreviated in
+print and retained in full in the accompanying CSV.}
+\label{tab:software}
+\resizebox{\columnwidth}{!}{%
+\input{../../runs/sbf2_go3055/analysis/tables/go3055_software_provenance.tex}}
+\end{table}
+
+The implementation uses NumPy, SciPy, Astropy, Photutils, Matplotlib, and
+STPSF \citep{Harris2020,Virtanen2020,Astropy2013,Astropy2018,Astropy2022,
+Hunter2007,Perrin2014}. Exact installed versions, rather than only literature
+citations, are given in Table~\ref{tab:software}.
+
+The 28 input i2d headers are heterogeneous archive products rather than a
+uniform local reprocessing: 2 files record JWST pipeline 1.19.1, CRDS 12.1.11,
+and \nolinkurl{jwst_1413.pmap}; 22 record pipeline 1.20.2, CRDS 13.0.6, and
+\nolinkurl{jwst_1464.pmap}; and 4 F090W files record pipeline 2.0.1, CRDS
+13.1.13, and \nolinkurl{jwst_1535.pmap}. Exact counts are generated directly
+from the files used by the batch and retained in
+\nolinkurl{go3055_input_calibration_provenance.csv}. This records the reduction
+state exactly, but does not prove that mixing contexts is harmless; uniform
+reprocessing is a residual reproducibility/systematics check. The
+product-generation run records Git HEAD
+\texttt{5d0fd1496474...} and the exact executed \nolinkurl{sbf-2.ipynb}
+SHA256 \texttt{a1828d2d8d97...}. Full identifiers are retained in
+\nolinkurl{go3055_software_provenance.csv}.
+Its provenance also records that the worktree was dirty. Consequently the
+commit alone is not sufficient; the saved notebook snapshot and its hash are
+the authoritative measurement recipe. The final article commit/tag must be
+inserted after the present edits are committed.
+
+From the project root, the reproducible analysis commands are
+\small
+\begin{verbatim}
+export MPLBACKEND=Agg
+astro_env/bin/jupyter nbconvert \
+  --to notebook --execute --inplace \
+  code/sbf-2-graph.ipynb \
+  --ExecutePreprocessor.timeout=3600
+astro_env/bin/python \
+  code/build_sbf2_article_tables.py
+\end{verbatim}
+\normalsize
+The Agg backend is mandatory for non-interactive execution on macOS; figures
+are saved and also displayed inline in the notebook.
+
+\FloatBarrier
 \begin{thebibliography}{99}
-\bibitem{TonrySchneider1988}
+
+\bibitem[Tonry \& Schneider(1988)]{TonrySchneider1988}
 Tonry, J. L., \& Schneider, D. P. 1988, AJ, 96, 807.
 
-\bibitem{Jensen2015}
+\bibitem[Tonry et al.(2001)]{Tonry2001}
+Tonry, J. L., Dressler, A., Blakeslee, J. P., et al. 2001,
+ApJ, 546, 681, doi:10.1086/318301.
+
+\bibitem[Blakeslee et al.(2002)]{Blakeslee2002}
+Blakeslee, J. P., Lucey, J. R., Tonry, J. L., et al. 2002,
+MNRAS, 330, 443, doi:10.1046/j.1365-8711.2002.05080.x.
+
+\bibitem[Blakeslee et al.(2009)]{Blakeslee2009}
+Blakeslee, J. P., Jordan, A., Mei, S., et al. 2009,
+ApJ, 694, 556, doi:10.1088/0004-637X/694/1/556.
+
+\bibitem[Blakeslee et al.(2010)]{Blakeslee2010}
+Blakeslee, J. P., Cantiello, M., Mei, S., et al. 2010,
+ApJ, 724, 657, doi:10.1088/0004-637X/724/2/657.
+
+\bibitem[Blakeslee et al.(2021)]{Blakeslee2021}
+Blakeslee, J. P., Jensen, J. B., Ma, C.-P., Milne, P. A., \& Greene, J. E.
+2021, ApJ, 911, 65, doi:10.3847/1538-4357/abe86a.
+
+\bibitem[Cantiello et al.(2018)]{Cantiello2018}
+Cantiello, M., Jensen, J. B., Blakeslee, J. P., et al. 2018,
+ApJL, 854, L31, doi:10.3847/2041-8213/aaad64.
+
+\bibitem[Cantiello et al.(2024)]{Cantiello2024}
+Cantiello, M., Blakeslee, J. P., Ferrarese, L., et al. 2024,
+ApJ, 966, 145, doi:10.3847/1538-4357/ad3453.
+
+\bibitem[Jensen et al.(2001)]{Jensen2001}
+Jensen, J. B., Tonry, J. L., Thompson, R. I., et al. 2001,
+ApJ, 550, 503, doi:10.1086/319819.
+
+\bibitem[Jensen et al.(2003)]{Jensen2003}
+Jensen, J. B., Tonry, J. L., Barris, B. J., et al. 2003,
+ApJ, 583, 712, doi:10.1086/345430.
+
+\bibitem[Jensen et al.(2015)]{Jensen2015}
 Jensen, J. B., Blakeslee, J. P., Ma, C.-P., et al. 2015,
 ApJ, 808, 91, arXiv:1505.00400.
 
-\bibitem{Jensen2021}
+\bibitem[Jensen et al.(2021)]{Jensen2021}
 Jensen, J. B., Blakeslee, J. P., Ma, C.-P., et al. 2021,
 ApJS, 255, 21.
 
-\bibitem{Jensen2025}
+\bibitem[Jensen et al.(2025)]{Jensen2025}
 Jensen, J. B., Blakeslee, J. P., Cantiello, M., et al. 2025,
 \emph{The TRGB--SBF Project. III. Refining the HST Surface Brightness
 Fluctuation Distance Scale Calibration with JWST},
 ApJ, arXiv:2502.15935v2.
 
-\bibitem{Chazov2026}
+\bibitem[Chazov et al.(2026)]{Chazov2026}
 Chazov, M. I., Makarov, D. I., Tully, R. B., et al. 2026,
 \emph{The TRGB--SBF Project. IV. A Color Calibration of the TRGB in the
 JWST F090W+F150W Filters}, arXiv:2603.11160v1.
 
-\bibitem{SchlaflyFinkbeiner2011}
+\bibitem[Schlafly \& Finkbeiner(2011)]{SchlaflyFinkbeiner2011}
 Schlafly, E. F., \& Finkbeiner, D. P. 2011, ApJ, 737, 103.
+
+\bibitem[Reid et al.(2019)]{Reid2019}
+Reid, M. J., Pesce, D. W., \& Riess, A. G. 2019,
+ApJL, 886, L27, doi:10.3847/2041-8213/ab552d.
+
+\bibitem[Astropy Collaboration et al.(2013)]{Astropy2013}
+Astropy Collaboration, Robitaille, T. P., Tollerud, E. J., et al. 2013,
+A\&A, 558, A33, doi:10.1051/0004-6361/201322068.
+
+\bibitem[Astropy Collaboration et al.(2018)]{Astropy2018}
+Astropy Collaboration, Price-Whelan, A. M., Sipocz, B. M., et al. 2018,
+AJ, 156, 123, doi:10.3847/1538-3881/aabc4f.
+
+\bibitem[Astropy Collaboration et al.(2022)]{Astropy2022}
+Astropy Collaboration, Price-Whelan, A. M., Lim, P. L., et al. 2022,
+ApJ, 935, 167, doi:10.3847/1538-4357/ac7c74.
+
+\bibitem[Harris et al.(2020)]{Harris2020}
+Harris, C. R., Millman, K. J., van der Walt, S. J., et al. 2020,
+Nature, 585, 357, doi:10.1038/s41586-020-2649-2.
+
+\bibitem[Virtanen et al.(2020)]{Virtanen2020}
+Virtanen, P., Gommers, R., Oliphant, T. E., et al. 2020,
+Nature Methods, 17, 261, doi:10.1038/s41592-019-0686-2.
+
+\bibitem[Hunter(2007)]{Hunter2007}
+Hunter, J. D. 2007, Computing in Science \& Engineering, 9, 90,
+doi:10.1109/MCSE.2007.55.
+
+\bibitem[Perrin et al.(2014)]{Perrin2014}
+Perrin, M. D., Sivaramakrishnan, A., Lajoie, C.-P., et al. 2014,
+Proc. SPIE, 9143, 91433X, doi:10.1117/12.2056689.
+
 \end{thebibliography}
 
 \end{document}

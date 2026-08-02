@@ -1,0 +1,8 @@
+component,column,median_sigma_mag,min_sigma_mag,max_sigma_mag
+Power-spectrum fit and k-window,sigma_measurement_mag,0.01305315250345025,0.0094664452130977,0.0224055610494977
+STPSF realization scatter,sigma_psf_diagnostic_mag,0.0022428055293462,0.0011783076822374,0.0033442885700914
+Residual sources $P_r$,sigma_Pr_mag,0.00059961294998055,4.916267278048802e-05,0.0013195474720386
+Sky subtraction,sigma_sky_mag,0.00713713230496215,0.0034712850740125,0.0449134357706918
+Paper IV TRGB (without reddening),sigma_mu_without_reddening_mag,0.0251204157201005,0.0238080322580426,0.0271285827127035
+Shared foreground reddening,sigma_reddening_color_mag,0.004047821376474,0.0031485093428561,0.0054214069305792
+Total individual calibration point,sigma_Mbar_internal,0.0301536703518688,0.0281572735720033,0.0540350055907597
