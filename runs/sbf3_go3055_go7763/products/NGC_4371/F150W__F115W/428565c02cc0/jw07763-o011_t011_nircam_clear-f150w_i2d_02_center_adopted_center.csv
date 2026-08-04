@@ -1,2 +1,0 @@
-target,source,x_pixel,y_pixel,ra_deg,dec_deg,auto_x_pixel,auto_y_pixel,header_x_pixel,header_y_pixel,header_ra_deg,header_dec_deg,auto_header_delta_px,decision_threshold_px
-NGC 4371,fits-target,1078.2887195438761,3059.120466452501,186.2305,11.704199999999991,2515.3302187506692,2286.9576976220123,1078.2887195438761,3059.120466452501,186.2305,11.7042,1631.3563718606902,100.0

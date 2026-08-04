@@ -1,3 +1,0 @@
-summary,color_F090W_F150W,sigma_proxy,notes
-SBF-weighted circular-annuli color,0.6683934123454193,0.0005705681059102186,"uses same annulus weights as recommended SBF; sigma_proxy is half inner-outer color difference, not full calibration error"
-mean of available circular-annuli colors,0.6683858362788113,0.0008069051536357595,simple annulus-matched diagnostic color summary

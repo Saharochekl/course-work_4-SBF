@@ -1,2 +1,0 @@
-target,source,x_pixel,y_pixel,ra_deg,dec_deg,auto_x_pixel,auto_y_pixel,header_x_pixel,header_y_pixel,header_ra_deg,header_dec_deg,auto_header_delta_px,decision_threshold_px
-NGC 4429,auto-fast,1067.8998360401238,3031.8190163497898,186.8604452760857,11.107746142287423,1067.8998360401238,3031.8190163497898,1078.394026157207,3059.180638913895,186.86069999999998,11.1077,29.305057849355055,100.0

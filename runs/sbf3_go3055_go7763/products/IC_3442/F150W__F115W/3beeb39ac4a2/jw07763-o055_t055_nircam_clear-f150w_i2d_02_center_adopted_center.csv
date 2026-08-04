@@ -1,2 +1,0 @@
-target,source,x_pixel,y_pixel,ra_deg,dec_deg,auto_x_pixel,auto_y_pixel,header_x_pixel,header_y_pixel,header_ra_deg,header_dec_deg,auto_header_delta_px,decision_threshold_px
-IC 3442,fits-target,1078.3828995917615,3059.0674677539027,187.8336,14.1154,5245.617469712922,2710.017963162346,1078.3828995917615,3059.0674677539027,187.8336,14.1154,4181.827294266048,100.0
