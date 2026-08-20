@@ -1,0 +1,905 @@
+                                                 Draft version March 13, 2026
+                                                 Typeset using LATEX twocolumn style in AASTeX631
+
+
+
+
+                                                                                     The TRGB-SBF Project. IV.
+                                                                 A Color Calibration of the TRGB in the JWST F090W+F150W Filters
+                                                         Maksim I. Chazov ,1 Dmitry I. Makarov ,1 R. Brent Tully ,2 Gagandeep S. Anand ,3
+                                                Lidia N. Makarova ,1 Yotam Cohen ,3 John P. Blakeslee ,4 Michele Cantiello ,5 Joseph B. Jensen                                  ,6
+                                                                                     and Gabriella Raimondo 5
+                                                   1 Special Astrophysical Observatory of the Russian Academy of Sciences, Nizhnij Arkhyz, Karachay-Cherkessia 369167, Russia
+                                                                2 Institute for Astronomy, University of Hawaii, 2680 Woodlawn Drive, Honolulu, HI 96822, USA
+arXiv:2603.11160v1 [astro-ph.GA] 11 Mar 2026
+
+
+
+
+                                                                     3 Space Telescope Science Institute, 3700 San Martin Drive, Baltimore, MD 21218, USA
+                                                                                 4 NSF’s NOIRLab, 950 N Cherry Ave, Tucson, AZ 85719, USA
+                                                                       5 INAF – Astronomical Observatory of Abruzzo, Via Maggini, 64100, Teramo, Italy
+                                                                                       6 Utah Valley University, Orem, Utah 84058, USA
+
+
+
+                                                                                                         ABSTRACT
+                                                          Observations with JWST in the F090W band provide a powerful tool for determining galaxy distances
+                                                       based on tip of the red giant branch (TRGB) measurements. It is a great convenience that the TRGB
+                                                       lies at an almost constant absolute magnitude level at low metallicities. However, the TRGB becomes
+                                                       fainter at high metallicities in the F090W filter. Details of this break in slope are critical for precision
+                                                       applications in the acquisition of distances. With an absolute scaling set by the maser distance to
+                                                                                                                                      TRGB
+                                                       NGC 4258 (but excluding the uncertainty in that distance), the value MF090W          = −4.40 ± 0.03 mag
+                                                       (traditional Vega) is found for (F090W − F150W)0 < 1.65 mag. The theoretical RGB isochrone
+                                                       that reaches the color 1.65 at the RGB tip corresponds to metallicity [M/H] = −0.57 for a 10 Gyr
+                                                       population. The calibration is used to derive distances for 16 galaxies relative to the megamaser host
+                                                       NGC 4258. Revised distances are on average slightly closer than literature values derived from the
+                                                       same data.
+
+
+                                                       Keywords: Distance indicators; Galaxy distances; Red giant tip; Stellar distance
+
+                                                                 1. INTRODUCTION                                    might be a slight dependency at low metallicities as well.
+                                                  The James Webb Space Telescope (JWST) will enable                 These issues must be understood for the TRGB method
+                                               a measurement of the Hubble Constant through the Pop-                to reach its full potential accuracy. The intent of this
+                                               ulation II ladder of tip of the red giant branch (TRGB)              study is to determine the precise metallicity dependence
+                                               and surface brightness fluctuation (SBF) measurements                of the F090W TRGB absolute calibration.
+                                               that is comparable in precision and completely indepen-                    1.1. Observed and Theoretical TRGB Color
+                                               dent of the Cepheid–Type Ia supernova ladder (Freed-                                   Dependency at F090W
+                                               man et al. 2001; Riess et al. 2022). The TRGB absolute
+                                                                                                                      The F090W0 versus (F090W − F150W)0 color-
+                                               scale, to be grounded in Gaia parallaxes and RR Lyrae
+                                                                                                                    magnitude diagram (CMD) for stars in the halo of the
+                                               cross-referencing (Clementini et al. 2023; Savino et al.
+                                                                                                                    central galaxy in the Virgo Cluster, M 87, is shown in
+                                               2024) will be transferred to SBF, with JWST observa-
+                                                                                                                    the Figure 1 that is drawn from Anand et al. (2025).
+                                               tions extending to z ∼ 0.06 enabling the Hubble Con-
+                                                                                                                    Though asymptotic giant branch (AGB) stars at higher
+                                               stant measurement.
+                                                                                                                    luminosities are a contaminant, the red giant branch
+                                                  The TRGB calibration is a critical component of the
+                                                                                                                    (RGB) stars dominate and the trend of the upper enve-
+                                               Population II ladder. Early observations with JWST
+                                                                                                                    lope to fainter magnitudes at redder colors is evident.
+                                               confirm theoretical expectations that the absolute mag-
+                                                                                                                    Selected 13 Gyr PARSEC isochrones (Bressan et al.
+                                               nitude of the TRGB is almost constant at low metallic-
+                                                                                                                    2012; Marigo et al. 2013) give a reasonable represen-
+                                               ities in the NIRCam passband F090W (Newman et al.
+                                                                                                                    tation of the RGB stars from theoretical models. The
+                                               2024a; Anand et al. 2024a,b, 2025). However, it demon-
+                                                                                                                    expectation from models is further illustrated in Fig-
+                                               strably becomes fainter at high metallicities, and there
+                                                                                                                    ure 2 which plots model magnitudes using the Teramo
+2
+
+                                                               SPoT stellar population code (Brocato et al. 2000; Rai-
+                                                               mondo 2009), showing TRGB values as a function of
+                                                               metallicity for various JWST and HST filters. It is seen
+                                                               that, in the F090W band, the TRGB absolute magni-
+                                                               tude MTRGB lies at a roughly constant magnitude at
+                                                               low metallicities, only breaking to fainter magnitudes
+                                                               around [Fe/H] ≃ −0.3. The solid horizontal line in the
+                                                                                                 F090W
+                                                               plot is at the absolute value MTRGB       = −4.347 mag
+                                                               (Vega) determined by Anand et al. (2024a) based on the
+                                                               maser distance to NGC 4258. Likewise, there is rough
+                                                               constancy of the TRGB at low metallicities in the HST
+                                                               F814W band (Hoyt et al. 2021; Newman et al. 2024b),
+                                                               breaking downward at somewhat lower metallicity than
+                                                               at JWST F090W. At all bands longward of 1 µm the
+                                                               TRGB increases in magnitude with increasing metallic-
+                                                               ity requiring precise knowledge of color dependencies for
+                                                               useful distance measurements (Beaton et al. 2018).
+                                                                  Constancy of the TRGB at low metallicities and in-
+                                                               termediate to old ages was equally found in synthetic
+                                                               photometry using the PARSEC stellar library by Mc-
+                                                               Quinn et al. (2019). This result was confirmed with
+                                                               JWST data by Newman et al. (2024a) who gave atten-
+                                                               tion to the properties of the TRGB in combinations of
+                                                               six JWST passbands based on observations of six nearby
+Figure 1. CMD of M 87 with the PARSEC isochrones over-
+                                                               galaxies: WLM, Sextans A, M 81, NGC 253, NGC 300,
+plotted. The isochrones were shifted to D = 16.3 Mpc
+(Anand et al. 2025) and Galactic extinction reproduced from    and NGC 2403 with JWST programs ERS–1334 (Weisz
+Schlafly & Finkbeiner (2011). Figure extracted from Anand      et al. 2017), GO–1619 (Boyer et al. 2021), and GO–
+et al. (2025).                                                 1638 (McQuinn et al. 2021). The TRGB coverage is ro-
+                                                               bust in the cases NGC 253, NGC 2403, and WLM giving
+                                                               good coverage of a wide range of metallicity/age condi-
+                                                               tions at sub-solar metallicities. Galaxy distances were
+                                                               taken from HST F814W TRGB measurements (New-
+                                                               man et al. 2024b). From the combination of these data
+                                                               sets, Newman et al. (2024a) found the TRGB magni-
+                                                               tude at F090W to be constant within the uncertainties
+                                                               over the color range 1.15 < (F090W − F150W)0 < 1.68.
+
+                                                                    1.2. F090W Observations Extending to High
+                                                                                    Metallicities
+                                                                  The CMD seen in Figure 1 is an example drawn
+                                                               from JWST GO–3055 that targeted 14 massive early-
+                                                               type galaxies observed to establish a scale link be-
+                                                               tween TRGB and SBF. Results for 13 of these galax-
+                                                               ies have been published (Anand et al. 2024b, 2025). In
+                                                               all cases, the TRGB measurements are made in halo
+                                                               fields where the stars are expected to be old but with a
+                                                               wide range of metallicities. All 14 have F090W0 versus
+Figure 2. Teramo SPoT model TRGB magnitudes as a               (F090W − F150W)0 CMDs that are remarkably similar
+function of metallicity for selected JWST and HST filters.     in morphology reflecting similar metallicity conditions.
+Horizontal black line illustrates the F090W calibration from
+                                                               For 3 cases in the Fornax Cluster see Fig. 3 in Anand
+Anand et al. (2024a) with one-sigma uncertainties shown
+with dotted lines.                                             et al. (2024b) and for 10 cases in and near the Virgo
+                                                               Cluster see Fig. 5 in Anand et al. (2025). It is a testa-
+                                                                                                                            3
+
+ment to the utility of the TRGB methodology that these                                                             [Fe/H]
+galaxies can be ordered in distance by eye, from the               -2
+nearest M 105 to the furthest NGC 1399. The collection                                                               -1.0
+of individual fits as a function of color to the CMD of             0
+these 14 galaxies, to be described in Section 4, will pro-
+vide an empirical formulation of the (F090W−F150W)0                 2                                                -1.5
+
+TRGB–color dependency at high metallicities.
+                                                                    4
+  The pivotal galaxy in this discussion is NGC 4258.
+                                                                                                                     -2.0
+This galaxy will be used here to set the absolute scale,
+                                                                    6
+assuming the geometric maser distance modulus of µ =
+29.397 ± 0.032 mag (D = 7.576 ± 0.11 Mpc; Reid et al.
+                                                                        -0.5   0.0   0.5   1.0   1.5   2.0   2.5
+2019). Multiple fields have been observed at F090W and
+F150W bands in NGC 4258 (GO–1685, GO–2875) be-
+cause of the galaxy’s importance for the parallel effort
+to establish the JWST version of the Cepheid period-
+luminosity relation (Riess et al. 2023). Using data from
+these programs, Anand et al. (2024a) applied the Max-
+imum Likelihood Estimator (MLE) method (Makarov
+et al. 2006) to determine the absolute magnitude of
+the TRGB at F090W, assuming a constant value with
+                   F 090W
+metallicity, of MTRGB       = −4.347 ± 0.033 (stat.) ±
+0.054 (sys.) mag (Vega). The observations that will be
+analyzed are of fields in the halo of NGC 4258. Stars of
+a substantial range in age and metallicity can be antic-
+ipated to inhabit the halo of this massive spiral galaxy.
+
+        1.3. Metallicity Effects Along the RGB
+   The RGB provides a valuable diagnostic tool for           Figure 3. Top panel: CMD of globular clusters observed
+                                                             with Gaia (Fig. 3 in Gaia Collaboration et al. 2018). Colors
+studying different stellar populations within galaxies.
+                                                             from blue to red distinguish increasing metallicities.; Bottom
+Specifically, the colors of stars with varying metallici-    panel: theoretical RGB isochrones from padova (Bressan
+ties across the RGB distinguish between different pop-       et al. 2012) for t = 10 Gyr and [M/H] = −2.5 to 0.5. The
+ulations. This claim relies on evidence from both ob-        isochrone for [M/H] = −0.57 (TRGB color at (F090W −
+servational and theoretical studies, which consistently      F150W)0 = 1.65) is shown by the black line.
+demonstrate the clear separation of RGB stars based on
+metallicity (Reitzel et al. 2004; Bressan et al. 2012).      sociated with different populations occupy distinct loca-
+   There is an age-metallicity degeneracy: not only are      tions in the CMD. The branches corresponding to differ-
+higher metallicity stars redder but also older RGB stars     ent populations are non-overlapping in the RGB region,
+are redder. We expect that the consequence of this de-       which is particularly significant because it confirms that
+generacy will be small in our case. Even in the early        metallicity is the dominant factor influencing the posi-
+study by Lee et al. (1993), it was demonstrated that         tion of a star along the RGB. This direct correlation
+age variations exceeding several Gyr in old RGB popu-        between metallicity and RGB color provides a powerful
+lations result in a significantly smaller color range than   means of distinguishing populations. More metal-rich
+variations in metallicity at the the same age. Most of       stars are typically found to have redder colors, creating
+our observational sample derives from the extended ha-       a well-defined and observable separation.
+los of massive early-type galaxies, so we can reasonably       Theoretical stellar isochrones reinforce these observa-
+expect that the resolved stellar populations are highly      tional findings, providing a robust framework for un-
+dominated by old red giants.                                 derstanding the relationship between metallicity and
+   Observations of globular clusters using data from the     the RGB. The bottom panel of Figure 3 shows that
+Gaia mission have provided a wealth of information on        isochrones calculated for old RGB populations with dif-
+stellar populations (Lengen et al. 2026). The top panel      ferent metallicities consistently show that RGB tracks
+of Figure 3 presents the CMDs of clusters containing
+distinct populations demonstrating that RGB stars as-
+4
+
+remain separate and do not intersect, mirroring what is      et al. 2023; Riess et al. 2023) for selection of photomet-
+observed in empirical data.                                  ric sources: (1) Crowding < 0.5, (2) (Sharpness)2 ≤
+   Together, the agreement between observational evi-        0.01, (3) Object Type ≤ 2, (4) S/N ≥ 5, and
+dence and theoretical predictions provides a strong foun-    (5) Error Flag ≤ 2. As was shown in Anand et al.
+dation for using RGB stars with varying metallicities as     (2025), there was no significant systematical shift be-
+a method to separate and identify stellar populations.       tween TRGB values derived from different NIRCam de-
+By analyzing “slices” along the RGB, specific metallic-      tectors. For analysis performed in this study we used
+ity and age populations can be isolated. This technique      the combined photometry from all chips. Similarly, for
+will be used in the current work to identify TRGB values     NGC 4258 and NGC 5643 from GO–1685, we combined
+as a function of color across the RGB branch.                photometry from two separate (non-overlapping) visits.
+   This paper has two primary goals (a) to establish in         Photometric uncertainties, bias, and completeness are
+detail the color dependency of the TRGB in the JWST          evaluated by the injection and recovery of synthetic stars
+F090W passband when coupled with F150W and (b) to            matching the spatial, magnitude, and color distribution
+provide a recipe for measuring TRGB distances in these       of the observed stars using DOLPHOT’s artificial star
+filters going forward. In Section 2 there is discussion of   mode. In order to take statistical variance into account
+the input material and of characteristics of the RGB. In     more carefully and minimize fluctuations we adopted
+Section 3 the maximum likelihood procedure for locat-        several methods. The photometric completeness func-
+ing the TRGB is described and then there is focus on         tion ρ(m), the bias function b(m), and the photometric
+the role of NGC 4258 in the calibration. Section 4 and       error distribution ε(m | x) were estimated using kernel
+the Appendices provide a description of how the CMD is       density estimation (KDE) with a Gaussian kernel. The
+segmented in color intervals to monitor the TRGB with        Median Absolute Deviation (MAD) was used in the cal-
+color. The results of this segmentation analysis are pre-    culation of the bias and error functions, allowing for sta-
+sented in Section 5. There is application to the current     ble and robust approximations. The resulting discrete
+sample of 16 galaxies in Section 6. Sections 7 and 8 are     functions were interpolated using a univariate spline in
+discussion and conclusion.                                   the B-spline basis with a smoothing parameter (Virta-
+                                                             nen 2020).
+     2. STELLAR PHOTOMETRY AND TRGB                             To correct for foreground extinction AF090W and
+                      FRAMEWORK                              AF150W for each target, E(B − V ) values are taken
+                    2.1. Photometry                          from Schlafly & Finkbeiner (2011) and the extinctions
+                                                             are found assuming AF090W /E(B − V ) = 1.4156 and
+  For our analysis, we collected data from the JWST
+                                                             AF150W /E(B − V ) = 0.6021 (Riess et al. 2023). We
+observing programs GO–1638 (McQuinn et al. 2021),
+                                                             have applied these corrections before the TRGB mea-
+GO–1685 (Riess et al. 2021), and GO–3055 (Tully
+                                                             surements.
+et al. 2023). The data were reduced with the identi-
+cal calibration pipeline (CAL VER=1.17.1), reference file
+(pmap=1322), and DOLPHOT/NIRCam (February 4,
+2024) versions to ensure uniformity across the full set of                    2.2. Spatial Selections
+data. For science that requires extremely high-precision       It is favored to make TRGB measurements in the ha-
+(at the level of ∼0.02 mag, or 1% in distance), we           los of massive galaxies to avoid crowding and contam-
+argue that such a level of care is required. For in-         ination from younger stellar populations, as well as to
+stance, in the case of NGC 4258, changes to both the         maximize the contrast of low metallicity RGB. As an
+JWST/NIRCam pipelines (including updates to under-           additional practical matter, highly-precise PSF photom-
+lying reference files) and DOLPHOT since Anand et al.        etry in crowded fields becomes increasingly difficult due
+(2024a) result in a systematic increase in the bright-       to issues in performing accurate aperture corrections or
+ness of the TRGB feature at the level of ∼0.03 mag,          empirical PSF adjustments. For the 14 early-type galax-
+which was determined by using the same measurement           ies from GO–3055, we performed photometry only on
+procedures in that paper on the newly reduced set of         the outermost 2/8 NIRCam short-wavelength detectors
+photometry presented here.                                   to avoid increasing levels of crowding towards the cores
+  Stellar point-spread function (PSF) photometry of          of these massive elliptical galaxies (which were centered
+images was carried out using the NIRCam module of            on the other side of NIRCam for measurements of SBF).
+dolphot (Dolphin 2016; Weisz et al. 2024) follow-            For examples of these field selections, see Anand et al.
+ing the recommendations laid out within Weisz et al.         (2024b) Fig. 2 in the case of NGC 1380 or Anand et al.
+(2024). We adopted the following criteria (Warfield          (2025) Fig. 4 in the case of M89.
+                                                                                                                                  5
+
+   For galaxies with a component of their popula-
+tions in young stars (e.g., NGC 4258), a quantitative                         NGC4258               All data
+choice is to exclude parts of the galaxy with surface                24.9                           Inside 25 mag arcsec 2
+brightness greater than the photographic blue isophote                                              Outside 25 mag arcsec 2
+25 mag arcsec−2 (Anand et al. 2021). As a test of this
+cutoff magnitude, we explored the use of stellar pho-
+
+
+
+
+                                                             F090W
+tometry at higher surface brightnesses in the case of                25.0
+NGC 4258. NGC 253 aside, this galaxy is the nearest
+of our calibration sample by a factor 2 to 3, providing
+better spatial resolution at given surface brightness. The
+particular interest was to access higher metallicity RGB             25.1
+stars than available in the outer halo. As seen from
+the footprints of the repeated observations of NGC 4258                 1.4          1.5      1.6       1.7          1.8
+in Anand et al. (2024a) there is a wide radial range of                                      F090W - F150W
+coverage in this galaxy.
+   Certainly, crowding is extreme at inner radii, mak-       Figure 4. NGC 4258: TRGB color relation comparison
+ing photometric measurements of individual stars im-         for stellar populations outside 25 mag arcsec−2 isophote and
+                                                             inside this isophote to a radius 0.6 times the radius at
+possible. From experimentation, it was concluded that
+                                                             25 mag arcsec−2 .
+NGC 4258 CMD were usefully uncrowded outside 0.6
+times the 25 mag arcsec−2 radius. With Figure 4 there
+is a comparison of the TRGB dependence on color (with        where ρ(z) denotes the photometric completeness func-
+the measurement techniques described in Section 3.1)         tion, and ε(m|z) describes the distribution of photomet-
+at radii outside 25 mag arcsec−2 and the useful do-          ric errors. Both functions are derived from artificial-star
+main inside that isophote. The TRGB color relations          photometry that mimics the real observations. As a first
+do not show any statistically significant difference be-     approximation for the error function ε(m|z), it is conve-
+tween the inner and outer regions and are well described     nient to adopt a Gaussian distribution whose mean and
+by the color relation obtained for the combined PSF–         dispersion depend on the true stellar magnitude.
+photometry. Nonetheless, we proceed with only mea-              This formalism allows us to estimate the likelihood
+surements from the outer regions to ensure the highest-      function of the observed sample of N stars within the
+fidelity photometry.                                         magnitude range [mmin , mmax ]. The probability is given
+                                                             by
+                                                                                   N
+3. MAXIMUM LIKELIHOOD ESTIMATION (MLE)                                                   φ(m |x) dm
+                                                                                      R mmax i
+                                                                                  Y
+                                                                          P (x) =                       ,            (3)
+  The maximum likelihood methodology for determin-                                i=1 mmin
+                                                                                             φ(m|x) dm
+ing TRGB distances was proposed by Méndez et al.
+                                                             which we evaluate as a function of the free parame-
+(2002) and further developed by Makarov et al. (2006).
+                                                             ters x(mTRGB , a, b, c). The corresponding log-likelihood
+In this approach the true luminosity function (LF) is
+                                                             function for minimization is
+described by split power laws for RGB and AGB com-
+ponents and a jump at the TRGB.                               L(x) = − log P (x)
+                                                                              N                            Z mmax
+          10 a(m−mTRGB )+b ,     if m ≥ mTRGB
+                                                                               X
+                                                                        =−           log φ(mi |x) + N log            φ(m|x) dm.
+       ψ=                                             (1)                                                     mmin
+          10 c(m−mTRGB ) ,                                                    i=1
+                                  if m < mTRGB .
+                                                                                                                              (4)
+Here, mTRGB is the magnitude of the TRGB, b denotes
+                                                                We have developed a new tool using Python (Chazov
+the relative strength of the RGB discontinuity, and a
+                                                             et al., in preparation). This approach is based on the
+and c are the slopes of the RGB and AGB, respectively.
+                                                             MLE implementation in MATLAB and is an evolution
+   The analytic description of the RGB LF allows us to
+                                                             of the previous methodology by Makarov et al. (2006).
+compute the observed luminosity distribution in a con-
+                                                             It includes both Python scripts and a cross-platform
+sistent manner, properly accounting for photometric un-
+                                                             graphical user interface, and will be released in the near
+certainties, incompleteness, and other observational ef-
+                                                             future. The key innovation in this new iteration is the
+fects.                Z                                      ability to perform MLE fits along physically motivated
+             φ(m) =     ψ(z)ρ(z)ε(m|z) dz,            (2)    slices of the RGB.
+6
+
+
+            23                                                      NGC4258                                     1.689
+                                                                    N=3342                    25.026            1.665
+                                         NGC4258                                                                1.641
+                                                                    N=4122                    25.013
+                                                                                              25.004            1.618
+                                                                    N=4658
+                                                                                              24.995            1.593
+
+
+
+
+                                                                                                                    F090W - F150W
+                                                                    N=5291
+                                                                                              24.993            1.567
+            24                                                      N=5686
+
+
+
+
+                                                             TRGB
+                                                                                              24.986            1.538
+                                                                    N=5706                    25.000            1.511
+                                                                    N=5528                    25.000            1.487
+                                                                    N=5061                    24.976            1.459
+    F090W
+
+
+
+
+                                                                    N=4353
+                                                                                              24.978            1.431
+            25                                                      N=3630
+                                                                                              24.977
+                                                                    N=2903
+                                                                             24          25               26
+                                                                                       F090W
+
+            26
+                                                             Figure 6. In the case of NGC 4258, logarithmic RGB LF in
+                                                             color slices from (F090W − F150W)0 = 1.4 (bottom) to 1.7
+                                                             (top). The number of stars included in the MLE calculation
+                                                             for each slice is shown on the left. The fitted TRGB mag-
+                                                             nitudes are displayed in the center numerically and as red
+                                                             dots, while the corresponding slice colors are shown on the
+            27                                               right. Orange vertical segments at F090W=25.01 record the
+                            1.5            2.5
+                                                             TRGB values given by Anand et al. (2024a).
+                        F090W - F150W
+
+Figure 5. Segmentation of an RGB CMD into color strips       tecting the tip. The color assigned to each slice at the
+bounding individual maximum likelihood tests. Represen-      location of the fitted TRGB is defined as the mean of
+tative magenta lines are shown. Details discussed in Ap-     the color boundaries of the slice, derived from the fitted
+pendix A.
+                                                             magnitude level.
+                                                                However, the significant TRGB slope for high-
+                 3.1. Segmentation of the RGB                metallicity red stars in the F090W filter is a particular
+   It is clear that the TRGB in the F090W band gets          challenge for the maximum-likelihood approach. The
+fainter at redder colors corresponding to higher metallic-   slope results in over-smoothing of the observed one-
+ities. A quantitative measure of the related color depen-    dimensional LF in the vicinity of the TRGB, which in
+dence is determined as follows. First, an RGB, such as       turn degrades its representation by the model and re-
+the one presented in Figure 5, is segmented into F090W       duces the accuracy of the fit. To mitigate this effect,
+intervals using broken blue lines. In the bluer part of      we perform TRGB measurements for red stars using the
+the diagram, these lines are horizontal, whereas in the      F150W filter, carefully accounting for all its photometric
+redder part, they roughly follow the TRGB color rela-        effects. In this filter, the color dependence of the TRGB
+tion. This procedure allows us to split the RGB into         for high-metallicity stars is substantially weaker and ap-
+evenly spaced strips starting from the tip. It enables us    proaches a constant value. This enables higher-precision
+to analyze the distribution of stars at fixed distances      TRGB determination. A more detailed description of
+from the TRGB and to identify distinct populations           this approach is provided in Appendix B.
+based on percentiles. In the next step, the positions           In the case of NGC 4258, Figure 6 shows the loga-
+of these percentiles are described by second-order poly-     rithmic LF of the RGB in slices, ranging from the blue
+nomials, which generate RGB slices in the dereddened         extreme at (F090W−F150W)0 = 1.4 to the red extreme
+color (F090W−F150W)0 space, thereby defining regions         at (F090W−F150W)0 = 1.7. The black dotted lines and
+that encompass stellar populations spanning a range of       the shaded regions correspond to the observed smoothed
+ages and metallicities. This color-based segmentation        RGB LF and its errors (95% confidence level). The cyan
+is described in more detail in Appendix A and is il-         broken lines represents the predicted LF, incorporating
+lustrated by the magenta lines in Figure 5. For each         photometry completeness, errors, and biases. Small or-
+slice, the magnitude distribution is then fitted using the   ange vertical segments at F090W0 = 25.01 mag indicate
+standard broken-exponential RGB LF (Equation 1), and         the TRGB values consistent with Anand et al. (2024a),
+the maximum-likelihood methodology is applied for de-
+                                                                                                                    7
+
+                                                            1% in distance). Unfortunately, the number statistics
+                                                            do not allow for very thin slices. It was possible to se-
+                                                            lect only 2–4 independent slices in the blue flat part
+                                                            of the TRGB in the case of NGC 4258. Moreover, the
+                                                            bluest slice suffers from small number statistics, and the
+                                                            boundary slice between the flat and inclined parts may
+                                                            already be subject to the color dependence effect. Thus,
+                                                            we made the choice to use overlapping slices, which ef-
+                                                            fectively smooths the running average TRGB values. As
+                                                            a consequence, the values are no longer statistically in-
+                                                            dependent, but the resultant curve describes the TRGB
+                                                            behavior in more robust detail.
+                                                              The limiting case of increasing the slice thickness is
+Figure 7. Two representative thin slices of the NGC 4258
+                                                            to use a slice that covers almost the entire flat part of
+RGB. The slice stars are shown in orange, while the stars   the TRGB. Figure 8 illustrates the star selection and
+used in the MLE calculations are shown in red.              the maximum-likelihood fit to the resulting LF for such
+                                                            a thick slice in the galaxy NGC 4258, encompassing the
+                                                            color range 1.45 ≤ (F090W − F150W)0 ≤ 1.65 at the
+                                                            tip.
+                                                              Figure 9 shows F090W0 versus (F090W − F150W)0
+                                                            CMD for NGC 4258 with superposition of the color de-
+                                                            pendent results from RGB slicing. The fit over the
+                                                            range 1.30–1.75 from Anand et al. (2024a) is shown as a
+                                                            straight line. The constraints on the TRGB redward of
+                                                            (F090W − F150W)0 = 1.7 are tentative with this data
+                                                            for NGC 4258. The constraints in this red regime are
+                                                            much stronger from the CMDs of the elliptical galaxies
+                                                            which contain more high-metallicity stars, as discussed
+                                                            in the next secion.
+Figure 8. A thick slice of the RGB in the case of the
+galaxy NGC 4258. In separate panels are the correspond-
+ing LF (top) and completeness and error dependencies with               4. TRGB COLOR RELATION
+F090W magnitude (bottom).                                     In total, 17 galaxies were used to establish the TRGB
+                                                            color-magnitude relation, including 10 galaxies from
+given updated photometry and accounting for redden-         the Virgo Cluster and its surrounding environment,
+ing.                                                        three within the Fornax Cluster, as well as NGC 253,
+  The revised Anand et al. (2024a) result is to be com-     NGC 1549, NGC 4258 and NGC 5643. The result-
+pared with the mean TRGB magnitude of F090W0 =              ing TRGB color-magnitude fits for all galaxies except
+24.99 mag for the slices in this figure. Anand et al.       NGC 4258 are superimposed on CMD in Figure 10. The
+(2024a) include higher-metallicity stars in their broader   case of NGC 4258 is shown in Figure 9.
+color selection range of 1.30 ≤ (F090W − F150W)0 ≤            The photometric quality of the data varies from galaxy
+1.75, which when combined with a modest shift in pho-       to galaxy which influences the precision of the TRGB
+tometry (see Section 2.1) led to a shift of the TRGB        color-magnitude relations. In some cases it is diffi-
+magnitude toward a fainter magnitude. The broader           cult to construct a high-precision TRGB color relation
+color range selection used in that work was motivated       due to insufficient statistics in individual slices. Con-
+by the predicted behavior of the TRGB in the PARSEC         sequently, two samples are adopted for the following
+suite of isochrones (Bressan et al. 2012).                  analysis: the first comprises galaxies with minimal pho-
+                                                            tometric scatter between slices at the TRGB defining
+               3.2. Thick vs Thin Slices                    precise color-magnitude relations, while the second in-
+   The two panels of Figure 7 illustrate examples of thin   cludes the full sample. The uncertainties are smallest
+slicing of the RGB. For the TRGB zero point and color       for bright RGB stars in the F150W filter. A total of 12
+relation calibration it is desired to detect the TRGB       galaxies have been selected for the final color-magnitude
+with an uncertainty not exceeding about 0.02 mag (or        relation construction (identified in Table 2). The re-
+8
+
+         24                                                                  where f (x) denotes the TRGB value at color x for
+
+              NGC4258                               29.397                   NGC 4258 and g(x) denotes the equivalent value for an-
+                                                                             other galaxy in the sample. This approach allows us to
+                                                                             minimize the systematic shift between relations over a
+                                                                             common color range. For the high-quality photometry
+                                                                             sample, this approach achieves excellent agreement for
+                                                                             the entire relation, as shown in the bottom of Figure 11.
+                                                                             However, the top panel of Figure 11 demonstrates that
+                                                                             when all galaxies are included, the blue part of the re-
+                                                                             lation exhibits significantly larger scatter. A compari-
+                                                                             son between the full set of galaxies and the subset with
+F090W
+
+
+
+
+                                                                             high-quality photometry reveals that galaxies with pre-
+         25
+                                                                             cise photometry display a much smaller spread, partic-
+                                                                             ularly in the critical region of the flat blue part of the
+                                                                             TRGB.
+                                                                               As a result, it was decided to use only high-quality
+                                                                             photometric galaxies to construct the definitive TRGB
+                                                                             color relation. The data were fitted using a fourth-
+                                                                             degree polynomial, and the resulting TRGB color re-
+                                                                             lation is illustrated in Figure 12. The final TRGB color
+                                                                             magnitude relation is described by the piecewise func-
+                                                                             tion:
+                                                                                              
+         26         1.0    1.2    1.4      1.6      1.8     2.0      2.2
+                                                                                              −4.398                   if x < 0
+                            F090W - F150W
+                                                                                    TRGB
+                                                                                 MF090W     =                                       (6)
+                                                                                              A + Bx + Cx2 + Dx3 if x ≥ 0
+
+Figure 9. TRGB fit as a function of color for the galaxy                     where x = (F090W−F150W)0 −1.65 and the coefficients
+NGC 4258. The running mean of slices as a function of color                  A, B, C, D are given in Table 1.
+are shown by the magenta line with cyan band uncertainties.
+The red band is the RGB isochrone for a 10 Gyr popula-
+                                                                             Table 1. Coefficients for derived color-magnitude relation.
+tion with [M/H] = −0.57. The green constant value line
+at F090W0 = 25.01 corresponds to the fit by Anand et al.                                       A        B        C         D
+(2024a) with revised photometry and after adjustment for                                     −4.398    0.431    0.712    −0.293
+reddening.
+                                                                                             ±0.017   ±0.027   ±0.074    ±0.051
+
+sulting dependencies show excellent agreement for red,
+high-metallicity stars, even though the quality of the                         The isochrone that passes through the point of the
+maximum-likelihood fitting in individual cases may be                        relation bend has [M/H] = −0.49 for 7 Gyr or [M/H] =
+suboptimal.                                                                  −0.57 for 10 Gyr.
+  To construct a reliable color calibration, we need to
+combine data from all sample galaxies, taking care to                                  5. DISTANCE MEASUREMENTS
+account for color shifts due to reddening. The rela-                           In Table 2, distance moduli based on JWST obser-
+tions were aligned in brightness by fitting relative shifts                  vations are reported for 13 galaxies in the Fornax and
+with respect to NGC 4258, which was chosen as the ref-                       Virgo cluster regions (Anand et al. 2024b, 2025) as well
+erence point for the color-dependence relation. Using                        as for WLM (McQuinn et al. 2024), NGC 5643 (Li et al.
+the points in the same color interval as we have for                         2024), and NGC 1549 (Tully et al. 2023). The first 13 re-
+NGC 4258 we can calculate the weighted shift required                        sults were derived from a similar MLE methodology used
+for the alignment:                                                           in the current paper with the difference of a red color cut
+                                                                             at (F090W − F150W)0 = 1.75 (blue color cuts do not
+                                      !                              !−1     significantly affect results) and a simple vertical color
+                   f (x) − g(x)
+              Z                            Z
+                                                        dx                   cut instead of slicing. These published distance moduli
+    δ=                              dx ·
+                  σf2 (x) + σg2 (x)              σf2 (x) + σg2 (x)           were scaled to fits to NGC 4258 at the maser modulus
+                                                                       (5)   29.397 mag (Reid et al. 2019; Anand et al. 2024a). In
+                                                                                                                           9
+
+Table 2. New and literature distance moduli. Distance moduli are given for both approaches used in this work: applying
+MLE method directly to “thick” slices and for “thin slices”. Average differences between values in current and previous works
+0.037 mag in the thick slice case and 0.028 mag in the thin slice case. The uncertainty on the distance moduli do not include
+the systematic uncertainty in the NGC 4258 zero-point scaling of 0.046 mag.
+
+                    Name       AF090W            mthick
+                                                  TRGB           (m − M )thick
+                                                                         0          (m − M )thin
+                                                                                             0           Literature
+                    NGC 1380 * 0.021         27.007 ± 0.013     31.405 ± 0.027     31.408 ± 0.025     31.397 ± 0.066 a
+                    NGC 1399    0.015        27.070 ± 0.012     31.468 ± 0.026     31.498 ± 0.026     31.511 ± 0.068 a
+                             *
+                    NGC 1404    0.014        26.957 ± 0.014     31.355 ± 0.027     31.366 ± 0.025     31.364 ± 0.067 a
+                    M 49        0.027        26.616 ± 0.012     31.014 ± 0.026     31.016 ± 0.027     31.091 ± 0.071 b
+                             *
+                    M 59        0.039        26.423 ± 0.014     30.821 ± 0.028     30.821 ± 0.026     30.841 ± 0.074 b
+                    M 60        0.032        26.594 ± 0.012     30.992 ± 0.026     31.009 ± 0.025     31.061 ± 0.072 b
+                             *
+                    M 84        0.049        26.713 ± 0.015     31.111 ± 0.028     31.112 ± 0.027     31.195 ± 0.075 b
+                             *
+                    M 86        0.036        26.674 ± 0.014     31.072 ± 0.027     31.096 ± 0.025     31.139 ± 0.072 b
+                    M 87        0.028        26.648 ± 0.013     31.046 ± 0.027     31.046 ± 0.025     31.062 ± 0.071 b
+                             *
+                    M 89        0.050        26.523 ± 0.016     30.921 ± 0.029     30.923 ± 0.028     30.933 ± 0.075 b
+                             *
+                    M 105       0.030        25.679 ± 0.019     30.077 ± 0.030     30.078 ± 0.028     30.085 ± 0.076 b
+                    NGC 4636 * 0.035         26.660 ± 0.013     31.058 ± 0.027     31.070 ± 0.026     31.120 ± 0.072 b
+                    NGC 4697 * 0.036         25.913 ± 0.015     30.311 ± 0.028     30.324 ± 0.028     30.330 ± 0.073 b
+                    NGC 253 * 0.023          23.363 ± 0.015     27.761 ± 0.028     27.770 ± 0.036            —
+                    NGC 1549    0.015        26.864 ± 0.012     31.262 ± 0.026     31.231 ± 0.026            —
+                    NGC 5643 * 0.228         26.197 ± 0.016     30.595 ± 0.046     30.621 ± 0.052      30.57 ± 0.06 c
+                    NGC 4258* 0.020         24.989 ± 0.014     29.387 ± 0.027     29.397 ± 0.026     29.397 ± 0.032 d
+      *
+        Galaxies contributing to the high quality sample represented in bottom panel Figure 11.
+      a
+        Anand et al. (2024b), includes NGC 4258 zero-point uncertainty
+      b
+        Anand et al. (2025), includes NGC 4258 zero-point uncertainty
+      c
+        The modulus for NGC 5643 (Li et al. 2024) results from a Sobel filter analysis
+      d
+        Geometric maser distance modulus (Reid et al. 2019)
+
+the case of NGC 5643 the literature modulus (Li et al.           the top 13 galaxies in the table, there is a shift of
+2024) was derived from a Sobel filter which is not di-           −0.037 ± 0.009 mag between the new thick slice moduli
+rectly comparable.                                               and the literature and a shift of −0.028 ± 0.008 mag be-
+  Table 2 reports two moduli for each galaxy based on            tween the thin slice fits defined over the color range 1.4
+the methods described in this paper. In the cases of             to 1.8 mag and the literature.
+the moduli with the superscript thin, results are derived          The determination of our uncertainties is as follows.
+by the thin slice method with fits to the mean relation          For the statistical uncertainty on the distance moduli,
+displayed in Figure 12 that are, in turn, normalized to          we add in quadrature 1) the uncertainty in the measure-
+NGC 4258. In the cases of moduli with superscript thick ,        ment of the tip itself (shown in Table 2 in the mthick
+                                                                                                                     T RGB
+MLE fits are made using a single wide slice limited on           column), 2) the uncertainty in the foreground redden-
+the red side at the RGB isochrone reaching (F090W −              ing, defined as the quadrature sum of typical 16% er-
+F150W)0 = 1.65 at the TRGB, the color break-point                ror (Schlegel et al. 1998), 0.16 × AF090W , and the typ-
+(see the red lines in the panels of Figure 10). Since the        ical spread in the regions of the small extinction of
+TRGB measurement and the red edge of the slice are               0.003 × E(B − V ) (Peek & Graves 2010) correspond-
+coupled, a slight iteration is required for the optimal fit.     ing to 0.005 mag in the F090W band, 3) 0.02 mag to
+This MLE fit is given in the table column mthick
+                                               T RGB . Note      account for uncertainties within DOLPHOT’s aperture
+again that adjustments for reddening are made before             correction procedure, and 4) 0.01 mag to cover the PSF
+the MLE analysis is carried out to assure the proper             stability of JWST/NIRCam. This overall term is pro-
+location of the 1.65 mag color break-point. The distance         vided within Table 2 as the uncertainty on the distance
+modulus is then µ = mTRGB + 4.398 as given by Eq. 6.             moduli.
+  Differences between the literature moduli and each               To determine the systematic uncertainty arising from
+of the two moduli found here are shown graphically in            the zero-point calibration, we add in quadrature 1) the
+Figure 13. With both methodologies, there are small              overall statistical uncertainty on the measurement of the
+but systematic shifts to lower values. Averaging over            TRGB in NGC 4258 (0.027 mag), 2) the uncertainty in
+10
+
+
+
+
+Figure 10. Color relations for all the galaxies except NGC 4258. As in Figure 9, cyan curves illustrate the TRGB limits as a
+function of (F090W − F150W)0 colors. The isochrone for 10 Gyr that ends where the TRGB color slope changes is shown in
+red.
+                                                                                                                                                  11
+
+
+                                      Newman at al. (2024)
+        4.5                                                           4.5
+
+
+        4.0                                                           4.0
+F090W
+
+
+
+
+                                                              F090W
+                                                                                   NGC4258
+        3.5                                                           3.5          Our work
+                                                                                   Newman at al. (2024)
+                                                                                   PARSEC, 5Gyr
+                                                                                   PARSEC, 8Gyr
+        3.0                                                           3.0          PARSEC, 10Gyr
+                                                                                   PARSEC, 13Gyr
+                  1.5        2.0         2.5         3.0                 1.0           1.5           2.0                         2.5        3.0
+                         F090W - F150W                                                                 F090W - F150W
+
+                                                              Figure 12. Color relations for high photometry qual-
+                                      Newman at al. (2024)
+                                                              ity galaxies. The Newman et al. (2024a) calibration blue-
+        4.5                                                   ward of (F090W − F150W)0 = 1.7 is shown in the thick
+                                                              black line. Theoretical PARSEC expectations redward of
+                                                              (F090W − F150W)0 = 1.3 are shown by dotted lines.
+        4.0
+F090W
+
+
+
+
+                                                                      NGC1380                                -0.037     -0.028
+        3.5                                                           NGC1399
+                                                                      NGC1404
+                                                                         M49
+                                                                         M59
+        3.0                                                              M60
+                                                                         M84
+                                                                         M86
+                  1.5        2.0         2.5                             M87
+                         F090W - F150W                                   M89
+                                                                        M105
+                                                                      NGC4636          Thin
+Figure 11. Top panel: Resulting TRGB color relations for              NGC4697          Thick
+the entire sample. Bottom Panel: Resulting TRGB color re-                       0.10           0.08   0.06       0.04    0.02      0.00   0.02
+lations for galaxies with high photometry quality and with-                                                      0 (mag)
+out significant fit problems.
+                                                              Figure 13. Offsets between separately reported TRGB
+its geometric distance (Reid et al. 2019; 0.032 mag),         magnitudes. The shifts are defined as ∆µ0 = mthin/thick −
+and 3) 0.02 mag to account for any intrinsic stellar pop-     mliterature . Blue and green symbols denote the thin- and
+                                                              thick-slice measurements, respectively. The vertical dashed
+ulation variation in the magnitude of the TRGB (Mc-
+                                                              black line indicates zero offset, while the dotted blue and
+Quinn et al. 2019; Anand et al. 2024a), summing to            green lines show the mean shifts for the thin- and thick-slice
+±0.047 mag.                                                   approaches. These systematic shifts are partially driven by
+                                                              updates to the JWST pipeline and DOLPHOT.
+
+                    6. DISCUSSION                               With either thick or thin slice procedure, measured
+   The distance moduli found for our primary sample of        distance moduli are slightly lower than found analyzing
+13 galaxies listed in Table 2, for two MLE methodologies      the same data with related techniques by Anand et al.
+analyzing the same data, differ from each other by a sta-     (2024a,b, 2025) that did not take into account the slope
+tistically insignificant 0.007 mag. As a practical matter,    of the TRGB at redder colors. In those earlier published
+we give preference to the thick slice procedure that limits   cases, the MLE methodology assumed a flat TRGB ex-
+colors on red side at the juncture of the RGB isochrone       tending to (F090W−F150W)0 = 1.75 mag. Hence, RGB
+with the TRGB at (F090W − F150W)0 = 1.65 mag.                 stars were being included redward of the 1.65 mag down-
+We prefer the thick slice fits because the RGB of lower       turn in the TRGB with the consequence that the aver-
+metallicity populations in the halos of most galaxies fall    aged TRGB magnitude assuming a flat value were re-
+on the blue of the 1.65 mag color break.                      duced. Differences in reported distances are minimized
+12
+
+given the related adjustment required for the calibra-                    color based on JWST observations of seventeen galax-
+tor galaxy NGC 4258. Differences with the 13 galaxies                     ies, primarily located in the Virgo and Fornax clus-
+contributing to Figure 13 persist because the galaxies                    ters. Within current measurement capabilities, the re-
+                                                                                                  TRGB
+in all these cases are early types with more substantial                  lation is flat at MF090W       = −4.398 mag blueward of
+populations near the color break than is the case with                    (F090W − F150W)0 = 1.65, then breaks to fainter mag-
+NGC 4258. With the mean of the thick and thin fits, the                   nitudes in the F090W band at redder colors. From
+average shift in modulus from the earlier papers I and II                 theoretical isochrones, the break occurs at a metallic-
+in this series (Anand et al. 2024b, 2025) is −0.032 mag                   ity of [M/H] = −0.57 for stars of age 10 Gyr. There
+or a reduction of 1.5% in distances. An immediate con-                    is good agreement between the empirical and theoret-
+                                                                                                      TRGB
+sequence is a shift of the absolute calibration of SBF                    ical decrease of the MF090W       magnitude with increas-
+distances resulting in a slight increase in the H0 value                  ing metallicity beyond the break, although the empirical
+reported in series Paper III (Jensen et al. 2025).                        fall-off is slightly faster than the model.
+   The other comparison that can be made with JWST                           The empirical relation was determined by combin-
+observations at (F090W−F150W) is with Newman et al.                       ing broken-line fits across the color break at (F090W −
+(2024a). That work found the TRGB to be essentially                       F150W)0 = 1.65 for individual galaxies. The integration
+flat extending to (F090W − F150W)0 = 1.68, consis-                        of 16 individual galaxies with the absolute calibration
+tent with the current study. However there is a differ-                   provided by NGC 4258 allowed us to estimate relative
+ence in absolute calibration. Newman et al. (2024a) find                  distances and construct a generalized relation for the
+   TRGB
+MF090W    = −4.36 mag1 based on the HST calibration of                    absolute TRGB magnitude as a function of color in the
+the TRGB at F814W by Freedman (2021) and distances                        range (F090W − F150W)0 = [1.4, 3.0].
+to the two Local Group dwarfs WLM and Sextans A.
+This calibration is to be compared with our value of
+   TRGB
+MF090W    = −4.40 mag (Eq. 6) from the maser distance                1      The careful attention and useful comments by the
+to NGC 4258. This difference of 0.04 mag, almost 2%                  2    anonymous referee are most appreciated.
+in distance, is larger than the relative uncertainties in            3      This work is based on observations made with the
+JWST TRGB distance estimates at F090W and point                      4    NASA/ESA/CSA JWST, program 3055. The data were
+to the ongoing need to address the absolute scaling.                 5    obtained from the Mikulski Archive for Space Telescopes
+                                                                     6    at the Space Telescope Science Institute, which is oper-
+                      7. CONCLUSION                                  7    ated by the Association of Universities for Research in
+  We have developed a new TRGB measurement pro-                      8    Astronomy, Inc., under NASA contract NAS 5-03127
+cedure and code written in Python and .NET, utiliz-                  9    for JWST. The specific observations analyzed can be
+ing an earlier method for TRGB MLE calculations with                 10   accessed via 10.17909/20tm-sg94.
+minor improvements. A novel methodology was devel-                   11     This research made use of the NASA Astrophysics
+oped which incorporates statistically robust and physi-              12   Data System and the NASA/IPAC Extragalactic
+cally motivated calculations for selecting RGB star sub-             13   Database (NED) funded by the National Aeronautics
+samples for MLE analysis, enabling us to measure the                 14   and Space Administration and operated by the Califor-
+color-dependence of the TRGB for higher metallicities                15   nia Institute of Technology.
+and redder colors with JWST at F090W.                                16     MIC, DIM and LNM are supported by the Russian
+  All analyzed galaxies exhibit good agreement between               17   Science Foundation grant № 24–12–00277. RBT, GSA
+their individual TRGB relations and the generalized                  18   and YC acknowledge financial support from JWST GO–
+relation, with uncertainties of 0.023 mag for a high-                19   3055. MC acknowledges support from ASI–INAF grant
+precision photometry sample and 0.029 mag for the full               20   no. 2024-10-HH.0 (WP8420), the ESO Scientific Visitor
+sample of galaxies. These results enable a more pre-                 21   Programme, and INAF GO-grant no. 12/2024 (P.I. M.
+cise application of the original TRGB methodology to                 22   Cantiello). RH and MC acknowledge support from the
+galaxies containing high-metallicity stars, significantly            23   project “INAF-EDGE” (Large Grant 12-2022, P.I. L.
+enhancing its utility for cosmological distance measure-             24   Hunt).
+ments.
+  The TRGB color-magnitude relation has been de-
+            TRGB
+rived at MF090W    as a function of (F090W − F150W)0
+
+  1 The Newman et al. (2024a) magnitudes in the Vega-Sirius system
+
+     are translated here to the Vega system used in this paper.
+                                                                                                                       13
+
+
+                                                      APPENDIX
+
+
+                                         A. SEGMENTATION OF THE RGB
+   The strong color dependence observed in the TRGB for (F090W − F150W)0 > 1.65 necessitates an accurate char-
+acterization of the color distribution. To achieve this, a multi-stage process to isolate distinct regions along the RGB
+is employed.
+   Initially, the RGB behavior is described using a broken line, where the segment corresponding to blue colors is
+approximated as a constant, and the segment corresponding to redder colors roughly follows the TRGB color relation.
+This relation is represented by the blue lines in Figure 5. Each line is parameterized by the constant value for the blue
+segment and the inclination angle for the red segment. The first two upper broken lines are defined by the globally
+fitted TRGB value for the galaxy and an inclination angle of 45 degrees. Subsequently, the proportion of blue and
+red stars within a horizontal strip are estimated, with the separation defined at a color value of 1.75. This ratio is
+determined individually for each galaxy and on average it was within 0.4-0.7 for most galaxies.
+   Maintaining the observed blue-to-red star ratio along the RGB, the color boundary and the inclination angle of the
+red segment is iteratively adjusted to define additional lines. These lines enable the division of the RGB into evenly
+spaced strips originating from the TRGB. Within each strip, colors are computed corresponding to specific increments
+of the color distribution.
+   The color-magnitude relation for the derived increments are then fitted using a second-order polynomial, as illustrated
+by the magenta lines in Figure 5. These polynomial relations define slices that isolate distinct stellar populations along
+the RGB. Finally, for each slice, the magnitude distribution is fit using a broken exponential RGB LF. The maximum-
+likelihood approach is then applied to detect the TRGB.
+   While this segmentation approach performs well in the densely populated regions of the RGB, it becomes challenging
+to apply the same method near the branch edges. To address this, we employ theoretical isochrones to achieve
+comparable slicing quality. This enables us to extend the color-magnitude relation into the bluer part of the RGB,
+down to a color of (F090W − F150W)0 ≈ 1.45 in several galaxies, as well as into the redder RGB populations. The case
+of slicing based on theoretical isochrones is demonstrated in the left panel of Figure 14. However, the corresponding data
+points carry significant uncertainties due to limited statistics. Because photometric errors and biases cannot be tracked
+continuously along the RGB slice, appropriately selected artificial-star statistics were applied. For the completeness
+correction, the mean color for each slice was computed, allowing the slice completeness to be approximated as the
+product of the completeness functions in the two filters. This approach enables the use of quasi-two-dimensional
+statistics while requiring only a minimal number of artificial stars.
+
+                               B. MAXIMUM LIKELIHOOD FITS AT RED COLORS
+   Inspection of the CMD in Figure 10 makes clear that the TRGB magnitude at F090W falls off redward of (F090W −
+F150W)0 ∼ 1.65. Equally, at the halo locations optimal for TRGB measurements the abundances of RGB stars are
+falling off toward redder colors. The sloping color dependence and diminished statistics within slices of the RGB lead
+to substantial uncertainties in F090W TRGB measurements at red colors.
+   The right panel of Figure 14 presents the CMD for M 86, analogous to that shown in Figure 10, but now with the
+F150W filter on the vertical axis. The locus of the TRGB as traced by the cyan curve increases slightly instead of
+getting fainter. Whereas with F090W magnitudes the TRGB is roughly flat at blue colors and falling off at red colors,
+at F150W the TRGB is sloping upward at blue colors and becomes roughly flat at red colors. The upward slope at
+blue colors with F150W has been demonstrated by Newman et al. (2024a) although their sample does not include
+CMD that explore the flattening at high metallicities.
+   The consequence is that the TRGB is more robustly determined in the redward RGB slices with F150W magnitudes.
+Not only is the CMD roughly flat but F150W magnitudes are brighter than F090W magnitudes and measured with
+higher accuracy. Given these considerations, the TRGB in slices redward of approximately (F090W − F150W)0 ≃ 1.7
+is measured in the F150W band. Fits for the color range (F090W − F150W)0 ≈ [1.65, 1.75] were performed in both
+the F090W and F150W filters. The result is a saw-tooth pattern in the corresponding color–magnitude relations.
+TRGB values fitted in F150W were transformed to the F090W band using a color defined as the mean of the slice
+color boundaries evaluated at the fitted TRGB magnitude level.
+14
+
+              23.3                                                             23.3
+                     M86                                                              M86
+
+              24.3                                                             24.3
+      F150W
+
+
+
+
+                                                                       F150W
+              25.3                                                             25.3
+
+
+
+
+              26.3                                                             26.3
+
+
+
+
+              27.3   0.7 0.9 1.1 1.3 1.5 1.7 1.9 2.1 2.3 2.5 2.7 2.9           27.3   0.7 0.9 1.1 1.3 1.5 1.7 1.9 2.1 2.3 2.5 2.7 2.9
+                                F090W - F150W                                                    F090W - F150W
+Figure 14. CMD with F150W0 magnitudes versus (F090W − F150W)0 color for the M 86 galaxy. Left panel: segmentation
+applied for TRGB thin-slice fitting in the reddest and bluest regions of the RGB, based on theoretical isochrones; Right panel:
+the TRGB fit obtained from thin-slice segmentation. The isochrone reaching the TRGB at F090W−F150W=1.65 is shown in
+red.
+
+                                                              REFERENCES
+Anand, G. S., Lee, J. C., Van Dyk, S. D., et al. 2021,                   Dolphin, A. 2016, DOLPHOT: Stellar photometry,
+  MNRAS, 501, 3621, doi: 10.1093/mnras/staa3668                                Astrophysics Source Code Library, record ascl:1608.013.
+Anand, G. S., Riess, A. G., Yuan, W., et al. 2024a, ApJ,                       http://ascl.net/1608.013
+  966, 89, doi: 10.3847/1538-4357/ad2e0a                                 Freedman, W. L. 2021, ApJ, 919, 16,
+Anand, G. S., Tully, R. B., Cohen, Y., et al. 2024b, ApJ,                      doi: 10.3847/1538-4357/ac0e95
+
+  973, 83, doi: 10.3847/1538-4357/ad64c7                                 Freedman, W. L., Madore, B. F., Gibson, B. K., et al. 2001,
+                                                                               ApJ, 553, 47, doi: 10.1086/320638
+—. 2025, ApJ, 982, 26, doi: 10.3847/1538-4357/adb399
+                                                                         Gaia Collaboration, Babusiaux, C., van Leeuwen, F., et al.
+Beaton, R. L., Bono, G., Braga, V. F., et al. 2018, SSRv,
+                                                                               2018, A&A, 616, A10, doi: 10.1051/0004-6361/201832843
+  214, 113, doi: 10.1007/s11214-018-0542-1
+                                                                         Hoyt, T. J., Beaton, R. L., Freedman, W. L., et al. 2021,
+Boyer, M. L., Blommaert, J. A. D. L., Dell’Agli, F., et al.
+                                                                               ApJ, 915, 34, doi: 10.3847/1538-4357/abfe5a
+  2021, Dust Formation in a Primitive Environment,
+                                                                         Jensen, J. B., Blakeslee, J. P., Cantiello, M., et al. 2025,
+  JWST Proposal. Cycle 1, ID. #1619
+                                                                               ApJ, 987, 87, doi: 10.3847/1538-4357/addfd6
+Bressan, A., Marigo, P., Girardi, L., et al. 2012, MNRAS,                Lee, M. G., Freedman, W. L., & Madore, B. F. 1993, ApJ,
+  427, 127, doi: 10.1111/j.1365-2966.2012.21948.x                              417, 553, doi: 10.1086/173334
+Brocato, E., Castellani, V., Poli, F. M., & Raimondo, G.                 Lengen, B., Anderson, R. I., Cruz Reyes, M., & Viviani, G.
+  2000, A&AS, 146, 91, doi: 10.1051/aas:2000357                                2026, A&A, 706, A87, doi: 10.1051/0004-6361/202557192
+Clementini, G., Ripepi, V., Garofalo, A., et al. 2023, A&A,              Li, S., Anand, G. S., Riess, A. G., et al. 2024, ApJ, 976,
+  674, A18, doi: 10.1051/0004-6361/202243964                                   177, doi: 10.3847/1538-4357/ad84f3
+                                                                                                                            15
+
+Makarov, D., Makarova, L., Rizzi, L., et al. 2006, AJ, 132,    Riess, A. G., Yuan, W., Macri, L. M., et al. 2022, ApJL,
+  2729, doi: 10.1086/508925                                      934, L7, doi: 10.3847/2041-8213/ac5c5b
+Marigo, P., Bressan, A., Nanni, A., Girardi, L., & Pumo,
+                                                               Riess, A. G., Anand, G. S., Yuan, W., et al. 2023, ApJL,
+  M. L. 2013, MNRAS, 434, 488,
+  doi: 10.1093/mnras/stt1034                                     956, L18, doi: 10.3847/2041-8213/acf769
+McQuinn, K. B. W., Boyer, M., Skillman, E. D., & Dolphin,      Savino, A., Choi, Y., Dolphin, A. E., et al. 2024, Anchoring
+  A. E. 2019, ApJ, 880, 63, doi: 10.3847/1538-4357/ab2627
+                                                                 the JWST population II distance ladder to Gaia, JWST
+McQuinn, K. B. W., Boyer, M. L., Dolphin, A. E.,
+  Newman, M. J. B., & Skillman, E. D. 2021, Securing the         Proposal. Cycle 3, ID. #4783
+  TRGB Distance Indicator: A Pre-Requisite for a JWST          Schlafly, E. F., & Finkbeiner, D. P. 2011, ApJ, 737, 103,
+  Measurement of H 0, JWST Proposal. Cycle 1, ID.                doi: 10.1088/0004-637X/737/2/103
+  #1638
+McQuinn, K. B. W., B. Newman, M. J., Savino, A., et al.        Schlegel, D. J., Finkbeiner, D. P., & Davis, M. 1998, ApJ,
+  2024, ApJ, 961, 16, doi: 10.3847/1538-4357/ad1105              500, 525, doi: 10.1086/305772
+Méndez, B., Davis, M., Moustakas, J., et al. 2002, AJ, 124,
+                                                               Tully, R. B., Anand, G. S., Blakeslee, J. P., et al. 2023, A
+  213, doi: 10.1086/341168
+                                                                 TRGB calibration of Surface Brightness Fluctuations,
+Newman, M. J. B., McQuinn, K. B. W., Skillman, E. D.,
+  et al. 2024a, ApJ, 975, 195,                                   JWST Proposal. Cycle 2, ID. #3055
+  doi: 10.3847/1538-4357/ad79f8                                Virtanen, P. e. a. 2020, Nature Methods, 17, 261
+—. 2024b, ApJ, 966, 175, doi: 10.3847/1538-4357/ad306d
+Peek, J. E. G., & Graves, G. J. 2010, ApJ, 719, 415,           Warfield, J. T., Richstein, H., Kallivayalil, N., et al. 2023,
+  doi: 10.1088/0004-637X/719/1/415                               Research Notes of the American Astronomical Society, 7,
+Raimondo, G. 2009, ApJ, 700, 1247,                               23, doi: 10.3847/2515-5172/acbb72
+  doi: 10.1088/0004-637X/700/2/1247
+                                                               Weisz, D. R., Anderson, J., Boyer, M. L., et al. 2017, The
+Reid, M. J., Pesce, D. W., & Riess, A. G. 2019, ApJL, 886,
+  L27, doi: 10.3847/2041-8213/ab552d                             Resolved Stellar Populations Early Release Science
+Reitzel, D. B., Guhathakurta, P., & Rich, R. M. 2004, AJ,        Program, JWST Proposal ID 1334. Cycle 0 Early Release
+  127, 2133, doi: 10.1086/382517                                 Science
+Riess, A., Anderson, R. I., Breuval, L., et al. 2021,
+                                                               Weisz, D. R., Dolphin, A. E., Savino, A., et al. 2024, ApJS,
+  Uncrowding the Cepheids for an Improved Determination
+  of the Hubble Constant, JWST Proposal. Cycle 1, ID.            271, 47, doi: 10.3847/1538-4365/ad2600
+  #1685
+

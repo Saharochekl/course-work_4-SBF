@@ -1,0 +1,983 @@
+                                                 Draft version March 2, 2021
+                                                 Typeset using LATEX twocolumn style in AASTeX63
+
+
+
+
+                                                             The Hubble Constant from Infrared Surface Brightness Fluctuation Distances∗
+                                                       John P. Blakeslee,1 Joseph B. Jensen,2 Chung-Pei Ma,3 Peter A. Milne,4 and Jenny E. Greene5
+                                                                1 Gemini Observatory and NSF’s NOIRLab, Tucson, AZ 85719, USA,      john.blakeslee@noirlab.edu
+                                                                     2 Utah Valley University, 800 W. University Parkway, MS 179, Orem, UT 84058, USA
+                                                                         3 Department of Astronomy, University of California, Berkeley, CA 94720, USA
+                                                                 4 University of Arizona, Steward Observatory, 933 N. Cherry Avenue, Tucson, AZ 85721, USA
+                                                                    5 Department of Astrophysical Sciences, Princeton University, Princeton, NJ 08544, USA
+arXiv:2101.02221v2 [astro-ph.CO] 26 Feb 2021
+
+
+
+
+                                                                                                          ABSTRACT
+                                                         We present a measurement of the Hubble constant H0 from surface brightness fluctuation (SBF)
+                                                       distances for 63 bright, mainly early-type galaxies out to 100 Mpc observed with the Wide Field
+                                                       Camera 3 Infrared Channel (WFC3/IR) on the Hubble Space Telescope (HST ). The sample is drawn
+                                                       from several independent HST imaging programs using the F110W (1.1 µm) bandpass of WFC3/IR.
+                                                       The majority of galaxies are in the 50 to 80 Mpc range and come from the MASSIVE galaxy survey.
+                                                       The median statistical uncertainty on individual distance measurements is 4%. We construct the
+                                                       Hubble diagram with these IR SBF distances and constrain H0 using four different treatments of the
+                                                       galaxy velocities. For the SBF zero point calibration, we use both the existing tie to Cepheid variables,
+                                                       updated for consistency with the latest determination of the distance to the Large Magellanic Cloud
+                                                       from detached eclipsing binaries, and a new tie to the tip of the red giant branch (TRGB) calibrated
+                                                       from the maser distance to NGC 4258. These two SBF calibrations are consistent with each other and
+                                                       with theoretical predictions from stellar population models. From a weighted average of the Cepheid
+                                                       and TRGB calibrations, we derive H0 = 73.3 ± 0.7 ± 2.4 km s−1 Mpc−1 , where the error bars reflect
+                                                       the statistical and systematic uncertainties. This result accords well with recent measurements of H0
+                                                       from Type Ia supernovae, time delays in multiply lensed quasars, and water masers. The systematic
+                                                       uncertainty could be reduced to below 2% by calibrating the SBF method with precision TRGB
+                                                       distances for a statistical sample of massive early-type galaxies out to the Virgo cluster measured
+                                                       with the James Webb Space Telescope.
+
+                                                                 1. INTRODUCTION                                       Increasingly precise distances measured from stellar
+                                                 Ever since Cook’s first expedition to Tahiti to ob-                parallaxes in the Milky Way (e.g., Lindegren et al.
+                                               serve the transit of Venus in 1769 (Cook & Mohr 1771),               2016; Bailer-Jones et al. 2018), detached eclipsing bi-
+                                               astronomers have been going to great lengths to mea-                 naries (DEBs) in the Large Magellanic Cloud (LMC)
+                                               sure accurate distances and to corroborate their results             (Pietrzyński et al. 2019), Cepheids in nearby spirals
+                                               through multiple independent routes (see Sawyer Hogg                 (e.g., Macri et al. 2015; Riess et al. 2020), and a variety
+                                               1947). Distances enable us to convert the observed prop-             of other methods reaching out into the Hubble flow, have
+                                               erties of planets, stars, galaxies, black holes, and cos-            progressively pushed down the reported uncertainties on
+                                               mic explosions into physical quantities. They reveal the             the local expansion rate. For instance, using Type Ia
+                                               structure of the local supercluster, map the peculiar mo-            supernovae (SNe Ia) tied to Cepheids, in turn calibrated
+                                               tions, and constrain the present-day expansion rate, pa-             by a combination of Galactic parallaxes, DEBs in the
+                                               rameterized by the Hubble constant H0 . The successful               LMC, and the maser distance to NGC 4258, Riess et al.
+                                               gauging of distances beyond our planet has been the key              (2019) find H0 = 74.03 ± 1.42 km s−1 Mpc−1 . However,
+                                               to understanding the Universe.                                       Freedman et al. (2020) conclude H0 = 69.6 ± 0.8 ± 1.7
+                                                                                                                    km s−1 Mpc−1 from a calibration of SNe Ia via the tip of
+                                                                                                                    the red giant branch (TRGB), assuming the DEB dis-
+                                                 ∗ Based on observations with the NASA/ESA Hubble Space Tele-
+                                                                                                                    tance to the LMC. These two studies, which report pre-
+                                                  scope, obtained at the Space Telescope Science Institute, which
+                                                  is operated by AURA, Inc., under NASA contract NAS 5-26555.
+                                                                                                                    cise values of H0 that differ by nearly 2 σ, use the same
+                                                  These observations come from GO Programs #11711, #11712,          first and third rungs in their distance ladders but differ
+                                                  #12450, #14219, #14654, #14771, #14804, #15265, #15329.           in the intermediate step (Cepheids versus TRGB).
+2                                   Blakeslee, Jensen, Ma, Milne, & Greene
+
+   Also using the LMC-based TRGB method to calibrate        the extremely rare water megamasers. Further, unlike
+SNe Ia but with a different treatment of the extinction     Cepheids, SNe Ia, and masers, which all require data
+for the LMC calibration stars, Yuan et al. (2019) report    spanning multiple epochs, the SBF measurements re-
+H0 = 72.4 ± 2.0 km s−1 Mpc−1 . Other recent estimates       quire only a single observation of sufficient depth, along
+include (omitting units for brevity) H0 = 71.1±1.9 from     with color data to provide the stellar population calibra-
+the SNe Ia-TRGB method calibrated by the maser dis-         tion. As a result, the method has been applied widely
+tance to NGC 4258 (Reid et al. 2019), 73.3 ± 1.8 from       to study the 3-D structure of the nearest galaxy clusters
+time delays in gravitationally-lensed quasars (Wong         (Mei et al. 2007; Blakeslee et al. 2009; Cantiello et al.
+et al. 2020, see also Harvey 2020), 73.9 ± 3.0 from ge-     2018a), determine the physical size of the “shadow” (and
+ometrical distances to galaxies hosting water masers        thus the mass) of the supermassive black hole in M87
+(Pesce et al. 2020), and 75.1 ± 3.0 from the Tully-         (Event Horizon Telescope Collaboration et al. 2019),
+Fisher method calibrated with Cepheids (Kourkchi et al.     measure the most precise distance to the host galaxy
+2020b). In general, most techniques for measuring dis-      of the first gravitational wave source with an optical
+tances in the relatively local universe appear to be con-   counterpart (GW170817; Cantiello et al. 2018b), study
+verging on a value of H0 ≈ 73 km s−1 Mpc−1 . For a          the satellite systems of nearby galaxies (Carlsten et al.
+more comprehensive review of the latest results in this     2019), and confirm the nature of dark matter deficient
+rapidly evolving field, see Di Valentino (2020).            ultra-diffuse galaxies (van Dokkum et al. 2018; Cohen
+   In parallel, the exquisitely precise measurements of     et al. 2018; Blakeslee & Cantiello 2018). However, the
+the cosmic microwave background (CMB) by the Planck         analysis is not trivial. For an early exposition of the
+mission result in a predicted value of H0 = 67.4 ± 0.5      many things can go wrong with SBF measurements, see
+km s−1 Mpc−1 , assuming the standard “lambda cold           Blakeslee et al. (1999a), but most of these problems are
+dark matter” (ΛCDM) cosmology (Planck Collabora-            avoided with the superb resolution and image stability
+tion et al. 2020). This lower value of H0 is not unique     provided by the Hubble Space Telescope (HST ).
+to Planck, however. Measurements of baryon acous-              The SBF method has been used less frequently to con-
+tic oscillations (BAO) in redshift surveys, which probe     strain H0 . In some cases it has served as an intermedi-
+the scale of the primordial density fluctuations at later   ate rung on the distance ladder between Cepheids and
+times, in combination with either other CMB data or         another method, such as Tully-Fisher, the fundamen-
+constraints from Big Bang nucleosynthesis, imply H0 ≈       tal plane, or SNe Ia (Tonry et al. 1997; Blakeslee et al.
+67 ± 1 (Addison et al. 2018; Philcox et al. 2020). In       2002; Khetan et al. 2020). In other cases, the H0 analy-
+addition, an analysis of the “inverse distance ladder”      sis relied on significant velocity corrections derived from
+of SNe Ia calibrated from BAO gives H0 = 67.8 ± 1.3         reconstructions of the local gravity field (Blakeslee et al.
+km s−1 Mpc−1 (Macaulay et al. 2019).                        1999b; Tonry et al. 2000; Blakeslee et al. 2002). Rarely
+   A significant discrepancy between the locally mea-       have SBF studies directly probed the Hubble flow with
+sured H0 and the value implied by primordial density        multiple galaxies — notable exceptions are Jensen et al.
+fluctuations within the context of ΛCDM may point to        (2001) with HST /NICMOS and Biscardi et al. (2008)
+physics beyond the standard paradigm (e.g., Planck Col-     with HST /ACS (discussed in Sec. 5 below). However,
+laboration et al. 2020; Poulin et al. 2019; Knox & Mil-     with the benefit of the Wide-Field Camera 3 Infrared
+lea 2020). Formally, this discrepancy now exceeds 4σ.       Channel (WFC3/IR) on HST, and the calibration pro-
+Additional evidence for required extensions to ΛCDM         vided by Jensen et al. (2015), we can now obtain reliable
+comes from the CMB itself, which shows a higher than        SBF distances well out into the Hubble flow in a single
+expected lensing amplitude in its power spectrum (Di        HST orbit. In this paper, we present the first measure-
+Valentino et al. 2020). Alternatively, it could be an in-   ment of H0 based on a large sample of galaxies with
+dication of unidentified systematics, perhaps lingering     WFC3/IR SBF distances reaching out to 100 Mpc.
+coherently in multiple distance estimation methods. For
+this reason, additional routes to H0 are worth exploring.                   2. IR SBF DISTANCES
+   One promising route is the surface brightness fluctu-
+                                                              The SBF method measures the small-scale spatial
+ation method (SBF, Tonry & Schneider 1988; Jensen
+                                                            variance, or “fluctuations,” in intensity due to the dis-
+et al. 1998). The modern SBF method (see the re-
+                                                            crete nature of the stars that comprise a galaxy. Because
+view by Blakeslee 2012) has become an all-purpose pre-
+                                                            the fluctuations are dominated by red giant stars in the
+cision distance indicator for galaxies that are too dis-
+                                                            early-type galaxies we target, the SBF signal is stronger
+tant for TRGB detection, lack young populations that
+                                                            in the near-infrared where these stars are brightest and
+would host Cepheids, and have no known supernovae or
+                                                            the exposure times for measuring SBF distances can be
+                                      The Hubble Constant from IR SBF                                              3
+
+much less than in the optical. The brighter fluctua-        cases disk galaxies that appeared to have useful regions
+tions, combined with the lower IR background and sta-       for the SBF measurement, based on the imaging data
+ble image quality from space, have made it possible to      that were available when we were designing the program.
+measure robust SBF distances with WFC3/IR out to at         These galaxies are naturally less luminous than those in
+least 100 Mpc in one to two HST orbits. As a result, we     the MASSIVE survey. For three targets in this program
+have been able to amass a large sample of high-quality      that were expected to be near or beyond 80 Mpc, we
+distances reaching as far as the Coma cluster in a rela-    conservatively obtained two orbits of WFC3/F110W in-
+tively modest amount of time. The galaxy observations       tegration to ensure adequate depth along the GCLF.
+come from several different programs but have similar         In a follow-up to GO-14219, Program GO-15265 ob-
+characteristics, as we detail below.                        tained second-band WFC3/UVIS imaging of a subset
+                                                            of the previously targeted MASSIVE galaxies to study
+               2.1. Observational Data                      the metallicity distributions of their globular clusters.
+                                                            As part of this program we were also awarded time for
+   Our sample comprises 63 galaxies with WFC3/IR
+                                                            single-orbit WFC3/IR F110W imaging of an additional
+imaging in the F110W filter that we have used to mea-
+                                                            six MASSIVE galaxies beyond our initial 6000 km s−1
+sure SBF distances based on the calibration by Jensen
+                                                            limit. We have found that we can reliably characterize
+et al. (2015). The majority of the observations come
+                                                            the GCLFs, and thus correct for their residual contribu-
+from a program (GO-14219) to obtain SBF distances
+                                                            tions to the variance, in these very luminous ellipticals
+to all galaxies in the MASSIVE survey priority sam-
+                                                            despite the somewhat larger distances. Thus, we have
+ple (Ma et al. 2014) out to 6000 km s−1 . MASSIVE is
+                                                            been able to measure the SBF distances for these six
+a volume-limited survey to study the structure, stellar
+                                                            galaxies and include them in our sample as well. To
+populations, internal dynamics, and central black holes
+                                                            these we add a two-orbit WFC3/F110W observation of
+of the most massive early-type galaxies within 100 Mpc
+                                                            the cD galaxy in Coma from another of our programs
+(e.g., Greene et al. 2015; Veale et al. 2018; Ene et al.
+                                                            and single orbit observations of two galaxies for which
+2020; Liepold et al. 2020). Uncertainties in supermas-
+                                                            we previously published WFC3/F110W SBF distances.
+sive black hole masses for nearby galaxies are often dom-
+                                                              The following list summarizes the HST programs that
+inated by distance errors (Kormendy & Ho 2013). Rec-
+                                                            contributed to the current data set. All of the data were
+ognizing this, McConnell & Ma (2013) used updated
+                                                            reduced homogeneously by our team.
+distances for 44 galaxies in their black hole mass com-
+pilation, 41 of which were SBF values. Goullaud et al.         • GO-11711: NGC 4874, the cD galaxy in the Coma
+(2018) present an analysis of the surface brightness pro-        cluster (PI: J. Blakeslee).
+files for the galaxies targeted in GO-14219.
+   The 6000 km s−1 limit (∼ 80 Mpc) for the initial            • GO-12450: NGC 3504 (PI: C. Kochanek), pub-
+WFC3/IR SBF sample was chosen as the point where                 lished previously by Nguyen et al. (2020).
+the typical peculiar velocities of 300 km s−1 drop below       • GO-14219: 35 early-type galaxies selected from
+5% of the Hubble velocity, meaning that the relative dis-        MASSIVE Survey (PI: J. Blakeslee).
+tance error from redshifts is comparable to the expected
+SBF distance error. In addition, we calculated that in         • GO-14654: 19 mainly early-type host galaxies of
+F110W we could reach far enough along the globular               SNe Ia (PI: P. Milne).
+cluster luminosity function (GCLF) at this distance to
+reduce the contamination in the SBF power spectrum             • GO-15265: 6 additional MASSIVE Survey galax-
+to ∼ 10% in only one orbit. The ability to remove con-           ies (PI: J. Blakeslee).
+tamination from globular clusters is usually our limiting      • GO-14771, GO-14804, GO-15329: NGC 4993, host
+factor, rather than the signal-to-noise of the SBF signal        of the binary neutron star merger that produced
+itself, and this level of detection completeness means           GW170817 (PIs: N. Tanvir, A. Levan, E. Berger),
+that the error in this correction will be . 0.03 mag.            published previously by Cantiello et al. (2018b).
+   Another large fraction of the galaxies in our data
+set come from a program (GO-14654) to measure SBF             In addition, we also reprocessed the observations from
+distances to host galaxies of well-studied SNe Ia with      GO-11712 (PI: Blakeslee) that were used by Jensen et al.
+the goal of investigating possible luminosity differences   (2015) to calibrate the WFC3/IR SBF method. This
+among subgroups with different ultraviolet colors (e.g.,    reprocessing was done in order to verify consistency be-
+Milne et al. 2013, 2015; Brown et al. 2017, 2019; Foley     tween the calibration and target samples. Although
+et al. 2020). We selected early-type hosts, or in some      Jensen et al. (2015) presented SBF calibrations for both
+4                                        Blakeslee, Jensen, Ma, Milne, & Greene
+
+F110W and F160W, we use only F110W data in the                                 2.3. Color Dependence
+present study and apply the same analysis for all pro-           The absolute SBF magnitude M in a given bandpass
+gram galaxies. This enables an extremely homogeneous          depends on stellar population properties such as age,
+and self-consistent set of distance measurements.             metallicity, alpha-element enhancement, etc. To cal-
+                   2.2. SBF Measurements                      ibrate this dependence, one generally uses broadband
+                                                              color as a distance-independent proxy for a galaxy’s stel-
+   The SBF analysis has been described many times             lar population (e.g., Tonry et al. 1997; Jensen et al. 2003;
+(e.g., Tonry et al. 1990; Jensen et al. 1998; Blakeslee       Blakeslee et al. 2001; Cantiello et al. 2007). Jensen et al.
+et al. 1999a; Cantiello et al. 2005; Mei et al. 2005).        (2015) derived high-quality calibrations of the F110W
+For these HST WFC3/IR data, we follow the proce-              SBF magnitude M 110 using data for 16 Virgo and For-
+dure documented for the calibration sample by Jensen          nax cluster early-type galaxies. For the sake of flexi-
+et al. (2015). Details specific to the present sample of 63   bility, the calibrations were provided using both ACS
+galaxies, including some refinements to the masking pro-      (g475 −z850 ) and WFC3 (J110 −H160 ) colors.
+cess and consistency tests with the calibration sample,          Because the broad-baseline optical color is more sen-
+are presented in a companion data paper (Jensen et al.        sitive to metallicity, the slope of the M 110 -(g475 −z850 )
+2021, hereafter J21). In brief, we model and subtract         calibration is shallower, and therefore less susceptible to
+the mean galaxy surface brightness, mask contaminating        photometric errors; thus, it is the preferred calibration.
+sources (mainly globular clusters and background galax-       However, for galaxies with large amounts of foreground
+ies) down to some completeness threshold, and measure         extinction (e.g., Cantiello et al. 2018b), or lacking in
+the Fourier power spectrum of the remaining image. The        optical data, the M 110 -(J110 −H160 ) calibration can be
+normalization of the power spectrum on the scale of the       used. For the current sample, we adopt the calibration
+point spread function (PSF) includes contributions from       based on optical color for nearly all galaxies, but instead
+the stellar fluctuations and contaminating sources. We        of ACS colors (unavailable for most of the sample) we
+fit and extrapolate the magnitude distribution of the         use colors derived from Pan-STARRS images (Magnier
+sources and use this to calculate the background vari-        et al. 2020; Waters et al. 2020), with sky estimation and
+ance, which we subtract from the normalization of the         object masking as in Jensen et al. (2015). The photo-
+PSF component of the power spectrum to get the vari-          metric transformation of Pan-STARRS (g−z) to ACS
+ance from the stellar fluctuations. These fluctuations        (g475 −z850 ) is described in detail by J21. We include
+are measured in a series of concentric annuli, normal-        the scatter in this transformation in our estimate of the
+ized by the local surface brightness, and converted into      color error, which contributes to the uncertainty in the
+the SBF magnitude, labeled m110 for the F110W band-           calibrated M 110 for each galaxy.
+pass. Applying a calibration for M 110 (see the following        One galaxy in our sample (ESO 125-G006) lacks Pan-
+section) then gives the distance modulus.                     STARRS data; for this, we use 2MASS (J−H) color
+   We adopted a photometric zero point of 26.822 AB           transformed to (J110 −H160 ). As with (g−z), we include
+mag for WFC3/F110W from the STScI website1 at the             the scatter in this transformation in the estimated M 110
+time our data were obtained and processed. In Decem-          error. This galaxy also suffers the highest amount of
+ber 2020, this value was revised by −0.004 mag based on       Galactic extinction in our sample, 20% higher than the
+Bajaj et al. (2020). Although this would change the nu-       next highest, and more than three times the sample aver-
+merical value of the m110 measurements tabulated in J21       age. Although the color measurement error is amplified
+by a small amount, it would not change our distances,         by the steeper slope of the (J−H) calibration, the ex-
+which are referenced to the WFC3/IR SBF calibration of        tinction is much lower in the IR, resulting in an error for
+Jensen et al. (2015, see also Cantiello et al. 2018b), who    M 110 only slightly larger than for the rest of the galax-
+used the former photometric zero point. We correct the        ies. The value of H0 derived from ESO 125-G006 is very
+photometry for Galactic extinction according to Schlafly      close to the best-fit value for the full sample; there is
+& Finkbeiner (2011), using the values provided for in-        no evidence for any systematic difference resulting from
+dividual galaxies by the NASA Extragalactic Database          the use of (J−H) for the calibration. Likewise, Cantiello
+(NED). Following that work, we adopted a 10% uncer-           et al. (2018b) found closely consistent distances for the
+tainty on the extinction correction and included it in        gravitational wave event host NGC 4993 using the two
+quadrature in our photometric error estimates.                different calibrations; J21 provide further tests illustrat-
+                                                              ing the consistency.
+    1 https://www.stsci.edu/hst/instrumentation/wfc3/data-       Finally, we note that the dependence of M 110 on
+     analysis/photometric-calibration                         galaxy color has some intrinsic scatter due to stellar pop-
+                                        The Hubble Constant from IR SBF                                               5
+
+ulation effects. For example, galaxies with the same col-     zero-point uncertainty to 0.09 mag, or 4.2% in distance.
+ors may have slightly different M 110 values because age      This is the current limit of our precision in measuring
+and metallicity are not completely degenerate in their ef-    H0 using the Cepheid-based SBF calibration alone.
+fects on M 110 and broadband color. In the z-band this           Stellar population models provide confidence in this
+intrinsic scatter is 0.06 mag for red galaxies (Blakeslee     zero point. Comparisons between SBF predictions for
+et al. 2009). Although the observed scatter in the M 110      evolved stellar populations and the empirical zero point
+calibration from Jensen et al. (2015) is consistent with      show agreement in optical bandpasses to better than
+measurement error, suggesting a negligible contribution       the 0.09 mag uncertainty (e.g., Blakeslee et al. 2010;
+from intrinsic scatter, we conservatively adopt the same      Cantiello et al. 2018a; Greco et al. 2020), although there
+0.06 mag intrinsic scatter for F110W. With this added         is more discrepancy among models for bluer populations
+in quadrature, our median distance modulus error is           (e.g., Trujillo et al. 2019). The models are less con-
+0.083 mag, or ∼ 4% in distance.                               straining in their predictions for near-IR SBF magni-
+                                                              tudes, but they encompass the range of the observations
+             2.4. SBF-Cepheid Zero Point                      (Jensen et al. 2003, 2015). Empirically, the tie between
+                                                              WFC3/IR and ACS SBF distances is very tight.
+  The I-band SBF distance zero point was tied to
+Cepheids by Tonry et al. (2000) using six spirals that
+had both SBF and Cepheid distances. This calibration                        2.5. SBF-TRGB Zero Point
+was revised by +0.06 mag by Blakeslee et al. (2002) us-         Constraints on the zero point can be improved using
+ing the final Key Project Cepheid distances from Freed-       the TRGB method for red galaxies with well-measured
+man et al. (2001), which were based on an LMC dis-            SBF distances. Cohen et al. (2018) show excellent agree-
+tance modulus of 18.50 mag. Additional discussion of          ment between SBF and TRGB distances for a sam-
+this distance zero point, including checks for consistency    ple of 12 dwarf galaxies with blue colors observed by
+with HST /ACS SBF distances, is given in Appendix A           HST. However, obtaining an overlapping sample of dis-
+of Blakeslee et al. (2010). For WFC3/IR, the F110W            tances for massive red ellipticals requires reaching the
+and F160W SBF zero points were determined by Jensen           Virgo cluster; there are few TRGB distances for early-
+et al. (2015) using 16 Virgo and Fornax cluster galaxies      type galaxies at this distance. Two exceptions are M60
+with previously measured SBF distances by Blakeslee           (NGC 4649) (Lee & Jang 2017) and M87 (Bird et al.
+et al. (2009). Cantiello et al. (2018b) revised these zero    2010). There is also a TRGB distance to the massive
+points by 0.05 ± 0.02 mag following improved PSF char-        merger remnant NGC 1316 (Arp 154) in Fornax, which
+acterization resulting from extensive tests with a library    has multiple independent SBF distances (e.g., Blakeslee
+of template stars that were used to reanalyze the power       et al. 2009; Cantiello et al. 2013; Jensen et al. 2015).
+spectra of the calibration sample. We use the same set of     In the Appendix, we compare the SBF and TRGB dis-
+PSF templates (see J21, for details) and therefore adopt      tances for these three galaxies using an absolute magni-
+this zero-point shift and its associated scatter.             tude for the TRGB itself based on the maser distance
+  The above Cepheid calibration assumed a distance            to NGC 4258 so that it is fully independent of the LMC-
+modulus of 18.50 mag for the LMC. Based on a sam-             based Cepheid calibration. Excluding the problematic
+ple of 20 DEBs, Pietrzyński et al. (2019) present an         calibrator NGC 1316, we find that the mean offset be-
+improved LMC distance of 49.59 ± 0.55 kpc (combining          tween the SBF and TRGB distances is −0.01±0.08 mag.
+random and systematic error), or 0.023 ± 0.024 mag less       In other words, SBF distances would be very slightly
+than the value used previously. For consistency with          longer if calibrated from the TRGB. Including system-
+other recent studies (e.g., Riess et al. 2019; Freedman       atic effects, the uncertainty on the TRGB-based SBF
+et al. 2019, 2020), we also apply this shift in zero point.   zero point becomes 0.10 mag, or 4.6%. Full details are
+The fully revised calibration is presented by J21.            provided in the Appendix.
+  The systematic uncertainty in the M 110 zero point            Clearly there is no significant difference between the
+was estimated by Cantiello et al. (2018b) to be 0.10 mag,     Cepheid-based and TRGB-based SBF zero points. How-
+including contributions of 0.03 mag from the tie between      ever, the complete independence of the two approaches
+WFC3/IR and optical SBF distances, 0.08 mag from              reduces the final systematic uncertainty on the jointly
+the tie between SBF and Cepheids, and 0.06 mag for            constrained zero point from > 4% for each method inde-
+the Cepheid zero point, dominated by the uncertainty          pendently to 3.1% when combined. Ultimately, we hope
+in the LMC distance. With the improved precision of           to anchor the SBF method using a much larger sample
+the revised LMC distance, the Cepheid zero-point error        of giant ellipticals with TRGB distances tied to Gaia
+drops to 0.028 mag (Riess et al. 2019), reducing the SBF      parallaxes. We return to this prospect in Sec. 6.
+6                                         Blakeslee, Jensen, Ma, Milne, & Greene
+
+                     3. VELOCITY DATA                            fit value for the CF3 database. In constructing the
+   In determining H0 , accurate velocities are equally im-       flow model, Graziani et al. (2019) assumed a fiducial
+portant as accurate distances. As mentioned above, the           H0 = 75 km s−1 Mpc−1 ; then as part of the model-
+majority of our galaxies are massive ellipticals in groups       ing, derived a best-fit scale factor of 1.02 ± 0.01, i.e.,
+and clusters, including several Abell clusters (see Ma           H0 = 76.5 ± 0.8 km s−1 Mpc−1 . To calculate the flow-
+et al. 2014). Many of these systems have velocity dis-           corrected velocities for this model, we adopt the best-fit
+persions in excess of 500 km s−1 , which would add sig-          H0 given by Tully and test the effect of the ±1% scale
+nificant scatter to the Hubble diagram if using individ-         factor uncertainty on our result. When using this model,
+ual velocities. We therefore use the group associations          the scaling does affect our final H0 , as discussed below.
+and mean group velocities in the CMB frame from Tully               The second flow model is that of Carrick et al. (2015),
+(2015), based on the 2MASS Redshift Survey (2MRS,                based on the density field reconstructed from the 2M++
+Huchra et al. 2012). The 2MRS is 97.6% complete to               redshift compilation (Lavaux & Hudson 2011), which
+magnitude Ks ≤ 11.75 mag over 91% of the sky. The                combines the 2MRS with deeper redshift surveys over
+Tully group catalog contains cross-matched identifica-           large fractions of the sky. We again use the online ve-
+tions to the Crook et al. (2007) catalog that was used           locity calculator4 provided for the model. Unlike the
+by Ma et al. (2014) and based on an earlier version of           CF3 model, the 2M++ model calculator requires the in-
+the 2MRS limited to Ks ≤ 11.25 mag.                              put velocity to be in the CMB frame.
+   For galaxies not in identifiable groups, we use the
+2MRS velocity data directly. We also test our results                         4. THE HUBBLE CONSTANT
+for H0 in the following section using only the individ-            The 63 galaxies in our sample have SBF distances
+ual, rather than group, velocities. In all cases we use          ranging from 19 to 99 Mpc, were selected in a vari-
+velocities referenced to the CMB frame and downloaded            ety of ways, and span a range of environments. Even
+through the Extragalactic Distance Database2 (EDD,               homogeneously selected galaxies, such as those in the
+Tully et al. 2009). In fitting for H0 , we use the first-order   MASSIVE sample, may exhibit diverse features that can
+cosmological corrections to the redshift (e.g., Wright           complicate the SBF analysis. In determining H0 , we use
+2006) assuming Ωm = 0.3, Λ = 0.7; the results change im-         a weighted average in the logarithm to ensure a sym-
+perceptibly if we instead use the best-fit Planck values         metric treatment of the errors in distance modulus and
+(0.315, 0.685) for a flat universe.                              velocity; this is the equivalent of a single parameter fit
+   In the following section, we also calculate H0 using          minimizing χ2 for the sample. To test the robustness
+the flow-corrected velocities predicted by two different         of our results, we have performed the fits to H0 using
+models. The first is the Bayesian linear flow model              numerous different cuts and subsamples, as well as the
+of Graziani et al. (2019), based on the CosmicFlows-3            four different approaches to the galaxy recessional ve-
+(CF3) database described by Tully et al. (2016). To              locities described in the preceding section. The sections
+implement this CF3 flow model for our sample, we                 below present an illustrative range of these fits before
+use the online distance-velocity calculator3 described by        settling on a preferred value. All information needed to
+Kourkchi et al. (2020a). The model returns the dis-              reproduce and extend these tests is provided in J21.
+tance expected from the observed velocity in the Local
+Group frame. To convert this model distance into the                                 4.1. Group Velocities
+desired flow-corrected recessional velocity (i.e., Hubble           As a first approach, we use the group-averaged veloc-
+expansion velocity), one must multiply it by the value of        ities in the CMB frame as described above. In doing
+Hubble constant most consistent with the CF3 database.           this, it is necessary to adopt some value for the random
+The question of what value of H0 to “take out” of the            dispersion of the groups and isolated galaxies within the
+CF3 model in order to convert to expansion velocity              general velocity field. Estimates of this small-scale pecu-
+is not entirely trivial. This value is a function of the         liar velocity “noise” σp range from 100 to 300 km s−1 , de-
+zero point used for SNe Ia in the CF3 database, and in           pending on the sample considered (Masters et al. 2006;
+that sense is independent of the H0 we derive from our           Hoffman et al. 2015; Graziani et al. 2019). Here we as-
+distances when using this velocity model. Tully et al.           sume σp = 240 km s−1 , which we add in quadrature
+(2016) find H0 = 76.2 km s−1 Mpc−1 to be the best-               with the generally small error in the group mean veloc-
+                                                                 ity (taken as zero for isolated galaxies). This results in a
+    2 http://edd.ifa.hawaii.edu/
+    3 http://edd.ifa.hawaii.edu/CF3calculator/api.php
+                                                                   4 https://cosmicflows.iap.fr
+                                              The Hubble Constant from IR SBF                                                    7
+
+     Table 1. Hubble Constants for Various Selections                  a significantly lower χ2ν = 1.02. This is an acceptable fit
+                                                                       for 44 degrees of freedom, indicating that the errors are
+ Selected samplea         vb     Ngxy       χ2ν          H0
+                                                                       a reasonable description of the scatter for this sample.
+ All galaxies            grp       63      1.19     73.53 ± 0.66          However, with our high-resolution HST data, we can
+ Ellipticals             grp       45      1.02     73.52 ± 0.74       do better than catalogued types derived from ground-
+ All clean               grp       53      0.97     73.44 ± 0.71       based surveys. In reducing the data, one of us (JBJ)
+ MASSIVE, clean          grp       37      1.16     73.86 ± 0.82       made consistent note of the presence of dust, spiral
+ d > 60, clean           grp       34      0.88     73.33 ± 0.82       structure, bars, and shells. This was done prior to deriv-
+ d < 70, clean           grp       33      0.88     74.08 ± 0.96       ing the distances, so that knowledge of discrepant results
+ d < 80, clean           grp       46      0.96     72.78 ± 0.77       could not bias the classification. Eleven galaxies show
+ SN Ia hosts, clean      grp       20      0.68     73.31 ± 1.26       evidence of spiral structure or dust. However, one of
+                                                                       these is NGC 4993, which has deep high-resolution ACS
+ All galaxies            ind       63      1.53     73.31 ± 0.67
+                                                                       g475 imaging that clearly reveals the localized dust fea-
+ All clean               ind       53      0.95     73.27 ± 0.73
+                                                                       tures, allowing them to be excised to give a clean area
+ MASSIVE, clean          ind       37      0.86     73.79 ± 0.85
+                                                                       for the SBF measurement. A distance for this galaxy
+ d < 80, clean           ind       46      1.02     72.96 ± 0.76
+                                                                       was already published by Cantiello et al. (2018b), and
+ All galaxies            cf 3      63      1.14     73.32 ± 0.71       we keep it in our resulting sample of 53 “clean” galaxies
+ All clean               cf 3      53      1.05     73.30 ± 0.76       while rejecting the other ten. Line 3 of Table 1 shows
+ MASSIVE, clean          cf 3      37      1.16     73.62 ± 0.88       that this sample gives H0 = 73.44±0.71 with χ2ν = 0.97,
+ d < 80, clean           cf 3      46      1.07     72.67 ± 0.83       again indicating a good fit (further cuts of galaxies with
+ All clean, −1%c         cf 3      53      1.03     72.54 ± 0.76       shells, bars, etc., do not yield additional improvement).
+ All clean, +1%c         cf 3      53      1.06     74.07 ± 0.77       We also show results from a fit using only clean galaxies
+ All galaxies           2M++       63      0.99     73.90 ± 0.65       that were selected as part of MASSIVE, a well-defined
+ All clean              2M++       53      0.89     73.78 ± 0.69       mass-selected sample. Again, the value of H0 is con-
+ Massive, clean         2M++       37      1.02     74.09 ± 0.80       sistent, but χ2ν increases, likely because the adopted σp
+ d < 80, clean          2M++       46      0.94     73.42 ± 0.75
+                                                                       works well on average but slightly underestimates the
+                                                                       small-scale dispersion of galaxy groups embedded within
+a “Ellipticals” refers to morphological type T ≤ −3; “clean” indi-
+                                                                       rich environments. A value of σp = 275 km s−1 would
+ cates galaxies with no discernible dust or spiral structure; “MAS-
+ SIVE” means limited to MASSIVE Survey galaxies.
+                                                                       give χ2ν = 1.0 with negligible change to H0 .
+b Velocities used for the fit: grp for group-averaged; ind for indi-      Figure 1 (left panel) presents the Hubble diagram
+ vidual galaxy; cf3 for the flow model of Graziani et al. (2019);
+                                                                       combining our SBF distances with the group-averaged
+ 2M++ for the flow model of Carrick et al. (2015).                     velocities, along with the best-fit H0 value for the clean
+c Velocities from CF3 linear flow model rescaled by ±1%                sample. The figure also shows the values of H0 derived
+                                                                       from individual galaxies. The scatter decreases at larger
+                                                                       distance as the velocity errors become a smaller fraction
+mean total velocity error of 250 km s−1 , typical of many              of the recession velocity. Overall the fit is good, but by
+peculiar velocity surveys involving early-type galaxies in             eye, there is a suggestion of small-scale coherent trends,
+groups (e.g., Zaroubi et al. 2001; Hudson et al. 2004).                with several galaxies near ∼ 75 Mpc lying below the line
+It corresponds to a 5.4% velocity error at the median                  and three near ∼ 90 Mpc scattering above. Features in
+distance of our sample.                                                the Hubble diagram can be associated with small-scale
+  Table 1 presents the results of many different trial fits            coherent flows. There is an ongoing HST /WFC3 SBF
+of H0 , beginning with the full sample of 63 galaxies with             program exploring this issue in more detail.
+group-averaged velocities. For this case, we find H0 =                    Alternatively, if we were inadequately accounting for
+73.53 ± 0.66 km s−1 Mpc−1 , but with a χ2 per degree of                the effects of globular clusters in the power spectra of the
+freedom χ2ν = 1.19, which means that either σp or our                  most distant galaxies, this could cause those galaxies to
+distance errors are underestimated for at least a portion              scatter to high H0 . We have explored a number of cuts
+of the sample. Because morphological irregularities can                in distance for our clean sample; the table shows three
+cause problems for the SBF method, we experimented                     examples: excluding galaxies within 60 Mpc, excluding
+by keeping only galaxies with morphological type T ≤                   those beyond 70 Mpc, or beyond 80 Mpc. In all these
+−3 in the HyperLEDA database (Makarov et al. 2014).                    cases, χ2ν < 1. The nearer galaxies have little leverage
+This selects 45 galaxies classified as ellipticals or early-           on H0 , and removing them has little effect. Changing
+type S0s; the fitted H0 is virtually identical, but with
+8                                       Blakeslee, Jensen, Ma, Milne, & Greene
+
+
+
+
+Figure 1. Left: Hubble diagram (top) and individual H0 values (bottom) for the Cepheid-calibrated WFC3/IR SBF distances
+and the galaxy group-averaged velocities in the CMB rest frame. Solid symbols indicate “clean” galaxies, for which no dust or
+spiral structure is evident. Open symbols indicate galaxies with obvious dust and/or spiral structure. The represented Hubble
+constant is the best-fitting value for the “clean” galaxy sample using these distances and velocities; the statistical and systematic
+error ranges are shown in dark and light gray, respectively. The plotted H0 error bars include both velocity and distance errors.
+Right: Same as the plot on the left, except using the flow-corrected recessional velocities derived from the 2M++ density field
+analysis of Carrick et al. (2015). The scatter is reduced by these flow-corrected velocities. Note that the distances would
+uniformly increase, and H0 decrease, by 0.3% for the TRGB-based SBF calibration (see Appendix A).
+
+
+the upper distance limit can change H0 by up to ±1%,                  ing the random motion of the groups themselves). We
+but this is still within the statistical error.                       adopt this approach: using the individual galaxy veloc-
+  Finally, we also show the results from a fit using only             ities with the errors taken to be the dispersions of the
+clean galaxies that are identified as SNe Ia hosts. These             parent groups. For galaxies not in groups, we adopt an
+galaxies range in distance from 19 to 91 Mpc, with the                error of 150 km s−1 , consistent with the quoted velocity
+few most distant ones having two orbits of integration.               field error in isolated regions from Graziani et al. (2019).
+The best-fit H0 is similar to that derived for the full                  The second section of Table 1 shows example fits us-
+clean sample, but the statistical uncertainty is much                 ing this approach. Interestingly, the subsample of clean
+larger because the fit includes only 20 galaxies.                     MASSIVE galaxies now gives the lowest χ2ν . This is
+                                                                      likely because the most massive members of groups and
+                 4.2. Individual Velocities                           clusters tend to deviate from the mean by less than one
+   We performed a second set of fits using individual                 standard deviation, although there are exceptions in our
+galaxy velocities from the 2MRS referenced to the CMB                 sample such as NGC 1272 in Perseus, which has a veloc-
+frame. However, we know that two-thirds of our sample                 ity 1600 km s−1 below the cluster mean. Overall, the H0
+consists of massive ellipticals that preferentially reside in         values from these fits track those from the group velocity
+rich groups and clusters that can have velocity disper-               fits to within ∼ 0.2 km s−1 Mpc−1 .
+sions up to 900 km s−1 . Thus, the assumption of a fixed
+random velocity error is insufficient. The Tully (2015)                         4.3. Flow-Corrected Model Velocities
+group catalog provides line-of-sight velocity dispersions               The lines labeled as “cf3 ” in the second column of
+for all groups, and these can be used as estimates of the             Table 1 show results obtained using the flow-corrected
+random velocity errors for the member galaxies (neglect-              recessional velocities from the CF3 linear velocity model
+                                        The Hubble Constant from IR SBF                                                           9
+
+of Graziani et al. (2019), implemented as described in                Table 2. Final Hubble Constant and Errors
+Sec. 3. For the velocity error in this case, we use the
+                                                                SBF calibration      H0 a     σstat b   σsys (d)c     σsys (v)d
+model’s best-fit nonlinear dispersion value of 280 km s−1 ,
+which represents the unmodeled small-scale motion in            Cepheid             73.44     1.0%       4.1%          1.0%
+the velocity field. The results of these tests are very         TRGB                73.20     1.0%       4.7%          1.0%
+similar to those found using the individual CMB-frame           Average             73.33     1.0%       3.1%          1.0%
+velocities. The χ2ν values are a bit higher in most cases,            Final: H0 = 73.3 ± 0.7 ± 2.4 km s    −1
+                                                                                                                Mpc   −1
+
+but there is no significant change in H0 .
+                                                               a H for “clean” galaxy sample with group velocities.
+   We perform two other fits for this model, varying the           0
+
+scale factor of the velocity field within the reported ±1%     b Statistical error from H fit.
+                                                                                        0
+uncertainty. Unsurprisingly, this changes the H0 we de-        c Systematic uncertainty in distance calibration.
+rive by ±1% as well. Since the result given by the base-       d Systematic uncertainty in velocity scaling.
+line scale factor agrees well with that found using the
+uncorrected CMB-frame velocities, this change in H0
+would represent a net inward or outward flow of our               In Appendix A, we find that the TRGB-based cali-
+sample with respect to the comoving volume (a small            bration differs by 0.007 ± 0.099 mag from the Cepheid
+Hubble bubble or sink-hole). Until we have more com-           calibration, in the sense that the SBF distances increase
+plete high-precision distance mapping of the local vol-        by ∼ 0.3%. The TRGB calibration therefore gives H0 =
+ume extending beyond 100 Mpc, we take this ±1% as              73.20 km s−1 Mpc−1 , with a systematic uncertainty of
+the systematic uncertainty in the velocity scale.              4.7%, or ± 3.41 km s−1 Mpc−1 . Averaging these two in-
+   Finally, the fits in Table 1 identified as “2M++” use the   dependent calibrations gives 73.33 km s−1 Mpc−1 with
+flow-corrected recessional velocities from the density-        a systematic error in distance of 3.1%. We combine
+based model of Carrick et al. (2015), also described in        this in quadrature with the estimated 1% systematic
+Sec. 3. As for the group velocity fits above, we again use     error in the velocity scaling (Sec. 4.3) to give a total
+σp = 240 km s−1 . We find that the corrected velocities        systematic error of 3.3%, or 2.41 km s−1 Mpc−1 . Our
+from this model result in significant improvements in χ2ν      final result, to single decimal-point precision, is then
+with respect to the other sets of velocities. For instance,    H0 = 73.3 ± 0.7 ± 2.4 km s−1 Mpc−1 . This calculation is
+the unreduced χ2 for the full sample drops by ∆χ2 > 12         summarized in Table 2.
+compared to the fit using the group-averaged velocities.
+The resulting H0 values are ∼ 0.4 km s−1 Mpc−1 higher,                                5. CONTEXT
+again consistent within the errors. The Hubble diagram
+                                                                 Verde et al. (2019) referenced a preliminary value
+in the right panel of Figure 1 illustrates the slightly
+                                                               of H0 from this project presented at a 2019 Kavli work-
+higher value of H0 and reduced scatter when using the
+                                                               shop (Blakeslee 2019). The value presented here is 4%
+2M++ model velocities.
+                                                               lower than the preliminary one. There have been several
+                                                               changes in our analysis since that workshop. First, we
+                      4.4. Final H0                            have added nine more galaxies to our WFC3/IR sample,
+  For the preferred H0 from our analysis, we adopt             improving our constraints. Second, as discussed by J21,
+the result in Table 1 for the full “clean” sample us-          we have improved our masking technique for removing
+ing the group velocities. Although the 2M++ model ve-          background sources. This has negligible effect for most
+locities gave lower values of χ2ν , we suspect that the        galaxies in our sample, but becomes marginally signifi-
+model-independent group velocities may be more ro-             cant for the most distant galaxies with only one orbit of
+bust against systematic errors in scaling. We note that        integration; we explored this issue in our tests above by
+same approach was used by Pesce et al. (2020) in de-           imposing distance cutoffs on the sample.
+riving H0 from their maser distances, for which the              However, the main reason for the decrease in H0 was
+2M++ model similarly gave the best fit. Readers who            our switch from the velocities given by the Mould et al.
+prefer the H0 result based on the 2M++ model should            (2000) parametric attractor model to those used here.
+increase the values given in this section by 0.5%.Thus,        As noted by Tonry et al. (2000), models that add mas-
+we adopt H0 = 73.44 ± 0.71 km s−1 Mpc−1 , statistical          sive attractors without compensating to ensure zero net
+error only, for our Cepheid-calibrated value of H0 . The       change to Ωm can bias H0 high if the galaxies preferen-
+revised Cepheid-based SBF calibration has a systematic         tially lie beyond the attractors, as is the case here for
+uncertainty of 0.09 mag, or 4.2% in distance (Sec. 2.4),       the Virgo and Great Attractor components of the Mould
+translating to ± 3.11 km s−1 Mpc−1 for H0 .                    model. We note that Pesce et al. (2020) saw the same
+10                                    Blakeslee, Jensen, Ma, Milne, & Greene
+
+effect: their H0 increased by 4% when they used the            result was H0 = 76 ± 6 ± 5 km s−1 Mpc−1 , where the
+Mould model velocities. Given the consistency of our           second error bar reflects their estimated uncertainty in
+results for four different treatments of the recessional       the model calibration. Further refinements to the mod-
+velocities, including two recent flow models, we are con-      els, perhaps incorporating constraints from Gaia, could
+fident that the H0 presented here is far more robust than      make this a competitive calibration route for SBF.
+the earlier one.                                                 Cantiello et al. (2018b) previously demonstrated the
+   As discussed in the Introduction, many of the previ-        usefulness of single-orbit WFC3/IR observations for pre-
+ous measurements of H0 using the SBF method relied             cise SBF distances out to at least 40 Mpc and reported
+on other techniques to tie local SBF distances to the          a Hubble constant H0 = 71.9 ± 7.1 km s−1 Mpc−1 (or
+far-field Hubble flow. A recent example is by Khetan           72.5 ± 7.2 with the revision to the LMC distance). Be-
+et al. (2020), who used a heterogeneous set of 24 ground-      cause that sample consisted of only NGC 4993, the host
+based and HST SBF distances to calibrate the SNe Ia            galaxy of the GW170817 event, the total error was dom-
+peak luminosity, and then derived H0 from 96 SNe Ia at         inated by statistical effects, including both the distance
+larger distances. That study used essentially the same         measurement error and the random error in the peculiar
+distance calibration as us, except for the adjustment          velocity. With the present sample of over 60 galaxies,
+we made for the improved LMC distance. Including               NGC 4993 among them, the statistical error in H0 has
+this revision, the Khetan et al. (2020) value becomes          dropped below the 1% level.
+H0 = 71.1 ± 2.4 ± 3.4 km s−1 Mpc−1 (statistical and sys-         In the broader context, our result is consistent with
+tematic errors), which agrees with our result to within        recent values of H0 from Cepheid-calibrated SNe Ia and
+the statistical error. Of course, since there are signif-      Tully-Fisher distances in the local universe, as well
+icantly fewer Cepheid calibrators for the SBF method           as Cepheid-independent results from water masers and
+than for SNe Ia, using SBF as an intermediary will re-         gravitationally lensed image delay times (see references
+sult in lower precision on H0 . Nonetheless, SBF dis-          in the Introduction). It disagrees with the predicted
+tances remain an extremely promising way of exploring          value from Planck for the ΛCDM cosmology at the 2.3σ
+possible systematics in SNe Ia properties; HST program         level. Although our measurement is by far the most di-
+GO-14654 was predicated on this very goal and has pro-         rect and precise value of H0 from SBF to date, it could
+vided nearly a third of our WFC3/IR SBF sample. Our            be improved substantially through a better constraint
+results from this program will be presented in future          on the distance zero point. We conclude by suggesting
+works (Garnavich et al., in prep.; Milne et al., in prep.).    one possibility for accomplishing this goal.
+   Although ours is the first measurement of H0 from a
+statistical sample of WFC3/IR SBF distances, Jensen                       6. SUMMARY AND OUTLOOK
+et al. (2001) previously derived H0 = 76 ± 1.3 ± 6
+                                                                  We have presented a new measurement of the Hubble
+km s−1 Mpc−1 from IR SBF distances for 16 galaxies
+                                                               constant based on a homogeneous set of 63 WFC3/IR
+ranging from 40 to 130 Mpc observed with NICMOS.
+                                                               SBF distances extending out to 100 Mpc. The data are
+When considering only the six most distant galaxies,
+                                                               provided in a companion paper (J21). Two-thirds of
+their value was 72 ± 2.3 ± 6 km s−1 Mpc−1 . However,
+                                                               our sample are luminous early-type galaxies selected as
+as discussed in that work, the NICMOS images suffered
+                                                               part of the MASSIVE Survey; most of the rest were
+persistent residuals from cosmic rays that affected the
+                                                               selected as hosts of recent SNe Ia. We have performed
+image power spectra to an uncertain degree. Further,
+                                                               numerous tests, including four different treatments of
+the NICMOS SBF calibration, explored in more detail
+                                                               the galaxy velocities, to ensure that our result is ro-
+by Jensen et al. (2003), was not well constrained for
+                                                               bust within the quoted errors. Although the 2M++ flow
+stellar population effects, and Blakeslee et al. (2010) dis-
+                                                               model gives the lowest scatter in the Hubble diagram,
+cuss a possible systematic shift in the NICMOS distance
+                                                               we use the observed group-averaged velocities to re-
+moduli. In contrast, the WFC3/IR SBF calibration by
+                                                               tain model independence. Averaging the results for the
+Jensen et al. (2015), with the small revisions discussed
+                                                               Cepheid and TRGB calibrations of SBF, our final result
+in Sec. 2.4 above, provides a firm foundation for the
+                                                               is H0 = 73.3 ± 0.7 ± 2.4 km s−1 Mpc−1 , where the error
+current H0 measurement.
+                                                               bars represent the statistical and systematic uncertain-
+   Another direct SBF H0 measurement was by Biscardi
+                                                               ties. This agrees well with other recent measurements
+et al. (2008) who analyzed ACS/F814W images of four
+                                                               of H0 in the local universe.
+galaxies with distances of 55 to 110 Mpc. Interestingly,
+                                                                  Of the 63 galaxies in our WFC3/IR SBF data sample,
+these authors opted for a theoretical calibration from the
+                                                               24 have hosted SNe Ia with high-quality light curve data.
+stellar population models of Raimondo (2009). Their
+                                                               The intercomparison of these two precision distance in-
+                                       The Hubble Constant from IR SBF                                              11
+
+dicators enables detailed investigation of subtle effects                    ACKNOWLEDGMENTS
+in both methods (Milne et al., in prep.). It may also pro-
+vide a better absolute calibration of the SBF zero point,       We are grateful to Gabe Brammer for assistance with
+since SNe Ia have been tied to Cepheids through a larger      processing of the raw WFC3/IR data, Brent Tully for
+number of calibrating galaxies. Additionally, we have         guidance with the CF3 velocity data, and Adam Riess,
+an ongoing WFC3/IR SNAP program that will further             Dan Scolnic, and John Tonry for helpful conversations.
+improve our constraints on H0 and the velocity struc-         Support for this work was provided by NASA through
+ture of the local universe. At the same time, more ex-        grants HST-GO-14219, HST-GO-14654, and HST GO-
+tensive stellar population modeling in the near-infrared,     15265 from the Space Telescope Science Institute, which
+implementing new constraints on the luminosities and          is operated by AURA, Inc., under NASA contract
+lifetimes of evolved stars in metal-rich populations (e.g.,   NAS 5-26555. The MASSIVE Survey is supported in
+Villaume et al. 2017; Pastorelli et al. 2020), can help us    part by NSF grants AST-1815417 and AST-1817100.
+understand better the deviations of some galaxies from        C.-P.M. acknowledges support from the Heising-Simons
+the IR SBF versus color relation, perhaps leading to an       Foundation and the Miller Institute for Basic Research
+improved distance method.                                     in Science. This work was also supported by the Interna-
+   Although WFC3/IR has proven to be a powerful tool          tional Gemini Observatory, a program of NSF’s NOIR-
+for SBF measurements, reaching 80 to 100 Mpc with             Lab, which is managed by the Association of Universities
+4-5% distance precision in a single HST orbit, the sys-       for Research in Astronomy under a cooperative agree-
+tematic uncertainty in the SBF zero point currently           ment with the National Science Foundation, on behalf
+limits the method’s ability to achieve competitive con-       of the Gemini partnership of Argentina, Brazil, Canada,
+straints on cosmology. However, prospects have never          Chile, the Republic of Korea, and the United States of
+been better for improvement. In addition to a tighter         America. This paper is dedicated to the memory of
+tie with Cepheids through the SNe Ia comparison men-          Justin Ross Dougherty, a dear friend we lost while this
+tioned above, SBF is ideally suited for calibration via the   was being written; he so loved the concept of appendices.
+TRGB method. We document our initial SBF-TRGB
+calibration in Appendix A of this work, which shows ex-
+                                                                Facilities: HST(WFC3/IR, ACS), Pan-STARRS
+cellent agreement between SBF and TRGB distances for
+two giant ellipticals in Virgo. The impending launch of
+the James Webb Space Telescope (JWST ) will enable
+numerous more TRGB distances to Virgo ellipticals in
+only modest amounts of observing time.
+   The systematic uncertainty in the TRGB absolute
+magnitude is approaching 2% (see Appendix A). If it
+can be reduced further through a combination of differ-
+ent approaches to the same 1.3% level as for Cepheids,
+that would open the door to a 2% constraint on the
+SBF zero point from a sample of 15 galaxies having
+both high-quality TRGB and SBF distances. This esti-
+mate assumes realistic errors for both methods. A single
+medium-sized JWST proposal could achieve this goal
+and give rise to a fully independent TRGB-SBF preci-
+sion ladder, competitive with the Cepheid-SNe Ia ladder,
+for testing the significance of the discrepancy between
+local and CMB-based measurements of H0 . We look
+forward to ascending that ladder.
+12                                    Blakeslee, Jensen, Ma, Milne, & Greene
+
+
+                                                       APPENDIX
+
+
+  A. SBF ZERO POINT FROM TIP OF THE RED                          Ultimately, the best calibration of MITRGB will come
+                     GIANT BRANCH                             from Gaia, and the recent result of Soltis et al. (2020)
+  The SBF method works best with evolved stellar pop-         in Table 3, using Gaia Early Data Release 3 (EDR3)
+ulations in morphologically regular early-type galaxies.      parallaxes, is promising. Thus far, however, it is based
+Cepheids do not exist in such galaxies, but the TRGB          on only the single large globular cluster ω Cen, likely
+method is well-suited for measuring their distances, and      the remnant nucleus of a stripped dE (e.g., Majewski
+there have been initial efforts to calibrate the TRGB         et al. 2000; Hilker & Richtler 2000). Capozzi & Raf-
+with Gaia (Soltis et al. 2020). This is an extremely          felt (2020) use the same ω Cen photometric data but
+promising route for calibrating SBF via a direct tie to       adopted the kinematic distance from Baumgardt et al.
+a geometrically calibrated distance indicator. Here we        (2019) based on Gaia EDR2 data. Cerny et al. (2020)
+take a first step along this route.                           use Gaia EDR2 proper motion data to assign member-
+                                                              ship for a sample of 46 globular clusters and determine
+        A.1. Absolute Magnitude of the TRGB                   their relative distances from the horizontal branch; the
+                                                              zero point is set from the DEB distance to ω Cen. We
+  Before tying SBF to the TRGB method, we must en-
+                                                              look forward to analysis of the TRGB in an expanded
+force that the galaxies all use the same TRGB absolute
+                                                              sample of globular clusters using Gaia parallaxes. This
+magnitude calibration. Numerous TRGB calibrations
+                                                              will also enable a determination of the intrinsic scatter
+have been published recently; we list them for reference
+                                                              in the TRGB absolute magnitude, an error term that is
+in Table 3. Some of the calibrations are quoted in the
+                            TRGB                              generally ignored.
+HST F814W bandpass, M814          , while others are in the
+standard Cousins I band, MITRGB . To convert between
+                                                                    A.2. Tying the SBF Method to the TRGB
+the two, we use the following transformation from Riess
+et al. (2016) with the TRGB color assumed by Freedman           Blakeslee et al. (2009) tabulate high-quality
+et al. (2019):                                                HST /ACS SBF distances for 134 early-type galaxies
+                                                              mainly in the Virgo and Fornax clusters, and Jensen
+      TRGB
+     M814  = MITRGB + 0.02 − 0.018 (V − I) ; (A1)             et al. (2015) present similar quality WFC3/IR SBF
+      TRGB                                                    measurements for 16 of these galaxies. These samples
+     M814  ≈ MITRGB − 0.009 .                         (A2)
+                                                              enabled the calibration of the color dependence of the
+Thus, MITRGB ≈ M814   TRGB
+                              + 0.01. For ease of compar-     SBF magnitude in the giant ellipticals that we measure
+ison, the fourth column of Table 3 shows the value of         at large distances. We wish to tie these calibration
+MITRGB , rounded to the nearest hundredth, for each of        samples to the TRGB method in order to improve the
+the recent TRGB calibrations. Several of these take           SBF zero point calibration.
+their zero point from the LMC, using the DEB dis-               Unfortunately, there are few TRGB distances to gi-
+tance of Pietrzyński et al. (2019), as we did in adjusting   ant ellipticals. Two exceptions are M60/NGC 4649
+the Cepheid zero point for SBF. In order to keep the          (Lee & Jang 2017) and M87/NGC 4486 (Bird et al.
+two SBF calibrations independent, we prefer to use a          2010). While not ideal, the giant, dusty merger rem-
+TRGB calibration based on another geometric method,           nant NGC 1316 (Arp 154, Fornax A) is another galaxy
+the maser distance to NGC 4258. For this purpose, we          that has a high-quality HST -based SBF distance and a
+take a simple average of the recent results of Reid et al.    published TRGB distance (Hatt et al. 2018). Table 4
+(2019) and Jang et al. (2020) using this approach. Since      displays the SBF and TRGB distances for the three
+these studies use the same basic distance and photomet-       galaxies. The SBF distances in this table are the homo-
+ric data, averaging them does not reduce the error, and       geneous set from Blakeslee et al. (2009), adjusted to the
+we adopt                                                      revised LMC distance based on DEBs (see Sec. 2.4). The
+                                                              TRGB distances have been adjusted for consistency with
+             MITRGB = −4.02 ± 0.05 mag .              (A3)    our adopted calibration in Eq. (A3). For NGC 1316, we
+                                                              use the revised TRGB distance given by Freedman et al.
+This is very close to the value derived by Jang & Lee         (2019) before adjusting to our adopted calibration.
+(2017) and the reassessment by Capozzi & Raffelt (2020)         We note that Freedman et al. (2019), with the goal of
+combining the distance from Reid et al. (2019) with the       increasing the number of TRGB-SNe Ia calibrators, also
+photometric measurements of Jang & Lee (2017).                tabulate a “TRGB distance,” with a purported preci-
+                                       The Hubble Constant from IR SBF                                              13
+
+sion of 0.05 mag, for NGC 1404, a giant elliptical just       radio emission (Ekers et al. 1983). We suspect that a
+50 kpc from the cD NGC 1399 in the core of the For-           dispersed population of asymptotic giant branch (AGB)
+nax cluster. We have excellent SBF distances for these        stars associated with the prominent 3 Gyr, and perhaps
+two galaxies. However, the quoted TRGB distance is            younger, component may have biased the TRGB mea-
+actually an average of the TRGB distances to the spiral       surement. More dramatic biases have occurred in TRGB
+galaxy NGC 1365 and the merger remnant NGC 1316.              estimates for more recent mergers at roughly the same
+NGC 1365 lies 420 kpc in projection from the Fornax           distance (Schweizer et al. 2008). The young component
+core, has an angular size larger than any of the For-         at large radius in NGC 1316 could account for the ob-
+nax ellipticals, and has been suggested to lie signifi-       served difference in the TRGB and optical SBF distances
+cantly in the foreground (Saha et al. 1997). NGC 1316         for this galaxy.
+is projected 1.25 Mpc from the core; if the separation          In short, we lack confidence in NGC 1316 as a reli-
+along the line of sight is the same, the offset would be      able calibrator. We therefore adopt the mean offset
+0.14 mag. There is no evidence that these two late-type       of −0.007 ± 0.080 mag between the TRGB and SBF
+galaxies at substantial separations from the core have        distances, determined from the two giant ellipticals in
+distance moduli within 0.05 mag of NGC 1404. Thus,            Virgo. Including the 0.03 mag error in the tie between
+we cannot use it as a TRGB calibrator.                        the optical and IR SBF distances and the 0.05 mag error
+   Table 4 reports the weighted average offsets between       in the TRGB calibration, the final offset and uncertainty
+the SBF and TRGB distances when using just M60 and            in the SBF zero point from this TRGB comparison is
+M87 in Virgo, and when using NGC 1316 as well. These          −0.007±0.099 mag, which we round to −0.01±0.10 mag
+averages differ by 0.07 mag. While this is in statisti-       in Sec. 2.5 of the present work.
+cal agreement, given that we have so few calibrators,           Ideally, we would make a direct tie between geometri-
+we want to ensure that all individual measurements are        cally calibrated TRGB distances to giant ellipticals and
+reliable. NGC 1316 is an irregular galaxy with promi-         the IR SBF measurements to the same galaxies, avoid-
+nent dust features, Hα filaments, tidal loops, and shells     ing the 0.03 mag error incurred from the tie through
+indicative of recent merging (Schweizer 1980). Based          the more extensive optical SBF data set. However, at
+on the ages of the centrally concentrated population of       present, M60 is the only IR SBF calibrator from Jensen
+bright, metal-rich star clusters, the galaxy is believed to   et al. (2015) with a TRGB distance. The result would
+have undergone a major merger, with an associated star-       be similar, but with a larger error. Sec. 6 presents a
+burst, 2 to 3 Gyr ago (Goudfrooij et al. 2001; Sesto et al.   plan for improving this situation.
+2018). The IR SBF magnitude for NGC 1316 is 0.25 mag
+brighter than expected based on the color calibration de-
+fined by more evolved early-type galaxies. This is con-
+sistent with predictions from stellar population models
+if there is a 3 Gyr old population present (Jensen et al.
+2015). In contrast, optical SBF distances are less af-
+fected by younger populations because their effect is to
+move the galaxy both brighter and bluer along the SBF-
+color relation, rather than simply scattering the SBF
+magnitude brighter. For this reason, we have more con-
+fidence in the optical SBF distance (shown in Table 4)
+for this galaxy than the IR one.
+   At present, the star formation in NGC 1316 is mainly
+occurring at larger radius. Based on the mid-IR emis-
+sion, Temi et al. (2005) suggest that “young, luminous
+stars are forming in the infalling dusty gas, raising the
+dust temperature sufficiently to emit at 15 µm.” Thus,
+unlike in spiral galaxies, where the star formation occurs
+in orderly fashion in the disk while the halo hosts only
+ancient metal-poor stars, NGC 1316 appears to have a
+significant population of young stars at large radius. No-
+tably, the field used for the TRGB measurement was
+about 100 from the galaxy’s center, in an area of intense
+14                                         Blakeslee, Jensen, Ma, Milne, & Greene
+
+
+
+
+                                          Table 3. Ten Recent TRGB Absolute Calibrations
+                                               TRGB
+                                             MBand       MITRGB        σtot    σstat     σsys
+         Reference                Band       (mag)       (mag)        (mag)   (mag)     (mag)      Anchoring method
+            (1)                    (2)        (3)         (4)          (5)      (6)      (7)              (8)
+   Freedman et al. (2019)        F814W       −4.049       −4.04       0.045   0.022     0.039     DEB distance to LMCa
+   Yuan et al. (2019)            F814W       −3.970       −3.96       0.046   0.038     0.026     DEB distance to LMCb
+   Freedman et al. (2020)          I         −4.047       −4.05       0.045   0.022     0.039     DEB distance to LMCa
+   Soltis et al. (2020)            I         −3.961       −3.96       0.040   0.011     0.038     DEB distance to LMCc
+   Reid et al. (2019)            F814W       −4.012       −4.00       0.044   0.030     0.032     Maser distance to NGC 4258
+   Jang et al. (2020)            F814W       −4.050       −4.04       0.056   0.028     0.048     Maser distance to NGC 4258
+   Capozzi & Raffelt (2020)        I         −4.027       −4.03       0.055   0.045     0.032     Maser distance to NGC 4258
+   Capozzi & Raffelt (2020)        I         −3.960       −3.96       0.067   0.064     0.021     GAIA EDR2 kinematic d to ω Cen
+   Soltis et al. (2020)            I         −3.970       −3.97       0.062   0.041     0.047     GAIA EDR3 parallax d to ω Cen
+   Cerny et al. (2020)             I         −4.056       −4.06       0.10    0.022     0.101     HB for 46 GCs + DEB in ω Cend
+ Note—Columns list: (1) Calibration paper; (2) reference band used in the study (Vega-based calibrations); (3) derived
+   TRGB absolute magnitude in reference band; (4) absolute TRGB magnitude in standard Cousins I, assuming where
+   needed I = m814W + 0.009, and rounded to nearest hundredth; (5) total error quoted from study, or quadrature sum
+   of quoted random and systematic errors; (6) quoted statistical error, or derived from information provided; (7) quoted
+   systematic error, or derived from information provided; (8) distance method used for anchoring the zero point.
+ a Extinction determined from observed TRGB color differences.
+ b Extinction from Haschke et al. (2011) OGLE reddening map.
+ c Extinction from Skowron et al. (2020) OGLE reddening map.
+ d “HB” refers to the horizontal branch, used by Cerny et al. (2020) to shift the 46 globular clusters (GCs) into agreement
+   before setting the distance zero point based on a DEB in ω Cen (Thompson et al. 2001).
+
+
+
+
+                                    Table 4. Homogenized SBF-TRGB Distance Comparisons
+
+                   (m−M )SBF a     σSBF     (m−M )TRGB b     σTRGB      ∆(m−M )c        σ∆ c
+     Galaxy          (mag)         (mag)       (mag)         (mag)        (mag)        (mag)          Reference for TRGB
+ NGC4486/M87          31.088       0.079         31.09         0.10       −0.002       0.128    Bird et al. (2010)
+ NGC4649/M60          31.059       0.076         31.07         0.07       −0.011       0.103    Lee & Jang (2017)
+ NGC1316              31.583       0.073         31.44         0.04       +0.143       0.083    Hatt et al. (2018); Freedman et al. (2019)
+                     weighted average for Virgo galaxies: h∆(m−M )i = −0.007 ± 0.080
+                     weighted average all three galaxies: h∆(m−M )i = +0.065 ± 0.058
+a SBF distance moduli from Blakeslee et al. (2009), reduced by 0.023 mag as described in Sec 2.4; σ
+                                                                                                      SBF is the statistical error as published.
+b TRGB distance moduli from references in last column, corrected by −0.03, +0.02, and −0.02 mag (M87, M60, and NGC 1316, respectively)
+ for consistency with our adopted zero point of MITRGB = −4.02 mag (M814    TRGB = −4.03 mag), which is an average of two recent TRGB
+
+ calibrations based on the NGC 4258 maser distance (Reid et al. 2019; Jang et al. 2020). The statistical errors σTRGB are as published;
+ unlike the SBF errors, they include no allowance for intrinsic scatter in the absolute magnitude of the standardized candle.
+c Difference in distance moduli: (m−M )
+                                         SBF − (m−M )TRGB , and error in this difference σ∆ .
+                                         The Hubble Constant from IR SBF                                                    15
+
+                                                        REFERENCES
+Addison, G. E., Watts, D. J., Bennett, C. L., et al. 2018,       Cantiello, M., Jensen, J. B., Blakeslee, J. P., et al. 2018b,
+  ApJ, 853, 119, doi: 10.3847/1538-4357/aaa1ed                     ApJL, 854, L31, doi: 10.3847/2041-8213/aaad64
+Bailer-Jones, C. A. L., Rybizki, J., Fouesneau, M.,              Capozzi, F., & Raffelt, G. 2020, PhRvD, 102, 083007,
+  Mantelet, G., & Andrae, R. 2018, AJ, 156, 58,                    doi: 10.1103/PhysRevD.102.083007
+  doi: 10.3847/1538-3881/aacb21                                  Carlsten, S. G., Beaton, R. L., Greco, J. P., & Greene, J. E.
+Bajaj, V., Calamida, A., & Mack, J. 2020, Updated                  2019, ApJ, 879, 13, doi: 10.3847/1538-4357/ab22c1
+  WFC3/IR Photometric Calibration, Space Telescope               Carrick, J., Turnbull, S. J., Lavaux, G., & Hudson, M. J.
+  WFC Instrument Science Report                                    2015, MNRAS, 450, 317, doi: 10.1093/mnras/stv547
+Baumgardt, H., Hilker, M., Sollima, A., & Bellini, A. 2019,      Cerny, W., Freedman, W. L., Madore, B. F., et al. 2020,
+  MNRAS, 482, 5138, doi: 10.1093/mnras/sty2997                     arXiv e-prints, arXiv:2012.09701.
+Bird, S., Harris, W. E., Blakeslee, J. P., & Flynn, C. 2010,       https://arxiv.org/abs/2012.09701
+  A&A, 524, A71, doi: 10.1051/0004-6361/201014876                Cohen, Y., van Dokkum, P., Danieli, S., et al. 2018, ApJ,
+Biscardi, I., Raimondo, G., Cantiello, M., & Brocato, E.           868, 96, doi: 10.3847/1538-4357/aae7c8
+  2008, ApJ, 678, 168, doi: 10.1086/587126                       Cook, J., & Mohr, J. M. 1771, Philosophical Transactions
+Blakeslee, J. P. 2012, Ap&SS, 341, 179,                            of the Royal Society of London Series I, 61, 433
+  doi: 10.1007/s10509-012-0997-6                                 Crook, A. C., Huchra, J. P., Martimbeau, N., et al. 2007,
+Blakeslee, J. P. 2019, in KITP Conference: Tensions                The Astrophysical Journal, 655, 790, doi: 10.1086/510201
+  between the Early and the Late Universe, 18                    Di Valentino, E. 2020, arXiv e-prints, arXiv:2011.00246.
+Blakeslee, J. P., Ajhar, E. A., & Tonry, J. L. 1999a,              https://arxiv.org/abs/2011.00246
+  Distances from Surface Brightness Fluctuations, ed.            Di Valentino, E., Melchiorri, A., & Silk, J. 2020, Nature
+  A. Heck & F. Caputo, Vol. 237, 181,                              Astronomy, 4, 196, doi: 10.1038/s41550-019-0906-9
+  doi: 10.1007/978-94-011-4734-7 11                              Ekers, R. D., Goss, W. M., Wellington, K. J., et al. 1983,
+Blakeslee, J. P., & Cantiello, M. 2018, Research Notes of          A&A, 127, 361
+  the American Astronomical Society, 2, 146,                     Ene, I., Ma, C.-P., Walsh, J. L., et al. 2020, ApJ, 891, 65,
+  doi: 10.3847/2515-5172/aad90e                                    doi: 10.3847/1538-4357/ab7016
+Blakeslee, J. P., Davis, M., Tonry, J. L., Dressler, A., &       Event Horizon Telescope Collaboration, Akiyama, K.,
+  Ajhar, E. A. 1999b, ApJL, 527, L73, doi: 10.1086/312404          Alberdi, A., et al. 2019, ApJL, 875, L6,
+Blakeslee, J. P., Lucey, J. R., Tonry, J. L., et al. 2002,         doi: 10.3847/2041-8213/ab1141
+  MNRAS, 330, 443, doi: 10.1046/j.1365-8711.2002.05080.x         Foley, R. J., Hoffmann, S. L., Macri, L. M., et al. 2020,
+Blakeslee, J. P., Vazdekis, A., & Ajhar, E. A. 2001,               MNRAS, 491, 5991, doi: 10.1093/mnras/stz3324
+  MNRAS, 320, 193, doi: 10.1046/j.1365-8711.2001.03937.x         Freedman, W. L., Madore, B. F., Gibson, B. K., et al. 2001,
+Blakeslee, J. P., Jordán, A., Mei, S., et al. 2009, ApJ, 694,     ApJ, 553, 47, doi: 10.1086/320638
+  556, doi: 10.1088/0004-637X/694/1/556                          Freedman, W. L., Madore, B. F., Hatt, D., et al. 2019, ApJ,
+Blakeslee, J. P., Cantiello, M., Mei, S., et al. 2010, ApJ,        882, 34, doi: 10.3847/1538-4357/ab2f73
+  724, 657, doi: 10.1088/0004-637X/724/1/657                     Freedman, W. L., Madore, B. F., Hoyt, T., et al. 2020,
+Brown, P. J., Landez, N. J., Milne, P. A., & Stritzinger,          ApJ, 891, 57, doi: 10.3847/1538-4357/ab7339
+  M. D. 2017, ApJ, 836, 232,                                     Goudfrooij, P., Mack, J., Kissler-Patig, M., Meylan, G., &
+  doi: 10.3847/1538-4357/aa5f5a                                    Minniti, D. 2001, MNRAS, 322, 643,
+Brown, P. J., Hosseinzadeh, G., Jha, S. W., et al. 2019,           doi: 10.1046/j.1365-8711.2001.04154.x
+  ApJ, 877, 152, doi: 10.3847/1538-4357/ab1a3f                   Goullaud, C. F., Jensen, J. B., Blakeslee, J. P., et al. 2018,
+Cantiello, M., Blakeslee, J., Raimondo, G., Brocato, E., &         ApJ, 856, 11, doi: 10.3847/1538-4357/aab1f3
+  Capaccioli, M. 2007, ApJ, 668, 130, doi: 10.1086/521295        Graziani, R., Courtois, H. M., Lavaux, G., et al. 2019,
+Cantiello, M., Blakeslee, J. P., Raimondo, G., et al. 2005,        MNRAS, 488, 5438, doi: 10.1093/mnras/stz078
+  ApJ, 634, 239, doi: 10.1086/491694                             Greco, J. P., van Dokkum, P., Danieli, S., Carlsten, S. G.,
+Cantiello, M., Grado, A., Blakeslee, J. P., et al. 2013, A&A,      & Conroy, C. 2020, arXiv e-prints, arXiv:2004.07273.
+  552, A106, doi: 10.1051/0004-6361/201220756                      https://arxiv.org/abs/2004.07273
+Cantiello, M., Blakeslee, J. P., Ferrarese, L., et al. 2018a,    Greene, J. E., Janish, R., Ma, C.-P., et al. 2015, ApJ, 807,
+  ApJ, 856, 126, doi: 10.3847/1538-4357/aab043                     11, doi: 10.1088/0004-637X/807/1/11
+16                                      Blakeslee, Jensen, Ma, Milne, & Greene
+
+Harvey, D. 2020, MNRAS, 498, 2871,                                Ma, C.-P., Greene, J. E., McConnell, N., et al. 2014, ApJ,
+  doi: 10.1093/mnras/staa2522                                       795, 158, doi: 10.1088/0004-637X/795/2/158
+Haschke, R., Grebel, E. K., & Duffau, S. 2011, AJ, 141,           Macaulay, E., Nichol, R. C., Bacon, D., et al. 2019,
+  158, doi: 10.1088/0004-6256/141/5/158                             MNRAS, 486, 2184, doi: 10.1093/mnras/stz978
+Hatt, D., Freedman, W. L., Madore, B. F., et al. 2018, ApJ,       Macri, L. M., Ngeow, C.-C., Kanbur, S. M., Mahzooni, S.,
+  866, 145, doi: 10.3847/1538-4357/aadfe8                           & Smitka, M. T. 2015, AJ, 149, 117,
+Hilker, M., & Richtler, T. 2000, A&A, 362, 895.                     doi: 10.1088/0004-6256/149/4/117
+  https://arxiv.org/abs/astro-ph/0008500                          Magnier, E. A., Schlafly, E. F., Finkbeiner, D. P., et al.
+Hoffman, Y., Courtois, H. M., & Tully, R. B. 2015, Monthly          2020, ApJS, 251, 6, doi: 10.3847/1538-4365/abb82a
+  Notices of the Royal Astronomical Society, 449, 4494,           Majewski, S. R., Patterson, R. J., Dinescu, D. I., et al.
+  doi: 10.1093/mnras/stv615                                         2000, in Liege International Astrophysical Colloquia,
+Huchra, J. P., Macri, L. M., Masters, K. L., et al. 2012,           Vol. 35, Liege International Astrophysical Colloquia, ed.
+ ApJS, 199, 26, doi: 10.1088/0067-0049/199/2/26                     A. Noels, P. Magain, D. Caro, E. Jehin, G. Parmentier,
+Hudson, M. J., Smith, R. J., Lucey, J. R., & Branchini, E.          & A. A. Thoul, 619.
+ 2004, MNRAS, 352, 61,                                              https://arxiv.org/abs/astro-ph/9910278
+ doi: 10.1111/j.1365-2966.2004.07893.x                            Makarov, D., Prugniel, P., Terekhova, N., Courtois, H., &
+Jang, I. S., & Lee, M. G. 2017, ApJ, 835, 28,                       Vauglin, I. 2014, A&A, 570, A13,
+                                                                    doi: 10.1051/0004-6361/201423496
+  doi: 10.3847/1538-4357/835/1/28
+                                                                  Masters, K. L., Springob, C. M., Haynes, M. P., &
+Jang, I. S., Hoyt, T., Beaton, R., et al. 2020, arXiv e-prints,
+                                                                    Giovanelli, R. 2006, ApJ, 653, 861, doi: 10.1086/508924
+  arXiv:2008.04181. https://arxiv.org/abs/2008.04181
+                                                                  McConnell, N. J., & Ma, C.-P. 2013, ApJ, 764, 184,
+Jensen, J. B., Blakeslee, J. P., & al. 2021, in preparation
+                                                                    doi: 10.1088/0004-637X/764/2/184
+Jensen, J. B., Blakeslee, J. P., Gibson, Z., et al. 2015, ApJ,
+                                                                  Mei, S., Blakeslee, J. P., Tonry, J. L., et al. 2005, ApJS,
+  808, 91, doi: 10.1088/0004-637X/808/1/91
+                                                                    156, 113, doi: 10.1086/426544
+Jensen, J. B., Tonry, J. L., Barris, B. J., et al. 2003, ApJ,
+                                                                  Mei, S., Blakeslee, J. P., Côté, P., et al. 2007, ApJ, 655,
+  583, 712, doi: 10.1086/345430
+                                                                    144, doi: 10.1086/509598
+Jensen, J. B., Tonry, J. L., & Luppino, G. A. 1998, ApJ,
+                                                                  Milne, P. A., Brown, P. J., Roming, P. W. A., Bufano, F.,
+  505, 111, doi: 10.1086/306163
+                                                                    & Gehrels, N. 2013, ApJ, 779, 23,
+Jensen, J. B., Tonry, J. L., Thompson, R. I., et al. 2001,
+                                                                    doi: 10.1088/0004-637X/779/1/23
+  ApJ, 550, 503, doi: 10.1086/319819
+                                                                  Milne, P. A., Foley, R. J., Brown, P. J., & Narayan, G.
+Khetan, N., Izzo, L., Branchesi, M., et al. 2020, arXiv
+                                                                    2015, ApJ, 803, 20, doi: 10.1088/0004-637X/803/1/20
+ e-prints, arXiv:2008.07754.
+                                                                  Mould, J. R., Huchra, J. P., Freedman, W. L., et al. 2000,
+ https://arxiv.org/abs/2008.07754
+                                                                    ApJ, 529, 786, doi: 10.1086/308304
+Knox, L., & Millea, M. 2020, PhRvD, 101, 043533,                  Nguyen, D. D., den Brok, M., Seth, A. C., et al. 2020, The
+ doi: 10.1103/PhysRevD.101.043533                                   Astrophysical Journal, 892, 68,
+Kormendy, J., & Ho, L. C. 2013, Annual Review of                    doi: 10.3847/1538-4357/ab77aa
+ Astronomy and Astrophysics, 51, 511,                             Pastorelli, G., Marigo, P., Girardi, L., et al. 2020, MNRAS,
+ doi: 10.1146/annurev-astro-082708-101811                           498, 3283, doi: 10.1093/mnras/staa2565
+Kourkchi, E., Courtois, H. M., Graziani, R., et al. 2020a,        Pesce, D. W., Braatz, J. A., Reid, M. J., et al. 2020, ApJL,
+ AJ, 159, 67, doi: 10.3847/1538-3881/ab620e                         891, L1, doi: 10.3847/2041-8213/ab75f0
+Kourkchi, E., Tully, R. B., Eftekharzadeh, S., et al. 2020b,      Philcox, O. H. E., Ivanov, M. M., Simonović, M., &
+ ApJ, 902, 145, doi: 10.3847/1538-4357/abb66b                       Zaldarriaga, M. 2020, JCAP, 2020, 032,
+Lavaux, G., & Hudson, M. J. 2011, MNRAS, 416, 2840,                 doi: 10.1088/1475-7516/2020/05/032
+  doi: 10.1111/j.1365-2966.2011.19233.x                           Pietrzyński, G., Graczyk, D., Gallenne, A., et al. 2019,
+Lee, M. G., & Jang, I. S. 2017, ApJ, 841, 23,                       Nature, 567, 200, doi: 10.1038/s41586-019-0999-4
+  doi: 10.3847/1538-4357/aa6c6a                                   Planck Collaboration, Aghanim, N., Akrami, Y., et al.
+Liepold, C. M., Quenneville, M. E., Ma, C.-P., et al. 2020,         2020, A&A, 641, A6, doi: 10.1051/0004-6361/201833910
+  ApJ, 891, 4, doi: 10.3847/1538-4357/ab6f71                      Poulin, V., Smith, T. L., Karwal, T., & Kamionkowski, M.
+Lindegren, L., Lammers, U., Bastian, U., et al. 2016, A&A,          2019, PhRvL, 122, 221301,
+  595, A4, doi: 10.1051/0004-6361/201628714                         doi: 10.1103/PhysRevLett.122.221301
+                                          The Hubble Constant from IR SBF                                                  17
+
+Raimondo, G. 2009, ApJ, 700, 1247,                                Tonry, J. L., Ajhar, E. A., & Luppino, G. A. 1990, AJ, 100,
+  doi: 10.1088/0004-637X/700/2/1247                                 1416, doi: 10.1086/115606
+Reid, M. J., Pesce, D. W., & Riess, A. G. 2019, ApJL, 886,        Tonry, J. L., Blakeslee, J. P., Ajhar, E. A., & Dressler, A.
+  L27, doi: 10.3847/2041-8213/ab552d                                1997, ApJ, 475, 399, doi: 10.1086/303576
+Riess, A. G., Casertano, S., Yuan, W., Macri, L. M., &            —. 2000, ApJ, 530, 625, doi: 10.1086/308409
+  Scolnic, D. 2019, ApJ, 876, 85,                                 Trujillo, I., Beasley, M. A., Borlaff, A., et al. 2019,
+  doi: 10.3847/1538-4357/ab1422                                     MNRAS, 486, 1192, doi: 10.1093/mnras/stz771
+Riess, A. G., Yuan, W., Casertano, S., Macri, L. M., &            Tully, R. B. 2015, AJ, 149, 171,
+  Scolnic, D. 2020, ApJL, 896, L43,                                 doi: 10.1088/0004-6256/149/5/171
+  doi: 10.3847/2041-8213/ab9900                                   Tully, R. B., Courtois, H. M., & Sorce, J. G. 2016, AJ, 152,
+Riess, A. G., Macri, L. M., Hoffmann, S. L., et al. 2016,           50, doi: 10.3847/0004-6256/152/2/50
+  ApJ, 826, 56, doi: 10.3847/0004-637X/826/1/56                   Tully, R. B., Rizzi, L., Shaya, E. J., et al. 2009, AJ, 138,
+Saha, A., Sandage, A., Labhardt, L., et al. 1997, ApJ, 486,         323, doi: 10.1088/0004-6256/138/2/323
+  1, doi: 10.1086/304507                                          van Dokkum, P., Danieli, S., Cohen, Y., Romanowsky,
+Sawyer Hogg, H. 1947, JRASC, 41, 319                                A. J., & Conroy, C. 2018, ApJL, 864, L18,
+Schlafly, E. F., & Finkbeiner, D. P. 2011, ApJ, 737, 103,           doi: 10.3847/2041-8213/aada4d
+  doi: 10.1088/0004-637X/737/2/103                                Veale, M., Ma, C.-P., Greene, J. E., et al. 2018, MNRAS,
+Schweizer, F. 1980, ApJ, 237, 303, doi: 10.1086/157870              473, 5446, doi: 10.1093/mnras/stx2717
+Schweizer, F., Burns, C. R., Madore, B. F., et al. 2008, AJ,
+                                                                  Verde, L., Treu, T., & Riess, A. G. 2019, Nature
+  136, 1482, doi: 10.1088/0004-6256/136/4/1482
+                                                                    Astronomy, 3, 891, doi: 10.1038/s41550-019-0902-0
+Sesto, L. A., Faifer, F. R., Smith Castelli, A. V., Forte,
+                                                                  Villaume, A., Conroy, C., Johnson, B., et al. 2017, ApJS,
+  J. C., & Escudero, C. G. 2018, MNRAS, 479, 478,
+                                                                    230, 23, doi: 10.3847/1538-4365/aa72ed
+  doi: 10.1093/mnras/sty1416
+                                                                  Waters, C. Z., Magnier, E. A., Price, P. A., et al. 2020,
+Skowron, D. M., Skowron, J., Udalski, A., et al. 2020, arXiv
+                                                                    ApJS, 251, 4, doi: 10.3847/1538-4365/abb82b
+  e-prints, arXiv:2006.02448.
+                                                                  Wong, K. C., Suyu, S. H., Chen, G. C. F., et al. 2020,
+  https://arxiv.org/abs/2006.02448
+                                                                    MNRAS, 498, 1420, doi: 10.1093/mnras/stz3094
+Soltis, J., Casertano, S., & Riess, A. G. 2020, arXiv e-prints,
+                                                                  Wright, E. L. 2006, Publications of the Astronomical
+  arXiv:2012.09196. https://arxiv.org/abs/2012.09196
+                                                                    Society of the Pacific, 118, 1711, doi: 10.1086/510102
+Temi, P., Mathews, W. G., & Brighenti, F. 2005, ApJ, 622,
+                                                                  Yuan, W., Riess, A. G., Macri, L. M., Casertano, S., &
+  235, doi: 10.1086/427867
+                                                                    Scolnic, D. M. 2019, ApJ, 886, 61,
+Thompson, I. B., Kaluzny, J., Pych, W., et al. 2001, AJ,
+                                                                    doi: 10.3847/1538-4357/ab4bc9
+  121, 3089, doi: 10.1086/321084
+                                                                  Zaroubi, S., Bernardi, M., da Costa, L. N., et al. 2001,
+Tonry, J., & Schneider, D. P. 1988, AJ, 96, 807,
+                                                                    MNRAS, 326, 375, doi: 10.1046/j.1365-8711.2001.04605.x
+  doi: 10.1086/114847
+

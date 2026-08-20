@@ -1,0 +1,1124 @@
+                                                D RAFT VERSION O CTOBER 10, 2018
+                                                Preprint typeset using LATEX style emulateapj v. 01/23/15
+
+
+
+
+                                                                         MEASURING INFRARED SURFACE BRIGHTNESS FLUCTUATION DISTANCES
+                                                                                    WITH HST WFC3: CALIBRATION AND ADVICE1
+                                                                                                                       J OSEPH B. J ENSEN
+                                                                                               Utah Valley University, Orem, Utah 84058, USA; jjensen@uvu.edu
+
+
+                                                                                                                      J OHN P. B LAKESLEE
+                                                                                                    NRC Herzberg Astrophysics, Victoria, British Columbia, Canada
+arXiv:1505.00400v2 [astro-ph.GA] 9 Jun 2015
+
+
+
+
+                                                                                                                       Z ACHARY G IBSON
+                                                                                                              Utah Valley University, Orem, Utah, USA
+
+
+                                                                                                                        H YUN - CHUL L EE
+                                                                                                   The University of Texas Rio Grande Valley, Edinburg, Texas, USA
+
+
+                                                                                                     M ICHELE C ANTIELLO AND G ABRIELLA R AIMONDO
+                                                                                                       INAF–Osservatorio Astronomico di Teramo, Teramo, Italy
+
+
+                                                                                                                        NATHAN B OYER
+                                                                                                            Brigham Young University, Provo, Utah, USA
+
+
+                                                                                                                         H YEJEON C HO
+                                                                        Department of Astronomy and Center for Galaxy Evolution Research, Yonsei University, Seoul 120-749, Korea
+                                                                                                            Draft version October 10, 2018
+
+                                                                                                              ABSTRACT
+                                                           We present new calibrations of the near-infrared surface brightness fluctuation (SBF) distance method for
+                                                         the F110W (J110 ) and F160W (H160 ) bandpasses of the Wide Field Camera 3 Infrared Channel (WFC3/IR) on
+                                                         the Hubble Space Telescope. The calibrations are based on data for 16 early-type galaxies in the Virgo and
+                                                         Fornax clusters observed with WFC3/IR and are provided as functions of both the optical (g475 −z850 ) and near-
+                                                         infrared (J110 −H160 ) colors. The scatter about the linear calibration relations for the luminous red galaxies in
+                                                         the sample is approximately 0.10 mag, corresponding to a statistical error of 5% in distance. Our results imply
+                                                         that the distance to any suitably bright elliptical galaxy can be measured with this precision out to about 80 Mpc
+                                                         in a single-orbit observation with WFC3/IR, making this a remarkably powerful instrument for extragalactic
+                                                         distances. The calibration sample also includes much bluer and lower-luminosity galaxies than previously used
+                                                         for IR SBF studies, revealing interesting population differences that cause the calibration scatter to increase for
+                                                         dwarf galaxies. Comparisons with single-burst population models show that, as expected, the redder early-type
+                                                         galaxies contain old, metal-rich populations, while the bluer dwarf ellipticals contain a wider range of ages and
+                                                         lower metallicities than their more massive counterparts. Radial SBF gradients reveal that IR color gradients
+                                                         are largely an age effect; the bluer dwarfs typically have their youngest populations near their centers, while the
+                                                         redder giant ellipticals show only weak trends and in the opposite sense. Because of the population variations
+                                                         among bluer galaxies, distance measurements in the near-IR are best limited to red early-type galaxies. We
+                                                         conclude with some practical guidelines for using WFC3/IR to measure reliable SBF distances.
+                                                         Subject headings: distance scale — galaxies: clusters: individual (Virgo, Fornax) — galaxies: distances and
+                                                                              redshifts — galaxies: elliptical and lenticular, cD — galaxies: stellar content
+
+                                                                         1. INTRODUCTION                                            into absolute physical quantities such as luminosities, masses,
+                                                     1.1. Distance Measurements in the Big Picture                                  ages, star formation rates, and dynamical time scales. In the
+                                                                                                                                    local universe where peculiar velocities are significant, the
+                                                Accurate distance measurement is central to both astro-                             distance estimate is often a major source of uncertainty on
+                                              physics and cosmology. Reliable distances are needed to con-                          these physical properties. For instance, a recent review ar-
+                                              vert observed properties of galaxies (fluxes and angular sizes)                       ticle on supermassive black holes (Kormendy & Ho 2013)
+                                                  1 Based on observations with the NASA/ESA Hubble Space Telescope,                 notes that for many galaxies, the errors in the central black
+                                                obtained at the Space Telescope Science Institute, which is operated by the         hole masses are dominated by the uncertainty in distance; yet,
+                                                Association of Universities for Research in Astronomy, Inc., under NASA             many authors neglect to include this important contribution to
+                                                contract NAS 5-26555. These observations are associated with Program                the uncertainty.
+                                                #11712, #11570, and #11691.
+2                                                            Jensen et al.
+
+   In the field of cosmology, the acceleration of the cosmic ex-        The excellent angular resolution and photometric stability
+pansion was first revealed by accurate distance measurements         of HST has also made it possible to measure SBF with far
+of Type Ia supernovae (Riess et al. 1998; Perlmutter et al.          better precision and to much larger distances than was possi-
+1999). The supernova distance estimates, combined with flat-         ble from the ground. For instance, Jensen et al. (2001) cal-
+ness constraints for the universe provided by the cosmic mi-         ibrated the SBF method for the near-IR F160W bandpass of
+crowave background (CMB) power spectrum, are primarily               the NICMOS NIC2 camera on HST (Thompson et al. 1999)
+responsible for inaugurating a new era of “precision cosmol-         and measured SBF distances to 16 galaxies beyond 40 Mpc,
+ogy,” central to which is the conclusion that the mass-energy        including the first SBF distances reaching beyond 100 Mpc.
+budget of the universe is dominated by “dark energy.” Now,           Stellar population effects on the NICMOS F160W SBF mag-
+with the exquisite constraints on the CMB power spectrum             nitudes were explored in detail by Jensen et al. (2003) using
+at z∼1100 (e.g., Bennett et al. 2013; Planck Collaboration           a larger sample of 65 galaxies. In general, the SBF absolute
+2015) and measurements of the baryon acoustic oscillation            magnitude in a given bandpass depends on stellar population
+(BAO) scale at intermediate redshift (e.g., Eisenstein et al.        and must be calibrated using a population indicator, typically
+2005; Blake et al. 2011), there has been a new effort to de-         a broadband color.
+termine the local value of the Hubble constant H0 to a pre-             Following the installation of the Advanced Camera for Sur-
+cision of 1% (Riess et al. 2011; Freedman et al. 2012). As           veys (ACS) on HST, Mei et al. (2005b) produced the first cal-
+discussed in the foregoing references, this level of precision       ibration of the SBF method for the ACS Wide Field Channel
+is required for firm simultaneous constraints on cosmic ge-          (ACS/WFC) using F475W (g475 ) and F850LP (z850 ) data for
+ometry, the dark energy equation of state, and the number of         84 galaxies from the ACS Virgo Cluster Survey (ACSVCS;
+neutrino species.                                                    Côté et al. 2004). In that work, the z850 SBF measurements
+   Of course, the value of H0 has been controversial for             were calibrated for stellar population variations based on the
+decades, primarily owing to systematic calibration errors            observed (g475 −z850 ) color; the resulting distances enabled the
+(e.g., Freedman & Madore 2010). Determining H0 with a to-            first clear resolution of the depth of the Virgo cluster and pro-
+tal uncertainty of no more than 1% remains beyond the ability        vided constraints on its triaxial structure (Mei et al. 2007). In
+of any single distance measurement technique. In order to            other studies based on ACS/WFC observations, Cantiello et
+achieve the required level of precision, it is helpful to have       al. (2005, 2007) measured multi-band SBF and color gradi-
+multiple high-precision distance indicators to provide robust        ents in 21 galaxies, and Biscardi et al. (2008) made the first
+constraints on the contributions from systematic errors.             optical SBF measurements beyond 100 Mpc. As part of the
+   The surface brightness fluctuation (SBF) method provides          ACS Fornax Cluster Survey (ACSFCS; Jordán et al. 2007),
+a measurement of the mean brightness of the red giant branch         Blakeslee et al. (2009) refined the SBF calibration for the
+stars in an early-type galaxy even though individual stars can-      ACS F850LP bandpass and determined the relative distance
+not be resolved (Tonry & Schneider 1988). It was introduced          of the Virgo and Fornax clusters to a precision of 1.7%. Ad-
+as a way to estimate distances with ∼10% uncertainty out to          ditional ACS/WFC SBF measurements and a new calibration
+about 20 Mpc from ground-based astronomical images (see              for the F814W bandpass were published by Blakeslee et al.
+Tonry et al. 1990). More recent applications have shown sub-         (2010). The launch of Wide Field Camera 3 with its powerful
+stantial improvements in both the precision of the method and        IR channel (WFC3/IR) has greatly increased the distance to
+depth to which it can be applied (see the reviews by Blakeslee       which SBF measurements can be made within a single HST
+2012 and Fritz 2012), so that it has become one of a small           orbit. However, the method must first be calibrated for se-
+number of methods capable of making a significant contribu-          lected WFC3/IR passbands as done previously for NICMOS
+tion to the problem of constraining H0 to 1%. In the follow-         and ACS; this is the primary goal of the present work.
+ing sections, we discuss these recent developments with the
+method and the need for a new calibration at near-IR wave-                        1.3. SBF Measurements in the Infrared
+lengths.                                                                The development of new infrared detectors in the 1990s al-
+                                                                     lowed researchers to successfully apply the SBF techniques
+                   1.2. The Key Role of HST
+                                                                     to IR images for the first time (Luppino & Tonry 1993; Pahre
+   The latest revolution in our knowledge of the extragalactic       & Mould 1994; Jensen, Luppino, & Tonry 1996). Because
+distance scale (decreasing the uncertainty from nearly a factor      the SBF signal is dominated by the most luminous stars in a
+of two to less than 10%) has resulted primarily from obser-          population, and these tend to be quite red for evolved galax-
+vations made with the Hubble Space Telescope (HST). Start-           ies, SBF magnitudes are much brighter in the near-IR than at
+ing in the mid-1990s, HST was used to measure light curves           optical wavelengths. Additionally, extinction by dust (both in
+for samples of Cepheid variable stars in late-type galaxies out      our Galaxy and in the target galaxy) is much lower at near-
+to ∼20 Mpc, mostly as part of the Key Project on the Dis-            IR wavelengths. Depending on how it is distributed, dust can
+tance Scale (e.g., Freedman et al. 1994; Ferrarese et al. 1996;      either reduce the fluctuation signal (as for a uniform screen
+Kelson et al. 1996; Saha et al. 1996, 1997; Silbermann et al.        of foreground dust in the Galaxy), or, more commonly, bias
+1999). The resulting Cepheid distance estimates were used            the fluctuation signal towards higher amplitudes and shorter
+to calibrate various secondary distance indicators and thereby       SBF distances, as would occur if dusty regions were clumpy
+derive the value of the Hubble constant H0 (Ferrarese et al.         on scales comparable to the size of the point-spread function
+2000; Gibson et al. 2000; Sakai et al. 2000; Mould et al.            (PSF). Clumpy dust is often associated with recent star for-
+2000). The resulting value of H0 from the Key Project was            mation, and bright young stars seriously bias SBF measure-
+72 ± 8 km s−1 Mpc−1 (Freedman et al. 2001) where the total           ments as well. The contrast between the fluctuations and other
+uncertainty includes both random and systematic contribu-            point-like sources (globular clusters and background galax-
+tions. More recent Cepheid-based estimates are very similar          ies) is also higher in the near-IR bands, reducing yet another
+to this value, but with reduced uncertainties of 3 to 4% (Riess      source of uncertainty in the SBF measurement. While the
+et al. 2011; Freedman et al. 2012; Sorce et al. 2012).               background in the IR is higher than at optical wavelengths,
+                                               Infrared SBF Distances Using WFC3                                                  3
+
+the increased strength of the SBF signal more than compen-         tral black hole, enabling a geometric estimate of the distance
+sates, especially from space, where the thermal background         (Greenhill et al. 1995; Miyoshi et al. 1995; Herrnstein et al.
+at 1.1 and 1.6 µm is not significant. The benefit of the much      1999). While not ideal for SBF analysis, the importance of
+lower background, combined with the excellent image qual-          this galaxy to the absolute calibration of the extragalactic dis-
+ity and a very stable PSF, usually makes near-IR SBF mea-          tance scale makes it an important target worthy of a trial SBF
+surements with HST much more accurate than measurements            measurement. NGC 1316 is an early-type S0 galaxy in the
+from ground-based facilities.                                      Fornax cluster with extensive dust and signs of recent merg-
+   However, the calibration of the SBF magnitudes as a func-       ing. Although it is also a poor SBF candidate, it is a useful
+tion of stellar population is potentially more complicated in      comparison galaxy for this study because it has hosted four
+the near-IR. As noted above, the trend of SBF magnitude            type Ia supernovae.
+with galaxy color is used for calibrating the SBF distance            Tables 2 and 3 list the exposure times and sky brightnesses
+measurements, both at optical and IR wavelengths. At op-           for the all the J110 and H160 observations used in this study.
+tical wavelengths, the effects of age and metallicity variations   Additional information in these tables is discussed in the fol-
+on the SBF calibration relations are largely degenerate, but       lowing sections.
+this degeneracy begins to break down in near-IR, and this
+                                                                                    3. SBF MEASUREMENTS
+can reveal interesting differences in the stellar populations
+of galaxies. Bluer elliptical and S0 galaxies typically show          The spatial fluctuations in the surface brightness of a
+signs of intermediate-age populations, and the asymptotic gi-      smoothly distributed population of stars, as found in ellip-
+ant branch (AGB) stars associated with those populations pro-      tical and lenticular galaxies, arise due to the Poisson statis-
+duce brighter fluctuations (Jensen et al. 2003; Mieske, Hilker,    tics of the discrete stars making up the galaxy, even when
+& Infante 2003, 2006). The stellar population variations may       the stars cannot be resolved or detected individually (Tonry
+therefore produce more scatter in IR SBF distance calibration,     & Schneider 1988). The SBF amplitude scales inversely with
+but the brightness of the fluctuations at these wavelengths        the square of the distance: nearby galaxies appear “bumpy”
+make them measurable to much larger distances; thus, it is         compared to more distant galaxies, where more  √ stars are sam-
+worth characterizing the behavior and limits of the calibration    pled by each resolution element and the N variation be-
+as well as possible.                                               tween regions is therefore a smaller fraction of the total num-
+   In this paper we report the results of a study to calibrate     ber of stars. The fluctuations, which are dominated by the
+the IR SBF distance measurement technique using new SBF            most luminous stars in a population, are blurred by the PSF;
+measurements in the F110W (J110 ) and F160W (H160 ) band-          additional contributions to the fluctuation signal arise from
+passes of WFC3/IR on HST. The calibration sample includes          clumpy dust, globular clusters, background galaxies, and fore-
+16 galaxies spanning a wide range in galaxy luminosity and         ground stars. The process of making an SBF measurement
+color. The following section describes the observations and        consists of extracting and fitting the spatial Fourier power
+sample in more detail. Section 3 discusses the data reductions     spectrum of the stellar fluctuations convolved with the PSF
+and SBF measurements. New SBF calibrations in J110 and             power spectrum and removing the contributions from extrane-
+H160 are presented in Section 4, while implications of the SBF     ous sources. The resulting fluctuation power is used to com-
+measurements for the galaxy stellar populations are discussed      pute the fluctuation magnitude.
+in Section 5. We provide our recommendations for measuring            Procedures for measuring surface brightness fluctuations
+SBF distances with WFC3/IR in Section 6, before concluding         have been described in detail by several authors (e.g., Tonry
+with a summary.                                                    et al. 1990, 1997; Blakeslee et al. 1997; Jensen et al. 1998;
+                                                                   Mei et al. 2005a; Fritz 2012). The description here provides
+                2. WFC3/IR OBSERVATIONS
+                                                                   a concise overview of the process steps that are either unique
+   In order to calibrate the SBF method for WFC3/IR, we            to this study or are particularly relevant to the WFC3/IR SBF
+selected 16 early-type galaxies, eight in each of the Virgo        measurements.
+and Fornax clusters, that already had high-quality ACS SBF
+measurements in z850 and (g475 −z850 ) colors (Blakeslee et al.                          3.1. Data Reduction
+2009). Table 1 lists the properties of the galaxies that were         The first step in the SBF data reduction process involves
+targeted in HST program GO-11712 (PI: J. Blakeslee). The           producing a calibrated, combined, and background-subtracted
+galaxies were chosen to cover the full color range of the          image ready for further SBF analysis. We used the images
+ACSVCS and ACSFCS samples so that the resulting cali-              from the HST archive reduced using the standard pipeline
+bration would be as generally applicable as possible. More-        through the flat-fielding stage (flt files). From that point, we
+over, the NICMOS SBF calibration exhibited increased scat-         adopted a reduction procedure that differs from the standard
+ter for bluer galaxies (Jensen et al. 2003), as have ground-       pipeline.
+based I-band SBF measurements (Mieske et al. 2006); ex-               We combined the individual flat-fielded exposures using in-
+ploring a broad color range should help us understand where        teger pixel shifts after fitting each image for background and
+the WFC3/IR calibration becomes less reliable.                     identifying cosmic rays; in order to avoid introducing corre-
+   Each of these 16 galaxies were observed for one orbit, split    lated noise between pixels, fractional pixel registration was
+approximately equally between the J110 and H160 filters, with      not used. Using integer pixel shifts results in slightly lower
+four dithered exposures in each filter and total exposure times    spatial resolution in the combined image, but preserves the
+varying with target visibility. The same dither pattern was        independence of noise from pixel to pixel, which is important
+used for each galaxy.                                              for fitting the SBF power spectrum.
+   For this study we also downloaded archival WFC3/IR H160            In a second difference from the standard pipeline reduc-
+data for NGC 4258 (GO-11570, PI: A. Riess) and NGC 1316            tion, the clean combined images were not corrected for the
+(GO-11691, PI: P. Goudfrooij). NGC 4258 is a late-type             WFC3/IR geometrical distortion nor combined using astro-
+galaxy with a H2 O masers in Keplerian orbits around a cen-        drizzle. Our analysis therefore includes the ∼10% difference
+4                                                                    Jensen et al.
+
+                                                                    TABLE 1
+                                                               G ALAXY P ROPERTIES
+
+                              Galaxy        Clustera   Typeb     mB c        Re d      MB e    Re f    AJ g    Alt IDh
+                                                                (mag)      (arcsec)   (mag)   (kpc)   (mag)
+                           IC 1919             F        dS0         13.5      21.2    −18.1    2.06   0.010    FCC 43
+                           IC 2006             F         E1         12.2      18.9    −19.4    1.84   0.008      ...
+                           NGC 1344            F        E5          11.3      33.2    −20.3    3.22   0.013   NGC 1340
+                           NGC 1374            F        E0          11.9      29.2    −19.7    2.83   0.010    FCC 147
+                           NGC 1375            F         S0         13.6      13.2    −18.0    1.28   0.010    FCC 148
+                           NGC 1380            F         S0         11.3      30.3    −20.3    2.94   0.012    FCC 167
+                           NGC 1399            F        E0          10.6     114.6    −21.0   11.11   0.009    FCC 213
+                           NGC 1404            F        E2          10.9      22.9    −20.7    2.22   0.008    FCC 219
+                           IC 3025             V        dS0         14.8       9.8    −16.4    0.78   0.015    VCC 21
+                           IC 3032             V        dE2         14.7       9.1    −16.6    0.73   0.026    VCC 33
+                           IC 3487             V        dE6         14.8       9.3    −16.4    0.74   0.015   VCC 1488
+                           IC 3586             V        dS0         14.5      20.2    −16.7    1.61   0.032   VCC 1695
+                           NGC 4458            V        E1          12.9      20.4    −18.2    1.63   0.017   VCC 1146
+                           NGC 4472            V        E2           9.3     210.8    −21.9   16.87   0.016   VCC 1226
+                           NGC 4489            V         S0         12.8      37.1    −18.4    2.97   0.020   VCC 1321
+                           NGC 4649            V        E2           9.8      98.1    −21.4    7.85   0.019   VCC 1978
+                         a Cluster: V for Virgo and F for Fornax.
+                         b Morphological type from the ACSVCS (Côté et al. 2004) and ACSFCS (Jordán et al. 2007).
+                         c Apparent B-band magnitude (Vega).
+                         d Effective radius in arcseconds, determined from the ACS and/or SDSS imaging (Ferrarese et al.
+                         2006; Chen et al. 2010; P. Côté, priv. comm.).
+                         e Absolute B magnitude (Vega), corrected for Galactic extinction, and assuming distances of 16.5
+                         and 20.0 Mpc for galaxies in Virgo and Fornax, respectively.
+                         f Effective radius in kpc, assuming same Virgo and Fornax distances as above.
+                         g Galactic extinction (Vega mag) in J-band, from Schlafly & Finkbeiner (2011).
+                         h Alternate names from Virgo and Fornax Cluster Catalogs (Binggeli et al. 1985; Ferguson 1989),
+                         or alternate NGC designation in the case of NGC 1344.
+
+in plate scale between the x and y axes, causing our images                                    3.2. Measuring Fluctuations
+to appear somewhat narrower horizontally than they do on the                     SBF measurements are made by fitting the Fourier spatial
+sky (Fig. 1). The SBF procedure involves taking the spatial                   power spectrum of the stellar fluctuations in a given region
+Fourier power spectrum, and correlated noise between pix-                     of a galaxy with the normalized power spectrum of the PSF.
+els resulting from fractional pixel shifts and interpolated pixel             There are several steps to produce the spatial power spec-
+values when correcting for geometrical distortion can produce                 trum: (i) the background level is estimated and subtracted;
+a slope in the white noise component of the power spectrum.                   (ii) extraneous objects (globular clusters, background galax-
+   Finally, we chose not to apply the correction to pixel size                ies, and dusty regions) are identified, measured, and masked;
+in the y-axis of WFC3/IR images. The pixel map correction                     (iii) a smooth isophotal model is fitted to the galaxy profile
+usually used for WFC3/IR corrects for PSF variations but is                   and subtracted; (iv) isolated bright stars are extracted and used
+inappropriate for extended objects. The WFC3/IR focal plane                   to determine the power spectrum of the PSF; (v) the Fourier
+is tilted, and the size (area) of the pixels on the sky varies                power spectra are computed for the stellar fluctuations, the
+by ∼8% from the center to the upper and lower edges of                        masked galaxy profile, and the PSF; and (vi) the power spec-
+the frame (Kalirai et al. 2010). When the data are divided                    trum of the data is fitted and normalized to determine the SBF
+by the flat field image (as is done for the flt files in the HST              power in units of flux, with the power from undetected globu-
+archive), the varying pixel sensitivity is removed, effectively               lar clusters and galaxies subtracted, from which a fluctuation
+making the pixels equally sensitive to uniform illumination.                  magnitude is computed in the established way (e.g., Tonry &
+Flattening the images in this way creates a variation in sensi-               Schneider 1988; Jensen et al. 1998; Mei et al. 2005a).
+tivity for point sources from the center to the top and bottom                   It is important to accurately measure and subtract the IR
+edges that is usually corrected in the pipeline data reduction                background before computing fluctuation magnitudes. Esti-
+process using astrodrizzle. Since we are interested in accu-                  mating the background level was done in an iterative process
+rately measuring the surface brightnesses of the galaxies and                 of cross-checking values measured in different ways. For
+avoiding correlated noise between pixels, we chose not to cor-                the small galaxies, we measured the flux in the corners of
+rect for pixel size variation in our SBF data reduction process.              the frames. For the larger ellipticals, we also determined the
+The practical effect of this decision is that the PSF at the ex-
+                                                                              background using the best fit to a r1/4 profile for each galaxy.
+treme upper and lower regions of the image does not match
+                                                                              These estimates were then compared to a measurement of the
+the PSF near the center. We have carefully chosen PSF refer-
+                                                                              background made by iteratively computing a smooth model
+ence stars from the same vertical region of the field of view
+                                                                              for each galaxy and looking at the residual background in the
+as the galaxies being analyzed (usually very near the center)
+                                                                              field of view. By adjusting the sky level offset, we optimized
+to avoid any systematic offset between the PSF photometric
+                                                                              the galaxy models such that the residual background was not
+normalization or power spectrum shape and the galaxy fluc-
+                                                                              systematically positive or negative. The difference between
+tuations. The chosen PSF stars were all unresolved, isolated
+                                                                              the sky values determined using the different methods was
+from other bright objects, and much brighter than the globular
+                                                                              used as an estimate of the uncertainty in the sky level, and
+cluster population.
+                                   Infrared SBF Distances Using WFC3                                                     5
+
+
+
+
+                                                      TABLE 2
+                                               J110 SBF M EASUREMENTS
+
+      Galaxy         Exposure      Background         Annulus    hgal/skyia    gal/sky     SBF S/N b         m110 c
+                       (sec)     (AB mag/arcsec2 )    (arcsec)    average       range      (P0 −Pr )/P1    (AB mag)
+  Fornax
+ IC 1919               997             21.74           8 – 33        1.3       0.9 – 2.6       33         28.31 ± 0.05
+ IC 2006               997             22.40           4 – 33        12          6 – 58        43         28.63 ± 0.05
+ NGC 1344              997             22.10           4 – 33        19         11 – 85        83         28.37 ± 0.05
+ NGC 1374              997             22.02           4 – 33        10          5 – 48        47         28.55 ± 0.06
+ NGC 1375              1197            22.64           4 – 33        5.8       3.1 – 27        59         28.19 ± 0.05
+ NGC 1380              1197            22.22           6 – 33        29        19 – 124        49         28.51 ± 0.04
+ NGC 1399              1197            22.15           4 – 33        41        23 – 194        52         28.79 ± 0.05
+ NGC 1404               997            22.04           4 – 33        32        17 – 173        47         28.68 ± 0.06
+  Virgo
+ IC 3025               997             21.84           8 – 17        0.8          0.8          17         28.36 ± 0.06
+ IC 3032               997             21.81           8 – 17        0.8          0.8          34         27.95 ± 0.07
+ IC 3487               997             21.84           4 – 33        0.4       0.2 – 2.5       27         28.16 ± 0.10
+ IC 3586               997             22.17           4 – 33        0.8       0.5 – 3.6       34         28.05 ± 0.08
+ NGC 4458              997             22.12           4 – 67        4.4       0.5 – 22        47         28.01 ± 0.05
+ NCG 4472              748             22.10           4 – 67        68        17 – 249        40         28.38 ± 0.06
+ NGC 4489              997             22.23           8 – 67        4.5        0.6 – 8        58         27.81 ± 0.06
+ NGC 4649              997             22.10           4 – 67        61        14 – 250        43         28.44 ± 0.06
+  Supernova host
+ NGC 1316              1396            22.08          33 – 67        15         8 – 34         166        28.26 ± 0.07
+a Weighted average ratio of the galaxy surface brightness to sky background surface brightness within the measurement
+region.
+b Weighted average ratio of the SBF fluctuation power to the white noise component P of the spatial power spectrum.
+                                                                                    1
+c SBF magnitudes have been corrected for Galactic extinction using values from Schlafly & Finkbeiner (2011).
+
+
+
+
+                                                      TABLE 3
+                                               H160 SBF M EASUREMENTS
+
+      Galaxy         Exposure      Background         Annulus    hgal/skyia    gal/sky     SBF S/N b         m160 c
+                       (sec)     (AB mag/arcsec2 )    (arcsec)    average       range      (P0 −Pr )/P1    (AB mag)
+  Fornax
+ IC 1919               997             21.90           8 – 33        1.8       1.3 – 3.8       43         27.55 ± 0.06
+ IC 2006               997             22.13           4 – 33        12          6 – 59        59         27.86 ± 0.04
+ NGC 1344              997             21.90           4 – 33        20         12 – 91        77         27.52 ± 0.05
+ NGC 1374              748             21.95           4 – 33        12          6 – 59        45         27.88 ± 0.05
+ NGC 1375              1197            22.36           4 – 33        5.5       2.9 – 27        62         27.42 ± 0.05
+ NGC 1380              1197            21.95           6 – 67        29        19 – 120        71         27.80 ± 0.05
+ NGC 1399              1197            21.95           4 – 33        46        25 – 220        52         28.03 ± 0.04
+ NGC 1404               997            22.07           4 – 33        43        22 – 235        50         27.94 ± 0.06
+  Virgo
+ IC 3025               997             21.76           8 – 17        0.3          0.3          27         27.72 ± 0.07
+ IC 3032               997             21.86           8 – 17        1.0          1.0          17         26.94 ± 0.09
+ IC 3487               997             21.75           4 – 33        0.4       0.2 – 2.7       27         27.42 ± 0.09
+ IC 3586               997             22.01           4 – 33        0.9       0.5 – 3.8       38         27.26 ± 0.04
+ NGC 4458              997             21.94           4 – 67        4.7       0.5 – 23        56         27.35 ± 0.05
+ NCG 4472              748             21.83           4 – 67        71        17 – 258        47         27.59 ± 0.05
+ NGC 4489              997             22.07           8 – 67        4.8        0.6 – 8        67         27.10 ± 0.05
+ NGC 4649              997             21.90           4 – 67        68        15 – 283        67         27.63 ± 0.05
+  Supernova host
+ NGC 1316              2796            21.85          33 – 67        21         9 – 36         111        27.35 ± 0.07
+  Maser host
+ NGC 4258              2012            21.91           irreg.        10           47           47         25.30 ± 0.06
+a Weighted average ratio of the galaxy surface brightness to sky background surface brightness within the measurement
+region.
+b Weighted average ratio of the SBF fluctuation power to the white noise component of the spatial power spectrum.
+c SBF magnitudes have been corrected for Galactic extinction using values from Schlafly & Finkbeiner (2011).
+6                                                                          Jensen et al.
+
+
+
+
+ F IG . 1.— Fornax (top two rows) and Virgo cluster galaxies (bottom two rows). Each image is displayed with background subtracted and using the same upper
+and lower limits and logarithmic stretch, within the same field of view 100 arcsec on a side. The bluer galaxies are on the left and the redder giant ellipticals are
+on the right. Measured values of (g475 −z850 ) (AB) are shown next to the galaxy labels.
+                                                       Infrared SBF Distances Using WFC3                                                                     7
+
+
+
+
+ F IG . 2.— Fits to the spatial power spectra for the 16 galaxies in Fornax and Virgo (superimposed white line). The dashed lines indicate the scaled PSF power
+spectrum and the white noise (flat) components.
+
+
+the SBF analysis was repeated to determine the uncertainty in                      tified and masked any non-fluctuation point sources in the
+fluctuation magnitude due to sky level uncertainty. The SBF                        field of view. Background galaxies and globular clusters were
+magnitude is normalized by the mean galaxy brightness at the                       identified and their brightnesses measured using the SExtrac-
+location of the SBF measurement. For the smaller galaxies                          tor software (Bertin & Arnouts 1996) and adopting aperture
+with the lowest surface brightness (see Fig. 1), the background                    corrections taken from the WFC3 instrument webpage.2 We
+level was most accurately measured. For the largest galaxies                       started by making an initial fit to the galaxy and subtracting
+that extend beyond the limits of the field of view, the back-                      it to make it easier for SExtractor to identify and measure all
+ground was most difficult to measure accurately, but its influ-                    the compact objects in the field (we used a noise model for
+ence on the SBF measurement was also minimal. The uncer-                           SExtractor that accounts for the subtracted galaxy and pre-
+tainty in the SBF magnitude is therefore relatively insensitive                    vents the software from confusing the stellar fluctuations with
+to the uncertainty in the background measurement.                                  globular clusters). Using the SExtractor output, we then cre-
+   Typical background levels at J110 were 1.3 e− s−1 pix−1 , or                    ated a fit to the luminosity functions of the globular clusters
+22.10 ± 0.23 AB mag arcsec−2 ; at H160 we measured 0.67                            and background galaxies. For most of the galaxies, we used a
+e− s−1 pix−1 , or 21.95 ± 0.15 AB mag arcsec−2 (see Tables 2 and                   Gaussian of width 1.2 mag to fit the luminosity functions; we
+3). These sky values were found to be consistent with pub-                         found that a width of 1.35 mag fit better for NGC 1399 and
+lished empirical measurements of the HST IR background,                            NGC 4472. We adopted a luminosity function peak absolute
+which is dominated by scattered zodiacal light in the Solar                        magnitude of MV = − 7.40, MJ = − 8.26, and MH = − 8.29 (e.g.,
+System (Pirzkal 2014). The J110 background levels were also                        Harris 2001; Frogel et al. 1978). The background galaxies are
+affected by the diffuse upper-atmosphere He emission line                          assumed to follow a power law distribution with power law
+at 1.083 µm (Brammer et al. 2014). While very few indi-                            slope of 0.25, which for most of our observations results in a
+vidual exposures were strongly affected, the residual back-                        normalization of about one to two galaxies per square arcsec
+ground variation among the data is larger at J110 than at H160 .                   at 34.50 mag AB (Retzlaff et al. 2010; Windhorst et al. 2011).
+The background variability between observations of different                       These fits allowed us to integrate the contribution to the SBF
+galaxies (see Tables 2 and 3) is not directly related to the                       signal fainter than the completeness limit and correct the final
+uncertainty in the background measurement for a particular                         SBF magnitude accordingly. A mask was then created from
+galaxy, which was determined independently for each galaxy.                        the list of objects that removed all objects brighter than the
+   After the background had been subtracted, we then iden-                           2 http://www.stsci.edu/hst/wfc3/phot_zp_lbn
+8                                                                Jensen et al.
+
+limiting cutoff magnitude.                                               scale factor used to best match the data corresponds to the flux
+   The next step was to fit a final smooth model to the galaxy           in SBF power in units of e− s−1 . It is then straight-forward to
+profile with the sky and point sources removed. We used an               compute the fluctuation magnitude:
+iterative procedure of fitting elliptical isophotes to the galaxy
+surface brightness profile, allowing the procedure to adjust                               m = −2.5 log(P0 − Pr ) + M1
+the centers, ellipticities, and orientations of the elliptical aper-
+tures. This model galaxy was later used to normalize the fluc-           where P0 is the fluctuation power and Pr is the contribution
+tuation signal.                                                          from point sources fainter than the completeness limit. M1
+   With the sky background and mean galaxy surface bright-               is the zero point for the filter+detector (26.8223 AB for J110
+ness removed and contaminating point sources masked, we                  and 25.9463 AB for H160 ). The AB magnitude is 0.7595 mag
+then computed the Fourier transform and spatial power spec-              larger than the Vega equivalent at J110 , and 1.2514 mag larger
+trum of the data in circular annuli (see Tables 2 and 3 for              than the Vega magnitude at H160 . AB magnitudes and colors
+the sizes of the annular regions). The measurements were re-             were corrected for Galactic extinction using the values pub-
+peated using elliptical annuli for the six most elongated galax-         lished by Schlafly & Finkbeiner (2011). The (g475 −z850 ) col-
+ies with apparent radial gradients in their SBF magnitudes.              ors from Blakeslee et al. (2009) were adjusted to make them
+The power spectrum was normalized by the mean galaxy lu-                 consistent with the Schlafly & Finkbeiner extinction values.
+minosity so that the fluctuation amplitude should be the same            Individual sky background levels, exposure times, and SBF
+in each annulus. The purpose of measuring fluctuations in                S/N values are listed in Tables 2 and 3.
+multiple annuli was to look for consistency between regions                 Absolute fluctuation magnitudes M 110 and M 160 (Table 4)
+with varying surface brightness, globular cluster population,            were then computed using both individual distance modulus
+and distance from the center. It also allowed us to measure              measurements and average cluster distances of (m−M) =31.51
+the radial gradients in fluctuation amplitude, and thus stellar          mag for the Fornax cluster and 31.09 for Virgo (all from the
+population, as described in Section 5.5.                                 optical ACS SBF measurements of Blakeslee et al. 2009). The
+   The measured fluctuation power spectrum is a convolution              radial extent of each cluster (0.053 mag for Fornax and 0.085
+of the pixel-to-pixel variation in the number of stars and the           mag for Virgo) was adopted as the uncertainty on the aver-
+PSF of the instrument. We therefore require a robust measure-            age cluster distance moduli. The colors originally reported
+ment of the PSF power spectrum to determine the fluctuation              by Blakeslee et al. (2009) were recomputed for the apertures
+amplitude. We extracted isolated bright stars from the central           used in this study (circular and elliptical).
+region of the detector field of view and computed their power               There are several sources of uncertainty in the SBF mea-
+spectra. Because PSF stars are not all uniformly centered on             surement procedure that we quantified by exploring the range
+the pixels, there is some variation that naturally arises in the         of input parameters, as we did for the uncertainty due to the
+PSF power spectra. To determine which PSF stars best fit-                PSF fit. Average values (and ranges) of the uncertainties we
+ted the power spectrum for a particular galaxy, we combined              measured and adopted for the final SBF measurements are
+the cleanest and brightest PSF stars from several observations,          listed in Table 5. Not all sources of uncertainty are com-
+and then repeated the SBF measurements using a variety of                pletely independent—residual errors in sky subtraction can
+PSF stars. We computed the uncertainty in SBF magnitude                  affect the galaxy or PSF fit, for example—so the total uncer-
+attributable to the PSF variations by determining the range of           tainties listed in Table 4 are not a simple quadrature addition
+plausible PSF fits based on the shape of the power spectra               of all sources listed in Table 5; we estimated the fraction of
+and the quality of the fits. We then used a common compos-               the power spectrum fit (P0 ) uncertainty that results from the
+ite PSF to measure SBF consistently in all the galaxies (the             PSF fit and sky subtraction separately before adding all inde-
+same dither pattern was used for all the observations). As an            pendent sources of error in quadrature. The distance modulus
+added check on the PSF uniformity and fit quality, we also               uncertainties were included in the individual-distance values
+fitted the observed power spectra to the “Tiny Tim” PSF mod-             of M. The cluster-distance M values include the cluster dis-
+els3 (Krist et al. 2011). The Tiny Tim model PSF for each                tance dispersion values from Blakeslee et al. (2009) in the
+filter was convolved with Gaussians of various widths to con-            total uncertainty.
+struct a library of model PSFs to provide better matches to the
+data, which had been combined using integer pixel offsets and                                       4. ANALYSIS
+no geometrical distortion corrections (see Sec. 3.1). The SBF                4.1. Calibration of the WFC3/IR SBF Distance Scale
+magnitudes computed using the Tiny Tim model PSFs were
+then compared to those derived from the combined empirical                 The SBF signal can be detected with HST in modest J110
+PSFs and the range of plausible fits was used to determine the           and H160 exposures (an orbit or less) out to ∼100 Mpc (e.g.,
+uncertainty due to PSF variations (typically 0.04 mag).                  Jensen et al. 2001). To take full advantage of WFC3/IR ob-
+   Fluctuation magnitudes were computed by fitting the nor-              servations of early-type galaxies collected for a variety of
+malized PSF power spectrum to the galaxy power spectrum                  purposes and measure accurate distances, we calibrated the
+P(k) = P0 E(k) + P1 , where E(k) is the expectation power spec-          WFC3/IR J110 and H160 SBF distances by fitting the abso-
+trum, which includes the smooth galaxy profile and the com-              lute fluctuation magnitudes M as a function of both optical
+bined annular region and external object mask, all convolved             (g475 −z850 ) and IR (J110 −H160 ) colors. Determining the M val-
+with the normalized PSF power spectrum (see Fig. 2 for                   ues requires us to adopt a distance modulus (m−M) for each
+power spectra and fit components). The fits excluded the                 galaxy. We used the z850 SBF distance moduli measured using
+lowest wavenumbers k < 10, which are affected by large-scale             ACS (Blakeslee et al. 2009). These measurements provide a
+galaxy and sky subtraction errors. P1 is the white noise com-            consistent distance reference accurate to . 0.08 mag for most
+ponent, which is flat for uncorrelated pixel-to-pixel noise. The         of the galaxies, although the calibration becomes systemati-
+                                                                         cally less certain for (g475 −z850 ) < 1.05 mag. We also adopted
+    3 http://tinytim.stsci.edu/cgi-bin/tinytimweb.cgi
+                                                                         (g475 −z850 ) values from the same ACS data, supplementing
+                                                       Infrared SBF Distances Using WFC3                                                                 9
+
+                                                                        TABLE 4
+                                                                A BSOLUTE SBF M AGNITUDES
+
+               Galaxy              (m−M)a          (g475 −z850 )b     (J110 −H160 )        M 110 c        M 110 d        M 160 c        M 160 d
+            Fornax
+           IC 1919             31.485 ± 0.073      1.163 ± 0.037     0.223 ± 0.007      −3.18 ± 0.09   −3.20 ± 0.08   −3.94 ± 0.09   −3.96 ± 0.08
+           IC 2006             31.525 ± 0.086      1.409 ± 0.013     0.263 ± 0.013      −2.90 ± 0.10   −2.88 ± 0.07   −3.67 ± 0.10   −3.65 ± 0.07
+           NGC 1344            31.603 ± 0.068      1.319 ± 0.007     0.260 ± 0.008      −3.23 ± 0.08   −3.14 ± 0.07   −4.08 ± 0.08   −3.99 ± 0.07
+           NGC 1374            31.458 ± 0.070      1.375 ± 0.011     0.251 ± 0.014      −2.91 ± 0.09   −2.96 ± 0.08   −3.58 ± 0.09   −3.63 ± 0.07
+           NGC 1375            31.500 ± 0.072      1.256 ± 0.029     0.224 ± 0.016      −3.31 ± 0.09   −3.32 ± 0.07   −4.08 ± 0.09   −4.09 ± 0.07
+           NGC 1380            31.632 ± 0.075      1.391 ± 0.007     0.286 ± 0.006      −3.12 ± 0.09   −3.00 ± 0.07   −3.83 ± 0.09   −3.71 ± 0.07
+           NGC 1399            31.596 ± 0.091      1.490 ± 0.005     0.302 ± 0.012      −2.81 ± 0.10   −2.72 ± 0.07   −3.57 ± 0.10   −3.48 ± 0.07
+           NGC 1404            31.526 ± 0.072      1.471 ± 0.006     0.292 ± 0.005      −2.85 ± 0.09   −2.83 ± 0.08   −3.59 ± 0.10   −3.57 ± 0.08
+            Virgo
+           IC 3025             31.421 ± 0.130      0.919 ± 0.074     0.183 ± 0.019      −3.06 ± 0.14   −2.73 ± 0.11   −3.70 ± 0.15   −3.37 ± 0.11
+           IC 3032             30.886 ± 0.133      1.006 ± 0.030     0.184 ± 0.036      −2.94 ± 0.15   −3.14 ± 0.11   −3.95 ± 0.16   −4.15 ± 0.13
+           IC 3487             31.053 ± 0.134      1.068 ± 0.060     0.132 ± 0.023      −2.89 ± 0.17   −2.93 ± 0.13   −3.63 ± 0.16   −3.67 ± 0.13
+           IC 3586             31.093 ± 0.080      1.118 ± 0.040     0.188 ± 0.007      −3.04 ± 0.11   −3.04 ± 0.11   −3.83 ± 0.09   −3.83 ± 0.13
+           NGC 4458            31.063 ± 0.070      1.236 ± 0.049     0.237 ± 0.026      −3.05 ± 0.08   −3.08 ± 0.10   −3.71 ± 0.09   −3.74 ± 0.10
+           NCG 4472            31.116 ± 0.075      1.514 ± 0.006     0.291 ± 0.013      −2.74 ± 0.10   −2.71 ± 0.10   −3.53 ± 0.09   −3.50 ± 0.10
+           NGC 4489            30.935 ± 0.069      1.257 ± 0.014     0.226 ± 0.013      −3.13 ± 0.09   −3.28 ± 0.10   −3.84 ± 0.08   −3.99 ± 0.10
+           NGC 4649            31.082 ± 0.079      1.554 ± 0.006     0.311 ± 0.013      −2.64 ± 0.10   −2.65 ± 0.11   −3.45 ± 0.09   −3.46 ± 0.10
+            Supernova host
+           NGC 1316            31.606 ± 0.065      1.374 ± 0.007     0.272 ± 0.007      −3.35 ± 0.10   −3.25 ± 0.09   −4.26 ± 0.10   −4.16 ± 0.09
+            Maser host
+           NGC 4258            29.404 ± 0.048      1.361 ± 0.044          ···                ···           ···        −4.10 ± 0.08       ···
+            N OTE. — All magnitudes are on the AB system and extinction corrected.
+         a Blakeslee et al. (2009) except NGC 4258, Humphreys et al. (2013).
+         b Galaxy colors from Blakeslee et al. (2009) have been updated to match the apertures used in this study, and corrected for extinction
+         using Schlafly & Finkbeiner (2011).
+         c M computed using the individual distance moduli shown in the second column.
+         d M computed using average cluster distances of 31.51 mag for Fornax and 31.09 for Virgo. Uncertainties on M include the cluster depths
+         of 0.053 mag (Fornax) and 0.085 mag (Virgo).
+
+                                                                                      (see Figs. 3 and 4), we adopted an iterative procedure that
+                            TABLE 5
+                      AVERAGE U NCERTAINTIES                                          takes into account the uncertainties in both the M and color
+                                                                                      axes. We started by making an initial approximate fit ignoring
+                  Source                 σ (mag)     Range (mag)                      the color uncertainties (i.e., using a standard least-squares ap-
+                                                                                      proach). We computed the error ellipse for each point and the
+       Power spectrum fit P0               0.06       0.04 – 0.10
+       PSF fit                             0.04      0.026 – 0.067                    distance from the fitted line in units of the combined x and y
+       Background subtraction              0.01      0.002 – 0.062                    uncertainties. Because the z850 SBF distances are also a func-
+       Galaxy subtraction                 0.007      0.001 – 0.022                    tion of (g475 −z850 ), there is a small correlation between the x
+       (g475 −z850 ) color uncertainty    0.025      0.005 – 0.074                    and y-axis uncertainties when fitting the individual-distance
+       (J110 −H160 ) color uncertainty    0.013      0.002 – 0.036
+       Distance modulus (individual)      0.086      0.068 – 0.134                    M values vs. (g475 −z850 ). We included the rotation of the er-
+       Distance modulus (Virgo)           0.085          0.085                        ror ellipse for that subset of the calibration fits. We then iter-
+       Distance modulus (Fornax)          0.053          0.053                        atively adjusted the fit coefficients to minimize the combined
+       Total statistical M uncertainty    0.10        0.08 – 0.17                     difference between the line and the data points, and then com-
+                                                                                      puted the rms in M. This procedure was repeated for each of
+the published values from Blakeslee et al. (2009) with up-                            the filters for both (g475 −z850 ) and (J110 −H160 ), and for the two
+dated color measurements made using the original images in                            sets of M values derived from individual and common clus-
+annuli that matched our IR observations. The ACS colors and                           ter distances. The coefficients and rms scatter for each fit are
+distance moduli used to calibrate the IR SBF distance scale                           listed in Tables 6 and 7.
+are listed in Table 4. Extinction-corrected (J110 −H160 ) colors                         The intrinsic scatter in the optical SBF distance measure-
+were measured using our WFC3/IR images.                                               ments is comparable to the Virgo and Fornax cluster depths
+   As in optical bandpasses, the intrinsic luminosity of IR fluc-                     as estimated by Blakeslee et al. (2009) (0.053 mag for For-
+tuations varies with galaxy color. The SBF amplitude is sen-                          nax, 0.085 mag for Virgo). Depending upon the location of
+sitive to the brightness of the most luminous stars in a pop-                         the galaxy within the cluster, the error in the estimated dis-
+ulation, and bluer galaxies with a significant component of                           tance may be larger when adopting the cluster mean or when
+young or intermediate-age stellar populations have luminous                           using the individual galaxy distance. If the typical distance
+AGB stars that enhance the SBF signal (e.g., Jensen et al.                            measurement error (including intrinsic scatter about the stel-
+2003). An accurate IR SBF distance calibration must take                              lar population calibration) is less than the magnitude of the
+into account the brightening of fluctuations at intermediate                          scatter from cluster depth, then it makes sense to calibrate the
+and bluer colors. As in the previous F160W NICMOS cali-                               IR measurements using individual optical SBF distances. If
+bration (Jensen et al. 2003), a linear fit to the red end of the                      the optical SBF distance measurement errors dominate, then
+sample was found to best represent the SBF calibration for                            it would be better to average all the optical SBF measure-
+distance measurements of typical giant elliptical galaxies. To                        ments and use a common cluster distance to calibrate the IR
+determine the best slope of M as a function of galaxy color                           measurements. In the case of Fornax, the individual distance
+10                                                                         Jensen et al.
+
+
+
+
+ F IG . 3.— Fits to the absolute fluctuation magnitudes M as a function of (g475 −z850 ) color. We also plot M for NGC 4258 for comparison. The calibration shown
+on the left is based on distances derived using the individual z-band SBF distances. The panel on the right shows the calibration using average cluster distances
+for Virgo and Fornax. Red points indicate H160 measurements (top set) and blue symbols are the J110 measurements (lower set). The dashed calibration lines
+show the quadratic fit and the linear calibration including IC 1919; the color of IC 1919 is intermediate between the other blue dwarf galaxies and the elliptical
+galaxies in our sample.
+
+
+errors are larger than the scatter from cluster depth; the situ-                    coefficients are defined as follows:
+ation is less clear in Virgo, especially for the bluer galaxies.
+                                                                                               M = a + b [(g−z) − 1.4] + c [(g−z) − 1.4]2                     (1)
+Table 6 presents calibrations computed using both individual
+                                                                                                                                                     2
+distance moduli and average cluster distances of 31.09 mag                                     M = a + b [(J−H) − 0.27] + c [(J−H) − 0.27]                    (2)
+and 31.51 mag for Virgo and Fornax, respectively (Blakeslee                         where c = 0 for the linear fits.
+et al. 2009). The linear calibrations using cluster distances are                     For (g475 −z850 )>1.2, researchers measuring distances
+not significantly different, particularly for the bright ellipticals                should use the appropriate linear calibrations centered at the
+located near the centers of the clusters, but the rms scatter is                    mean galaxy color as follows:
+somewhat lower using the cluster distances.
+   The downturn in absolute SBF magnitude at the blue end                                M 110 = (−2.946 ± 0.015) + (2.16 ± 0.15) [(g−z) − 1.4] (3)
+is dominated by the four dwarf galaxies in Virgo. The four                               M 160 = (−3.699 ± 0.028) + (2.13 ± 0.27) [(g−z) − 1.4] . (4)
+bluest galaxies have the largest color uncertainties and ranges,
+the lowest SBF S/N ratios, the lowest galaxy brightness com-                        The quadratic fits may be used for bluer galaxies, bearing
+pared to the sky, and the largest radial gradients in fluctuation                   in mind that the intrinsic scatter between blue galaxies is
+amplitude. They also show evidence of a wide range in stellar                       large. Quadratic fits are not shown for M computed using
+population age and metallicity, as manifested in their large ra-                    cluster distances because two of the bluest Virgo galaxies
+dial color and fluctuation magnitude gradients (the error bars                      have individual optical SBF distance moduli that differ from
+shown in Figures 3 and 4 are larger than the measurement er-                        the mean cluster modulus for Virgo by −0.20 and +0.33 mag
+rors, and include the range of values due to radial gradients                       (IC 3032 and IC 3025, respectively). The differences are 2.4
+as described below in Section 5.5). These four Virgo galaxies                       and 3.9 times larger than the Virgo cluster depth of 0.085 mag
+were excluded from the linear calibration fits; IC 1919 was                         (Blakeslee et al. 2009); these galaxies are probably outside the
+excluded from the (g475 −z850 ) fits as well. Because the fluc-                     Virgo cluster core and should not be included in a calibration
+tuation amplitude is significantly lower in the bluest galaxies                     based on mean cluster distances.
+in this sample, we also present an alternative second order                            If (g475 −z850 ) colors are not available, distances may be
+polynomial distance calibration fit that can be used for lower                      computed using the (J110 −H160 ) color instead. The scat-
+accuracy distance measurements of bluer galaxies (Figs. 3 and                       ter in the calibration with (J110 −H160 ) is larger than with
+4). The quadratic fits were computed using the same iterative                       (g475 −z850 ) because the color range spanned is much smaller.
+procedure that was used to make the linear fits, as described                       For (J110 −H160 ) > 0.2, the following relations centered at the
+above. Higher-order fits are not justified given the sample                         mean galaxy color should be used:
+size, measurement uncertainties, and large population varia-
+tions between blue dwarf elliptical galaxies. The linear cali-                           M 110 = (−2.964 ± 0.032) + (6.7 ± 0.9) [(J−H) − 0.27] (5)
+bration is not useful for the bluer galaxies; they have too much                         M 160 = (−3.718 ± 0.035) + (7.1 ± 1.1) [(J−H) − 0.27] . (6)
+population variation for SBF to be generally useful as a dis-                       For magnitudes on the Vega system, subtract 0.7595 mag from
+tance indicator. The quadratic calibration may be used to get                       J110 AB and 1.2514 mag from H160 AB for the WFC3/IR fil-
+approximate distances for bluer galaxies when necessary.                            ters. The (J110 −H160 ) color can be shifted to the Vega system
+   Calibration coefficients are shown in Tables 6 and 7. The                        by adding 0.4919 mag.
+                                                                                       The results of our calibration analysis show that IR SBF
+                                                                                    measurements, especially in F110W, can produce high-
+                                               Infrared SBF Distances Using WFC3                                                 11
+
+accuracy distance measurements for red early-type galaxies          worth an attempt. Unfortunately, the presence of clumpy
+with (g475 −z850 ) > 1.2 and (J110 −H160 ) > 0.2 mag using Equa-    dust and recent star formation prevented us from achieving
+tions (3) through (6). It is worth emphasizing again that the       an accurate calibration using this galaxy, even when optical
+linear calibrations should not be extended to bluer colors:         color images were used to identify dusty regions. The maser-
+the bluer galaxies, comprising dwarf ellipticals and low-mass       calibrated fluctuation magnitude is significantly brighter (by
+S0s, clearly do not follow extrapolations of the linear relations   ∼0.3 mag) than the calibration determined above for the el-
+in Equations (3) through (6). Such blue galaxies likely have        liptical and S0 galaxies in the Fornax and Virgo clusters with
+a wider variety of stellar populations than the giant ellipticals   similar (g475 −z850 ) colors (see Fig. 3). This result was not a
+and S0 galaxies, and thus exhibit larger scatter, even with re-     surprise; patchy dust adds to the fluctuation signal, as does
+spect to the quadratic fits; they are not well-suited for highly    the presence of younger populations containing bright AGB
+accurate distance measurements. The stellar population im-          stars. Unfortunately, the geometrical distance to NGC 4258
+plications are discussed in detail below in Section 5.              does not provide a useful direct calibration of the SBF tech-
+                                                                    nique for elliptical galaxies. Given that optical Cepheid dis-
+      4.2. Independent Checks of the IR SBF Calibration
+                                                                    tances to NGC 4258 have now been published by Macri et
+                           Zero Point
+                                                                    al. (2006), Fausnaugh et al. (2015), and Hoffmann & Macri
+   Now, as for several decades, the forefront of progress in the    (2015), the future value of NGC 4258 in calibrating IR SBF
+measurement of extragalactic distances is limited primarily by      is therefore most likely to be through an improved calibration
+the uncertainty in the calibration zero point (e.g., Freedman &     of the Cepheid distance scale zero point and metallicity cor-
+Madore 2010; Riess et al. 2011). We have chosen to calibrate        rections.
+the WFC3 IR SBF distance scale using the extensive Virgo               Type Ia supernovae are one of the most accurate and
+and Fornax optical SBF measurements made by Blakeslee et            widely-used distance measurement techniques in use today.
+al. (2009) and their collaborators. This guarantees that the        In a recent paper, Cantiello et al. (2013) reported WFC3 J110
+IR observational uncertainties and population variations will       and H160 measurements of the SBF distance to NGC 1316, a
+dominate the calibration uncertainty, not the precision of the      type Ia supernova host galaxy in the Fornax cluster. They used
+reference distances. It does not, however, reduce the system-       the Jensen et al. (2003) F160W SBF calibration for NICMOS
+atic zero point uncertainty present in the optical SBF mea-         (including a metallicity correction to the Freedman et al. 2001
+surements, which in turn were based on HST Cepheid dis-             Cepheid zero point) and applied a 0.2 mag offset to the NIC-
+tances (Freedman et al. 2001). Blakeslee et al. (2010) dis-         MOS zero point to account for the difference in filter width
+cuss in detail the small offsets between several of the largest     between NICMOS and WFC3/IR, based on predictions of the
+SBF surveys, including Tonry et al. (2001) and Jensen et al.        SPoT stellar population models (Raimondo 2009; Raimondo
+(2003), and the application of metallicity corrections to the       et al. 2005). To avoid uncertainties arising from differences
+HST Cepheid distance scale of Freedman et al. (2001). The           between the methods used by Cantiello et al. and those used
+systematic uncertainty in the SBF distance scale due to the         herein, we repeated the SBF analysis for NGC 1316 using the
+uncertainty in the Cepheid zero point is about 0.1 mag (Freed-      original WFC3/IR data (GO-11691) and the procedures de-
+man & Madore 2010; Blakeslee et al. 2010).                          scribed above. Our measured SBF magnitudes are listed in
+   One approach for avoiding the Cepheid zero point uncer-          Tables 2 and 3; they are consistent with the Cantiello et al.
+tainty would be to use theoretical stellar population model         (2013) values within the stated uncertainties. This galaxy is
+predictions to calibrate the absolute M in galaxies of varying      not an ideal SBF candidate due to the presence of extensive
+ages, metallicities, and colors. This model-based approach          patchy dust near the center, but the regions farther out from
+would therefore make SBF a primary distance indicator inde-         the center appear relatively clean and the SBF signal is very
+pendent of all other distance measurements, dependent only          strong. If we adopt the Blakeslee et al. (2009) z-band SBF
+on our understanding of the luminosities and colors of red          distance (Table 4), the M values we find for NGC 1316 are
+giants and other evolved stars of a particular age and metal-       brighter than the calibration prediction by ∼0.3 to 0.5 mag.
+licity. Comparisons with several different stellar population       The Tonry et al. (2001) ground-based I-band SBF measure-
+models are presented below in Section 5. As will be shown,          ment of 31.66 ± 0.17 supports the Blakeslee et al. (2009) dis-
+infrared stellar population models are not sufficiently consis-     tance for NGC 1316. If NGC 1316 is located at the same dis-
+tent to provide a robust zero point for distance calibration at     tance as the core ellipticals in Fornax, then it appears to have
+the 10% level. At present, we find that observed IR SBF             a significant population of younger AGB stars, most likely the
+magnitudes are more useful for constraining stellar population      result of star formation that took place during a major merg-
+models than the models are for constraining the SBF distance        ing episode a few Gyr ago, that biases the IR SBF magni-
+calibration in the IR.                                              tude. It may also have additional undetected dust contribut-
+   Another approach is to find other distance indicators that       ing to the fluctuations. On the other hand, the IR and optical
+are independent of the Cepheid calibration, such as the ge-         SBF distances are inconsistent with the published type Ia su-
+ometrical distance to NGC 4258. Water masers orbiting the           pernova distances, which place NGC 1316 ∼0.25 mag closer
+central black hole in NGC 4258 have now been used to ac-            than the Fornax cluster core. If we adopt the Ia supernova
+curately determine the distance to this galaxy using a purely       distance modulus for the three normal supernovae published
+geometrical technique based on the Keplerian orbits of the          by Stritzinger et al. (2010) of 31.248 ± 0.034 ± 0.04 instead
+masers (Humphreys et al. 2013). While SBF magnitudes                of the z-band SBF distance, our IR SBF measurements would
+are best measured in early-type galaxies, archival H160 im-         be much more consistent with the elliptical galaxy calibration.
+ages of the central bulge of NGC 4258 (GO-11570) provided           Additional work is needed to reconcile the SBF and supernova
+us with an opportunity to explore the SBF calibration inde-         distances to this galaxy.
+pendent of the Cepheid distance scale. Given that an SBF               The IR SBF measurements of the maser host galaxy
+measurement to NGC 4258 could allow us to bypass the sys-           NGC 4258 and the supernova host galaxy NGC 1316 are not
+tematic uncertainty in the Cepheid calibration, we felt it was
+12                                                                             Jensen et al.
+
+
+
+
+ F IG . 4.— Fits to the absolute fluctuation magnitudes M as a function of (J110 −H160 ) color derived using individual distances (left) and average cluster distances
+(right). Red symbols indicate H160 measurements (top set of points), and lower set of blue points are the J110 measurements. Symbol definitions are the same as
+in Figure 3.
+
+
+
+
+                                                                           TABLE 6
+                                                              L INEAR C ALIBRATION C OEFFICIENTS
+
+                                       Calibration              a                 b        χ2 /dof      rms      Distances   Ngal a
+                                     M 110 vs. (g−z)    −2.946 ± 0.015      2.16 ± 0.15         0.48   0.075       clust       11
+                                     M 110 vs. (g−z)    −2.935 ± 0.017      1.90 ± 0.16         0.86   0.086       clust       12
+                                     M 110 vs. (g−z)    −2.961 ± 0.032      1.86 ± 0.32         1.23   0.101       indiv       11
+                                     M 110 vs. (g−z)    −2.951 ± 0.034      1.61 ± 0.34         1.40   0.105       indiv       12
+                                     M 110 vs. (J−H)    −2.964 ± 0.032         6.7 ± 0.9        0.94   0.092       clust       12
+                                     M 110 vs. (J−H)    −2.977 ± 0.047         5.9 ± 1.4        1.76   0.130       indiv       12
+                                     M 160 vs. (g−z)    −3.699 ± 0.028      2.13 ± 0.27         1.35   0.114       clust       11
+                                     M 160 vs. (g−z)    −3.689 ± 0.029      1.90 ± 0.28         1.59   0.114       clust       12
+                                     M 160 vs. (g−z)    −3.712 ± 0.042      1.76 ± 0.42         2.49   0.138       indiv       11
+                                     M 160 vs. (g−z)    −3.704 ± 0.043      1.55 ± 0.44         2.45   0.134       indiv       12
+                                     M 160 vs. (J−H)    −3.718 ± 0.035         7.1 ± 1.1        1.35   0.121       clust       12
+                                     M 160 vs. (J−H)    −3.731 ± 0.050         6.4 ± 1.6        2.44   0.162       indiv       12
+                                     N OTE. — Linear fits for (g475 −z850 ) > 1.2 or (J110 −H160 ) > 0.22. For Vega magnitudes,
+                                   subtract 0.7595 mag from WFC3/IR J110 and 1.2514 mag from H160 AB.
+                                   a IC 1919 was excluded from the (g
+                                                                           475 −z850 ) calibration because (g475 −z850 ) < 1.2. The
+                                   (J110 −H160 ) color for IC 1919 is greater than 0.22, so it was included in the (J110 −H160 )
+                                   calibration. We have included (g475 −z850 ) calibrations with and without IC 1919 to show
+                                   the relatively small influence this one galaxy has on the (g475 −z850 ) calibration. The recom-
+                                   mended calibration in Equations (3) and (4) exclude IC 1919.
+
+
+
+
+                                                                           TABLE 7
+                                                             Q UADRATIC C ALIBRATION C OEFFICIENTS
+
+                                Calibration              a                 b                c          χ2 /dof   rms (mag)     Distances
+                              M 110 vs. (g−z)     −2.991 ± 0.004     1.73 ± 0.025      4.55 ± 0.12      1.11        0.115           indiv
+                              M 110 vs. (J−H)     −2.977 ± 0.011       6.3 ± 0.4          59 ± 6        1.06        0.129           indiv
+                              M 160 vs. (g−z)     −3.723 ± 0.003     1.54 ± 0.022      3.38 ± 0.09      2.17        0.128           indiv
+                              M 160 vs. (J−H)     −3.733 ± 0.030       6.9 ± 0.9         59 ± 15        1.74        0.149           indiv
+                                N OTE. — Quadratic fits for all 16 galaxies. Use only when necessary for (g475 −z850 ) < 1.2 or
+                             (J110 −H160 ) < 0.22.
+                                                   Infrared SBF Distances Using WFC3                                                   13
+
+sufficiently accurate at present to reduce the systematic un-              magnitudes. These models are usually calculated by integrat-
+certainty in the IR SBF distance scale calibration to less than            ing collections of properly-weighted isochrones, and can be
+the 10% that we currently inherit from the Cepheid calibration             used to compute predicted SBF magnitudes directly without
+of the optical SBF distances used for this study (Blakeslee et             any need to link the apparent SBF magnitudes to an exter-
+al. 2009, 2010). These galaxies have significant patchy dust               nal distance scale calibration. Examples of theoretical SBF
+and recent star formation, both of which enhance the IR SBF                comparisons include Worthey (1993, 1994), Liu et al. (2000,
+signal over what is typically observed in quiescent elliptical             2002), Blakeslee et al. (2001), Cantiello et al. (2003), Rai-
+galaxies.                                                                  mondo et al. (2005), Marín-Franch & Aparicio (2006), Bis-
+                                                                           cardi et al. (2008), and Lee et al. (2010).
+  4.3. Comparison of WFC3 and NICMOS SBF Magnitudes                           We compared our SBF measurements to three recent sets
+   Eight galaxies in our current sample, mostly in the Fornax              of SSP models for which J110 and H160 SBF magnitudes have
+cluster, were included in the NICMOS NIC2 calibration of                   been computed. The purpose of these comparisons is to ex-
+M 160 (Jensen et al. 2003). A comparison of the SBF magni-                 plore the limitations of our SBF distance calibration and pro-
+tudes is shown in Figure 5. To make the comparison using AB                vide input to researchers working to improve stellar popu-
+magnitudes, we added 1.313 mag to the published NIC2 SBF                   lation models, particularly for understanding galaxy evolu-
+magnitudes to shift from the Vega magnitude system used by                 tion, when the observations may not so easily distinguish the
+Jensen et al. (2003) to the AB mag system.4                                effects of age and metallicity as our near-IR SBF measure-
+   The difference between NIC2 and WFC3/IR F160W SBF                       ments do. While we compared our IR SBF measurements to
+magnitudes shows a modest color dependence (left panel in                  single-burst population models, real galaxies are composed
+Fig. 5). We fitted the slope (the color term in the conversion             of composite stellar populations with potentially many bursts
+of NIC2 SBF magnitudes to WFC3/IR) including uncertain-                    of star formation. Because the fluctuations are dominated by
+ties in both (J110 −H160 ) color and m160 SBF magnitudes; the              the most luminous stars weighted as L2 , they are even more
+rms for the fit is 0.055 mag and the χ2 per degree of freedom is           strongly weighted towards young, luminous populations than
+0.66. The right panel of Figure 5 compares the NIC2 F160W                  are broad-band galaxy colors (Tonry & Schneider 1988). A
+apparent SBF magnitudes to WFC3/IR, with and without the                   composite population model will therefore predict an SBF
+color correction. The dashed line in the right panel of Fig-               magnitude close to that of the younger (or brighter) model
+ure 5 is not a fit, but shows the 45-degree perfect correlation            component, even when the young population is only a small
+line. SBF m160 measurements made using NIC2 prior to the                   fraction (∼10% to 20%) of the galaxy by mass (Jensen et al.
+installation of the NICMOS cryocoolers may be compared to                  2003; Blakeslee et al. 2001; Liu et al. 2002). The comparison
+WFC3/IR measurements using the relation                                    to SSP model ages shown in this section should be considered
+                                                                           the time since the most recent episode of star formation, not
+           m160 = m160,NIC2 − 1.67(J110 −H160 ) + 0.46             (7)     the average age of the dominant stellar population by mass.
+(all AB magnitudes). Because we are comparing apparent
+fluctuation magnitudes directly, we do not need to be con-                                     5.1. Teramo BaSTI Models
+cerned about differences in distance scale calibrations be-                   The first set of stellar population models we consider here
+tween the two studies or cameras.                                          are based on the Teramo BaSTI models5 using a standard
+            5. STELLAR POPULATION MODELS                                   Salpeter initial mass function (IMF) with a low-mass cutoff of
+                                                                           0.5 M (Lee, Worthey, & Blakeslee 2010; Pietrinferni et al.
+   We turn now to how IR SBF measurements, with their sen-                 2004, 2006; Cordier et al. 2007). We compared our observed
+sitivity to red giant branch and intermediate-age AGB stars,               fluctuation magnitudes M 110 to absolute fluctuation magni-
+can expose interesting differences between galaxies with dif-              tudes computed for two variants of the BaSTI models: the
+ferent star formation histories and better constrain single-               solar-scaled abundance ratio models without convective over-
+burst stellar population models.                                           shoot, and the α-enhanced version of the models described
+   The brightening of the SBF magnitudes in elliptical and S0              by Lee et al. (2010). The latter models have a mean [α/Fe]
+galaxies at intermediate colors seen in the centers of Figures 3           of ∼ 0.4 dex, but with physically-motivated variations in the
+and 4, and the subsequent drop in SBF brightness in the bluest             abundance ratios of the individual α elements (i.e., O, Mg, Si,
+dwarf ellipticals in this sample, provide powerful new con-                S, Ca, Ti); the [Fe/H] abundances in these models have been
+straints for stellar population models, which have only been               correspondingly reduced to keep a fixed [Z/H].
+compared to redder galaxies in previous near-IR SBF studies.                  The solar-scaled models shown in the top panel of Figure 6
+The scatter among the bluest galaxies in our sample is much                do not match the reddest giant ellipticals as well as the α-
+larger than the observational uncertainties, and many of these             enhanced models shown in the lower panel (the solar-scaled
+galaxies exhibit significant radial gradients in IR fluctuation            models are included here to provide a point of reference
+magnitude, color, or both. The current sample includes bluer               with past SBF-model comparisons that only used solar-scaled
+and fainter galaxies than are typically targeted for SBF dis-              metallicity models). Both model variations suggest that the
+tance measurements, and the breaking of the age-metallicity                intermediate-color galaxies in our sample have younger pop-
+degeneracy in near-IR fluctuations provides a unique oppor-                ulations, as expected due to the presence of intermediate-age
+tunity to explore the stellar populations in these galaxies.               AGB stars. The models imply that the bluest galaxies are old
+   Single-burst stellar population (often abbreviated SSP)                 and metal-poor. While we have chosen to show the compar-
+models with constant age and metallicity are frequently used
+                                                                           ison for M 110 and (g475 −z850 ), the conclusions are the same
+to interpret broad-band colors and other properties of unre-
+                                                                           when we compare the models to M 160 instead of M 110 or
+solved stellar populations in distant galaxies, including SBF
+                                                                           (J110 −H160 ) instead of (g475 −z850 ).
+   4 http://www.stsci.edu/hst/nicmos/documents/handbooks/DataHandbookv8/
+nic_ch5.9.3.html                                                             5 http://193.204.1.62/index.html
+14                                                                         Jensen et al.
+
+
+
+
+  F IG . 5.— Comparison of NICMOS NIC2 and WFC3/IR H160 SBF measurements. The left panel shows the fit to the color term used to correct the points in the
+right panel, which shows the corrected NIC2 SBF magnitudes plotted as a function of the WFC3/IR SBF magnitudes. For reference, the SBF magnitudes with
+no color correction are shown with × symbols.
+
+
+
+
+                                                                                    F IG . 7.— Recent versions of the Teramo SPoT models compared to M 110
+                                                                                  measurements as in Figure 6. The metallicity range for these models spans
+                                                                                  [Fe/H] = − 0.66 to +0.4 and the ages from 2 to 14 Gyr. The lines and symbols
+                                                                                  are defined in the same way as in Figures 3 and 6.
+  F IG . 6.— Teramo BaSTI models compared to M 110 as a function of galaxy
+(g475 −z850 ) color for two metallicity variants of the models computed using     magnitudes in a procedure that allows modelers to statisti-
+the individual galaxy distances: the “SSS” models (top panel) are solar-scaled
+abundances spanning the range from [Fe/H] = − 0.659 to +0.395. The “AES”
+                                                                                  cally combine various stellar population models produced by
+models (lower panel) have enhanced α element compositions and reduced             stochastic variations in the number and properties of bright
+[Fe/H] to make the overall metallicity Z the same as the solar-scaled models      and rare stars, including the TP-AGB and horizontal branch
+shown in the top panel. The range of [Fe/H] spanned by the AES models             populations in intermediate-age and old stellar populations.
+is −1.01 to +0.05. Lines of constant metallicity are shown with red dashed
+lines, and lines of constant age from 2 to 13 Gyr are plotted with dotted blue    Overall, the SPoT and BaSTI models agree for the red and
+lines.                                                                            intermediate-color ellipticals, with somewhat fainter SBF
+                                                                                  magnitudes for the oldest and most metal-rich giant ellipti-
+                   5.2. Teramo SPoT Models                                        cals. The SPoT models predict a larger spread in SBF mag-
+                                                                                  nitude at younger ages and imply that the bluer galaxies in
+   The second set of models was developed by the Teramo                           the sample are all younger than about 5 Gyr, in contrast with
+SPoT group (version BaSeL3.1, Raimondo 2009; Raimondo
+et al. 2005). The Teramo SPoT models pay special attention                        the BaSTI models, which span a narrower range in M 110 and
+to the thermally-pulsating asymptotic giant branch (TP-AGB)                       imply ages greater than 5 Gyr for the bluest galaxies.
+stars, particularly in young to intermediate-age populations.
+                                                                                                        5.3. Padova Models
+The SPoT model SBF magnitude predictions in the near-IR
+have been empirically compared to a variety of clusters in the                       The third set of models are based on the Padova isochrones
+Large Magellanic Cloud and have been shown to match em-                           (Fig. 8), which include sophisticated handling of the TP-AGB
+pirical measurements of SBF magnitudes, integrated magni-                         evolutionary phase. The Padova tracks use solar-scaled metal-
+tudes, star counts, and colors (Raimondo 2009; Cantiello et                       licity abundance ratios and do not include α-element enhance-
+al. 2007; Cantiello 2012).                                                        ment. SBF magnitudes were computed by Lee et al. (2010)
+   The SPoT models in Figure 7 differ significantly from                          using the evolutionary tracks of Marigo et al. (2008).
+the BaSTI models in Figure 6, although they are based on                             The Padova SSP models show the largest spread in M 110
+the same stellar evolutionary tracks as the BaSTI models in                       of all the models considered here. At the red end, the giant
+the upper panel of Fig. 6. The SPoT models derive SBF                             ellipticals again agree with old, metal-rich population mod-
+                                                       Infrared SBF Distances Using WFC3                                                                   15
+
+
+
+
+  F IG . 8.— Stellar population models based on the Padova isochrones com-
+pared to M 110 measurements computed using individual SBF distances. The
+symbol definitions are the same as in Figure 3. Lines of constant metallicity
+from [Fe/H] = − 0.705 (in the extreme lower left corner) to 0.0 and +0.222
+(overlapping at right) are shown with red dashed lines. Lines of constant age
+from 2 to 13 Gyr are plotted with dotted blue lines.                              F IG . 9.— Distance-independent IR fluctuation colors for the solar-scaled
+                                                                                and α-enhanced Teramo models. Blue dotted lines indicate lines of con-
+                                                                                stant age, from 2 to 13 Gyr. Red dashed lines show constant metallicity
+els, with the intermediate bluer galaxies having brighter fluc-                 tracks, from [Fe/H] = − 0.659 at the left to +0.395 at right (upper panel) and
+                                                                                [Fe/H] = − 1.01 to +0.05 (lower panel). The two points that are not labeled for
+tuations and younger populations. The bluest galaxies in                        clarity are NGC 1399 in Fornax and NGC 4636 in Virgo. Symbol definitions
+the sample are consistent with ages intermediate between the                    are the same as in Figures 3 and 6.
+BaSTI and SPoT models, in the range 3 to 7 Gyr. Because of
+their larger spread in SBF magnitude predictions, the Padova
+models, as compared to the other sets of models, suggest
+that the data provide better discrimination between ages and
+metallicities.
+                    5.4. Fluctuation Colors
+   SBF measurements at two wavelengths can be used to elim-
+inate uncertainties resulting from distance error; for instance,
+the “fluctuation color” (m110 − m160 ) can be compared to stel-
+lar population models in a distance-independent way. Figure 9
+compares (m110 − m160 ) to the Teramo BaSTI solar-scaled and
+α-enhanced models as a function of (g475 −z850 ). As discussed
+by Lee et al. (2010), the predicted SBF magnitudes are sen-
+sitive to α-element abundance mostly because of the effects
+of oxygen-enhancement on the upper red giant branch and
+AGB phase. The data in Figure 9 agree on average with the                         F IG . 10.— Radial SBF and color gradients for the survey galaxies, with
+α-enhanced models relatively well, but only poorly with the                     larger symbols corresponding to the inner annuli in which SBFs were mea-
+solar-scaled models. However, this set of α-enhanced mod-                       sured and smaller symbols being outer regions. Black lines link measure-
+els also predicts a narrower range of (m110 − m160 ) than is ob-                ments in the same galaxy. The measurements are compared to the BaSTI
+                                                                                α-enhanced models; the conclusions are the same for the other models be-
+served. In particular, the low-mass dwarf IC 3032 in Virgo                      cause they all have lines of constant metallicity with similar slopes for this
+agrees better with the locus of the solar-scaled models; this                   color range. IC 2006 is not labelled but falls very close to NGC 1374.
+may indicate real variation in α-element abundance ratios
+among the sample galaxies. We conclude that fluctuation col-                    galaxies with significant M gradients (IC 1919, NGC 1375,
+ors can provide useful information on elemental abundance                       NGC 1380, IC 3025, IC 3487, and IC 3586; see Fig. 1). For
+ratio trends with age and metallicity in elliptical galaxies, in-               the rest of the sample we used the circular annulus SBF and
+dependent of the uncertainties in the distance calibration. In                  (g475 −z850 ) color measurements previously used for the cali-
+addition, comparisons with other observables that are sen-                      bration. The results are plotted in Figure 10.
+sitive to age, metallicity, or α-enhancement should provide                       The comparison of radial SBF gradients to the models
+powerful joint constraints for future stellar population mod-                   shows a significant difference between the giant ellipticals
+els.                                                                            and the smaller galaxies. Most of the galaxies show a gra-
+                                                                                dient sloping from upper left to lower right in Figure 10,
+                    5.5. Radial SBF Gradients                                   roughly along lines of constant metallicity. While the vari-
+  To further explore the origins of the scatter in SBF mag-                     ous models look quite different in detail, they all have lines
+nitude among the low-luminosity blue dwarf ellipticals, we                      of constant metallicity sloping in approximately the same di-
+measured the radial behavior of the SBF amplitude. Many                         rection at the relevant colors. The lower-luminosity galax-
+of the galaxies in our sample, particularly the low-luminosity                  ies have centers (larger symbols in Fig. 10) consistent with
+galaxies, are quite elliptical. To get the cleanest gradient mea-               younger stellar populations (brighter fluctuations) and nearly
+surements possible, we repeated the SBF analysis and mea-                       constant metallicities: IC 1919, IC 3025, IC 3487, IC 3586,
+sured (g475 −z850 ) colors in elliptical annuli for a subset of the             and NGC 1375 all have brighter fluctuations near their cen-
+16                                                             Jensen et al.
+
+ters. In contrast, the giant ellipticals on the red end of the
+diagram tend to show older, and sometimes more metal-rich,
+populations in their centers: IC 3032, IC 2006, NGC 1374,
+NGC 1399, NGC 1404, NGC 4458, and NGC 4649 have
+fainter fluctuations towards their centers. Four of the sixteen
+galaxies (NGC 1380, NGC 1344, NGC 4458, and NGC 4472)
+appear to have color and SBF gradients consistent with little
+or no age variation. The majority of the galaxies show gradi-
+ents consistent with primarily age variations, however.
+   The IR SBF and color gradients hint at differing formation
+histories for the galaxies. As noted above, low-luminosity
+blue elliptical galaxies usually have older populations at large
+radii, and thus to have formed stars more recently near their
+centers from metal-poor gas, while the giant ellipticals formed
+stars in their cores long ago from enriched gas. Optical studies
+                                                                       F IG . 11.— Lick index measurements for eleven of the galaxies in our sam-
+of SBF gradients, in contrast, suggest that the outer parts of        ple (Kuntschner 2000; Trager et al. 2000; Caldwell et al. 2003) as compared
+giant ellipticals have colors and fluctuation magnitudes con-         with the α-enhanced models from Lee & Worthey (2005). Hβ is more age-
+sistent with lower metallicity populations and little or no age       sensitive, while Mgb is metallicity-sensitive. Such data provide an indepen-
+gradient (Cantiello et al. 2005, 2007). Our IR measurements           dent way of checking the SBF model comparison conclusions; see text.
+do not cover as large a range in radius as the optical studies
+because of the smaller field of view spanned by the IR detec-         consistently sloped along lines of constant metallicity for all
+tors and the brighter sky background. Because the data here           the models, so even though the models might not agree on the
+are confined within the effective radius of the several largest       specific age and metallicity of a particular galaxy, the trend
+galaxies (Table 1), we cannot derive strong constraints on the        towards younger ages in the centers of bluer dwarf galaxies is
+large-scale stellar population gradients in these giant galax-        consistent for all the models.
+ies. Interestingly, the physical size (r . 5 kpc) of the radial
+region probed by our SBF data is similar to that of the lumi-                 5.6. Line Index Age and Metallicity Constraints
+nous dense cores observed at high redshift (e.g., van Dokkum
+                                                                         Eleven of the galaxies in our sample have published Hβ
+et al. 2010; van der Wel et al. 2014), which are believed to be
+                                                                      and Mgb Lick index measurements from Kuntschner (2000),
+the seeds around which massive modern-day ellipticals were
+                                                                      Trager et al. (2000), and Caldwell et al. (2003). The former
+assembled through hierarchical merging and accretion. Our
+                                                                      index is more sensitive to age, and the latter to metallicity.
+results on the old ages and relative homogeneity of the stellar
+                                                                      Figure 11 compares these data with the +0.3 dex α-enhanced
+populations of the giant ellipticals within the central region
+                                                                      model predictions from Lee & Worthey (2005). The line in-
+are thus in line with this scenario for early-type galaxy evo-
+                                                                      dex measurements generally sample different regions of the
+lution, if the elliptical galaxies in our sample may be com-
+                                                                      galaxies than our SBF data, but we see again that the red-
+pared with the high-redshift counterparts (Fritz et al. 2014).
+                                                                      dest ellipticals agree with the old, metal-rich population mod-
+At much larger radii in giant ellipticals, evidence exists from
+                                                                      els. The youngest galaxies as determined using absorption
+optical and IR color gradients that the stellar populations at
+                                                                      lines do not always agree with the SBF models. IC 3487
+several effective radii are older than the mean stellar age in
+the core (La Barbera et al. 2012; but see also Greene et al.          has the strongest Hβ index but the faintest M 110 among the
+2015). While our data do not probe such large radii in the            bluer galaxies, implying a relatively older age compared to
+massive galaxies, we find the same trend for the lower mass           NGC 1375, which has somewhat weaker Hβ and brighter
+galaxies where our measurements do reach beyond the effec-            M 110 (although there is considerable variation between SBF
+tive radius. It would be interesting to extend the IR SBF gra-        models at the youngest ages). Further work is needed to ex-
+dients to correspondingly large radii in the massive ellipticals      plore the radial behavior of Mgb and Hβ as compared to our
+to see if these also show evidence for larger ages in the galaxy      SBF measurements on the same scales, particularly since we
+outskirts.                                                            detect a significant radial age gradient in many of the lower-
+   Crucially for the purpose of distance measurement, the ra-         luminosity galaxies.
+dial and population variations in the reddest galaxies cause
+SBF magnitude variations along the direction of the linear cal-                      5.7. Model Comparison Summary
+ibration. These galaxies are ideally suited for distance mea-            The SBF models shown in Figures 6, 7, and 8 agree for old,
+surement because variations from galaxy to galaxy in age or           metal-rich populations such as those commonly found in gi-
+metallicity are adequately accommodated by the calibration            ant elliptical galaxies, and for which extensive comparisons
+slope with (g475 −z850 ). On the other hand, the radial gradi-        have been made in the past (e.g., Jensen et al. 2003; Cantiello
+ents in SBF magnitude in the bluer dwarf galaxies (the gray           et al. 2012; Fritz 2012). At younger ages and lower metallici-
+symbols in the left half of Fig. 10 are perpendicular to the          ties, the three sets of models are significantly different, and
+quadratic calibration relation, leading to greater scatter in the     the conclusions we draw about the ages of the blue dwarf
+distance calibration. These low-luminosity dwarfs show a              ellipticals are strikingly different. These three sets of mod-
+wide range of ages and metallicities, with several showing ev-        els allow for the blue, low-mass dwarf ellipticals to poten-
+idence of recent star formation near their centers, as revealed       tially have a range of ages from 2 to 14 Gyr, and [Fe/H] from
+by their SBF magnitudes.                                              about −1 to −0.3. Optical I-band SBF measurements of blue
+   Only one set of SBF measurements and models is shown               dwarf ellipticals (Mieske et al. 2006) also show a large spread
+in Figure 10; the general conclusions, however, are consistent        of fluctuation magnitudes and younger implied ages. Since
+for all the models discussed herein. The radial variations are        each set of models was computed with the aim of understand-
+                                                Infrared SBF Distances Using WFC3                                                      17
+
+ing something different—the role of α-enhancement in early-                 single orbit, but the large correction for contaminating
+type galaxies for the BaSTI models (Lee et al. 2010) and the                point sources would then dominate the uncertainty.
+TP-AGB phase for the SPoT and Padova models (Raimondo
+2009; Cantiello et al. 2007, 2012; Lee et al. 2010)—the differ-          3. Exposure times for more distant galaxies should be
+ences shown here provide the starting point for future detailed             scaled to achieve a point source sensitivity sufficient
+comparison of the near-IR properties of actual red giant and                to detect and remove globular clusters 1 to 1.5 mag
+AGB stars in unresolved stellar populations with model pre-                 brighter than the peak of the globular cluster luminos-
+dictions. We have chosen to show model comparisons using                    ity function. The exposure time needed to detect the
+M 110 plotted against (g475 −z850 ) computed using the individ-             stochastic fluctuations that comprise the SBF signal
+ual galaxy optical SBF distances. The general trends and con-               goes as d 2 , but the time required to detect the globu-
+clusions are similar when the models are compared to M 160 or               lar clusters increases significantly faster, scaling as d 3
+plotted against (J110 −H160 ).                                              to d 4 , because of the bright background on which the
+   It is beyond the scope of this study to provide a critical anal-         globular clusters are superimposed.
+ysis of the strengths and shortcomings of each of these sets of
+models. For the purposes of this study, we conclude that the             4. To avoid issues with correlated noise, do not use the
+IR SBF distance calibration is robust when applied to old, red,             default HST pipeline-combined images. Use the flt files
+metal-rich galaxies like the giant ellipticals typically found in           without correcting the WFC3/IR field distortion. It may
+environments like Virgo and Fornax, and even to some with                   be possible to recreate the drz files using the lanczos3
+intermediate-age populations and somewhat bluer colors. The                 kernel in the astrodrizzle package; this approach was
+bluer dwarf ellipticals, on the other hand, provide important               not tested for WFC3/IR as part of this study, but has
+new observational constraints that should be of interest to re-             been used successfully in the past for ACS data (cf.
+searchers constructing the next generation of stellar popula-               Cantiello et al. 2005; Mei et al. 2005a).
+tion models. It is clear that better constraints from data such          5. Because SBF magnitudes depend on the properties of
+as these will be valuable in better defining the properties of              the stellar populations, high-quality color data are es-
+young, metal-poor populations, and the brightness of the TP-                sential to determine accurate distances. For the most ac-
+AGB stars within these populations.                                         curate SBF distances, one should target giant elliptical
+  6. RECOMMENDATIONS FOR MEASURING IR SBF                                   and S0 galaxies with old stellar populations, for which
+                   DISTANCES WITH WFC3                                      (g475 −z850 ) colors are greater than 1.2 or (J110 −H160 ) are
+                                                                            greater than 0.22 AB mag. The population variations
+  WFC3 on the HST makes it possible to measure IR SBF                       at bluer colors are too great for robust distance mea-
+magnitudes at relatively large distances in modest exposure                 surements. If possible, it is best to use ACS (g475 −z850 )
+times. Based on our experience with the Fornax and Virgo                    colors, but WFC3/IR (J110 −H160 ) colors are an accept-
+cluster calibration data presented here, as well tests with                 able alternative. If necessary, other color indices may
+WFC3/IR observations in the Coma cluster from HST pro-                      be translated to (g475 −z850 ) or (J110 −H160 ) using well-
+gram GO-11711 (see Blakeslee 2013) and with the instrument                  constrained empirical or model relations for old, metal-
+exposure time calculator, we provide the following guidelines               rich populations.
+to help other astronomers plan WFC3 SBF observations and
+make use of existing data in the HST archive.                                                  7. SUMMARY
+   1. The fluctuations are brighter at H160 than at J110 , but the       We have measured J110 and H160 SBF magnitudes and
+      J110 filter is signficantly wider than H160 (by 0.8 mag),       (J110 −H160 ) colors for 16 early-type galaxies in the Virgo and
+      which largely cancels out the brightness advantage. The         Fornax clusters observed with WFC3/IR. All of these galaxies
+      image quality is slightly better at J110 than H160 , and the    have previously measured SBF distances and (g475 −z850 ) col-
+      background is slightly lower. The net effect is that ex-        ors from ACS. We find that the luminous red galaxies in the
+      posure times to achieve a particular SBF S/N ratio is           sample follow linear relations between absolute SBF magni-
+      about the same in the two filters, but the ability to de-       tude and optical or IR color; SBF distances to such galaxies
+      tect and remove contaminating point sources (primar-            can be determined within a statistical uncertainty of 5% us-
+      ily globular clusters) is better at J110 , and there is less    ing the calibration relations that we have presented in Equa-
+      scatter in the calibration. We therefore advise choos-          tions (3) through (6). The systematic uncertainty of this cali-
+      ing J110 over H160 when possible. The broad F140W               bration is ∼10% due to the uncertainty in the Cepheid calibra-
+      filter would be a good alternative, unhampered by the           tion on which this work is based. Stellar population models
+      1.083 µm He emission line in the upper atmosphere, but          are not consistent enough to provide a direct calibration of the
+      that bandpass remains uncalibrated for SBF.                     IR SBF technique accurate to 10%, but they are valuable for
+                                                                      inferring age and metallicity trends in and among the sample
+   2. Typical one-orbit exposure times (∼2400 s) suffice for          galaxies. The scatter in SBF magnitude among bluer galax-
+      measuring distances in either J110 or H160 out to about         ies is large, indicating that a wider variety of stellar popula-
+      80 Mpc. This distance limit is imposed by the point             tions dominate the light from these galaxies and that a simple
+      source sensitivity required to detect and remove glob-          broadband color does not adequately parameterize the com-
+      ular clusters from the image, with the goal of reaching         plexities inherent in such populations. Some galaxies, partic-
+      within ∼ 1 mag of the peak of the globular cluster lu-          ularly those of intermediate color, clearly have younger (4 to
+      minosity function in J110 , or ∼ 1.5 mag of the peak in         8 Gyr) populations, likely with AGB stars that enhance the IR
+      H160 , for which the fluctuations are relatively brighter       fluctuation amplitude. Bluer galaxies, primarily dwarf ellip-
+      (Jensen et al. 1998). The SBF signal itself can be de-          ticals, may have very-low metallicities and/or younger ages,
+      tected to much larger distances (beyond 100 Mpc) in a           with the interpretations varying among different sets of stellar
+18                                                                          Jensen et al.
+
+population models. Finally, we have provided practical advice                      and N. Boyer acknowledge the support of the Utah Valley
+to guide researchers interested in undertaking SBF measure-                        University Scholarly Activities Committee. Z. Gibson was
+ments with WFC3/IR.                                                                also supported by the Utah NASA Space Grant Consortium
+                                                                                   award NNX10AJ77H. M. Cantiello is grateful for support
+                                                                                   from the FSE-Abruzzo “Sapere e Crescita” project and the
+   Based on observations made with the NASA/ESA Hub-                               PRIN-INAF-2014 grant (P.I. Gisella Clementini). H. Cho
+ble Space Telescope, obtained at the Space Telescope Sci-                          acknowledges support from the National Research Founda-
+ence Institute, which is operated by the Association of Uni-                       tion of Korea to the Center for Galaxy Evolution Research.
+versities for Research in Astronomy, Inc., under NASA con-                         This research has made use of the NASA/IPAC Extragalac-
+tract NAS 5-26555. These observations are associated with                          tic Database (NED) which is operated by the Jet Propulsion
+program #11712. Additional data from program #11570                                Laboratory, California Institute of Technology, under contract
+was obtained from the Data Arcive. J. Jensen, Z. Gibson,                           with the National Aeronautics and Space Administration.
+                                                                          REFERENCES
+Bennett, C. L., Larson, D., Weiland, J. L., et al. 2013, ApJS, 208, 20,            Herrnstein, J. R., Moran, J. M., Greenhill, L. J., et al. 1999, Nature, 400,
+  arXiv:1212.5225                                                                    539, arXiv:astro-ph/9907013
+Bertin, E. & Arnouts, S. 1996, A&AS, 117, 393                                      Hoffmann, S. L. & Macri, L. M. 2015, AJ, in press, arXiv:1503.07953
+Binggeli, B., Sandage, A., & Tammann, G. A. 1985, AJ, 90, 1681                     Humphreys, E. M. L., Reid, M. J., Moran, J. M., Greenhill, L. J., & Argon,
+Biscardi, I., Raimondo, G., Cantiello, M., & Brocato, E. 2008, ApJ, 678,             A. L. 2013, ApJ, 775, 13
+  168, arXiv:0802.2509                                                             Jensen, J. B., Luppino, G. A., & Tonry, J. L. 1996, ApJ, 468, 519
+Blake, C., Kazin, E. A., Beutler, F., et al. 2011, MNRAS, 418, 1707,               Jensen, J. B., Tonry, J. L., Barris, B. J. et al. 2003, ApJ, 583, 712,
+  arXiv:1108.2635                                                                    arXiv:astro-ph/0210129
+Blakeslee, J. P. 2012, Ap&SS, 341, 179, arXiv:1202.0581                            Jensen, J. B., Tonry, J. L., & Luppino, G. A. 1998, ApJ, 505, 111,
+Blakeslee, J. P. 2013, IAU Symposium, 289, 304                                       arXiv:astro-ph/9804169
+Blakeslee, J. P., Cantiello, M., Mei, S., et al. 2010, ApJ, 724, 657,              Jensen, J. B., Tonry, J. L., Thompson, R. I. et al. 2001, ApJ, 550, 503,
+  arXiv:1009.3270                                                                    arXiv:astro-ph/0011288
+Blakeslee, J. P., Jordán, A., Mei, S. et al. 2009, ApJ, 694, 556,                  Jordán, A., Blakeslee, J. P., Côté, P., et al. 2007, ApJS, 169, 213,
+  arXiv:0901.1138                                                                    arXiv:astro-ph/0702320
+Blakeslee, J. P., Tonry, J. L., & Metzger, M. R. 1997, AJ, 114, 482,               Kalirai, J. S., Cox, C., Dressel, L., Fruchter, A., Hack, W., Kozhurina-Platais
+  arXiv:astro-ph/9705129                                                             V. & Mack, J. 2010, “WFC3 Pixel Area Maps,” WFC3 Instrument
+Blakeslee, J. P., Vazdekis, A., & Ajhar, E. A. 2001, MNRAS, 320, 193,                Science Report 2010-08, Space Telescope Science Institute
+  arXiv:astro-ph/0008218                                                           Kelson, D. D., Illingworth, G. D., Freedman, W. F., et al. 1996, ApJ, 463, 26
+Brammer, G., Pirzkal, N., McCullough, P., & MacKenty, J. 2014,                     Kormendy, J., & Ho, L. C. 2013, ARA&A, 51, 511, arXiv:1304.7762
+  “Time-varying Excess Earth-glow Backgrounds in the WFC3/IR                       Krist, J. E., Hook, R. N., & Stoehr, F. 2011, Proc. SPIE, 8127, 81270J
+  Channel,” WFC3 Instrument Science Report 2014-03, Space Telescope                Kuntschner, H. 2000, MNRAS, 315, 184
+  Science Institute                                                                La Barbera, F., Ferreras, I., de Carvalho, R. R., et al. 2012, MNRAS, 426,
+Caldwell, N., Rose, J. A., & Concannon, K. D. 2003, AJ, 125, 2891,                   2300, arXiv:1208.0587
+  arXiv:astro-ph/0303345                                                           Lee, H.-c., Worthy, G., & Blakeslee, J. P. 2010, ApJ, 710, 421,
+Cantiello, M. 2012, Ap&SS, 341, 187                                                  arXiv:0902.1177
+Cantiello, M., Blakeslee, J. P., Raimondo, G., Brocato, E., & Capaccioli, M.       Lee, H.-c. & Worthey, G. 2005, ApJS, 160, 176, arXiv:astro-ph/0504509
+  2007, ApJ, 668, 130, arXiv:0706.4467                                             Liu, M. C., Charlot, S., & Graham, J. R. 2000, ApJ, 543, 644,
+Cantiello, M., Blakeslee, J. P., Raimondo, G., Mei, S., Brocato, E., &               arXiv:astro-ph/0004367
+  Capaccioli, M. 2005, ApJ, 634, 239, arXiv:astro-ph/0507699                       Liu, M. C., Graham, J. R., & Charlot, S. 2002, ApJ, 564, 216,
+Cantiello, M., Grado, A., Blakeslee, J. P., Raimondo, G., Di Rico, G.,               arXiv:astro-ph/0107357
+  Limatola, L., Brocato, E., Della Valle, M., & Gilmozzi, R. 2013, A&A,            Luppino, G. A. & Tonry, J. L. 1993, ApJ, 410, 81
+  552, 106, arXiv:1302.7132                                                        Macri, L. M., Stanek, K. Z., Bersier, D., Greenhill, L. J., & Reid, M. J. 2006,
+Cantiello, M., Raimondo, G., Brocato, E., & Capaccioli, M. 2003, AJ, 125,            ApJ, 652, 1133, arXiv:astro-ph/0608211
+  2783, arXiv:astro-ph/0303325                                                     Marigo, P., Girardi, L., Bressan, A., Groenewegen, M. A. T., Silva, L., &
+Chen, C.-W., Côté, P., West, A. A., Peng, E. W., & Ferrarese, L. 2010, ApJS,         Granato, G. L. 2008, A&A, 482, 883, arXiv:0711.4922
+  191, 1                                                                           Marín-Franch, A., & Aparicio, A. 2006, A&A, 450, 979
+Cordier, D., Pietrinferni, A., Cassisi, S., & Salaris, M. 2007, AJ, 133, 468,      Mei, S., Blakeslee, J. P., Côté, P., Tonry, J. L., West, M. J., Ferrarese, L.,
+  arXiv:astro-ph/0303325                                                             Jordán, A., Peng, E. W., Anthony, A., & Merritt, D. 2007, ApJ, 655, 144
+Côté, P., Blakeslee, J. P., Ferrarese, L., et al. 2004, ApJS, 153, 223,            Mei, S., Blakeslee, J. P., Tonry, J. L. et al. 2005a, ApJS, 156, 113,
+  arXiv:astro-ph/0404138                                                             arXiv:astro-ph/0501325
+Eisenstein, D. J., Zehavi, I., Hogg, D. W., et al. 2005, ApJ, 633, 560,            Mei, S., Blakeslee, J. P., Tonry, J. L., et al. 2005b, ApJ, 625, 121
+  arXiv:astro-ph/0501171                                                           Mieske, S., Hilker, M., & Infante, L. 2003, A&A, 403, 43,
+Fausnaugh, M. M., Kochanek, C. S., Gerke, J. R., Macri, L. M., Riess, A.             arXiv:astro-ph/0303577
+  G., & Stanek, K. Z. 2015, MNRAS, submitted                                       Mieske, S., Hilker, M., & Infante, L. 2006, A&A, 458, 1013
+Ferguson, H. C. 1989, AJ, 98, 367                                                  Miyoshi, M., Moran, J., Herrnstein, J., et al. 1995, Nature, 373, 127
+Ferrarese, L., Côté, P., Jordán, A., et al. 2006, ApJS, 164, 334,                  Mould, J. R., Huchra, J. P., Freedman, W. L., et al. 2000, ApJ, 529, 786,
+  arXiv:astro-ph/0602297                                                             arXiv:astro-ph/9909260
+Ferrarese, L., Freedman, W. L., Hill, R. J., et al. 1996, ApJ, 464, 568            Pahre, M. A. & Mould, J. R. 1994, ApJ, 433, 567
+Ferrarese, L., Mould, J. R., Kennicutt, R. C., Jr., et al. 2000, ApJ, 529, 745,    Perlmutter, S., Aldering, G., Goldhaber, G., et al. 1999, ApJ, 517, 565,
+  arXiv:astro-ph/9908192                                                             arXiv:astro-ph/9812133
+Freedman, W. L. & Madore, B. F. 2010, ARA&A, 48, 673, arXiv:1004.1856              Pietrinferni, A., Cassisi, S., Salaris, M., & Castelli, F. 2004, ApJ, 612, 168,
+Freedman, W. L., Madore, B. F., Gibson, B. K., et al. 2001, ApJ, 553, 47,            arXiv:astro-ph/0405193
+  arXiv:astro-ph/0012376                                                           Pietrinferni, A., Cassisi, S., Salaris, M., & Castelli, F. 2006, ApJ, 642, 797,
+Freedman, W. L., Madore, B. F., Mould, J. R., et al. 1994, Nature, 371, 757          arXiv:astro-ph/0603721
+Freedman, W. L., Madore, B. F., Scowcroft, V., et al. 2012, ApJ, 758, 24,          Pirzkal, N. 2014, “The Near Infrared Sky Background,” WFC3 Instrument
+  arXiv:1208.3281                                                                    Science Report 2014-11, Space Telescope Science Institute
+Fritz, A. 2012, PASA, 29, 489, arXiv:1205.1498                                     Planck Collaboration, Ade, P. A. R., Aghanim, N., et al. 2015, submitted,
+Fritz, A. 2014, A&A, 563, 92, arXiv:1401.6137                                        arXiv:1502.01589
+Frogel, J. A., Persson, S. E., Matthews, K., & Aaronson, M. 1978, ApJ, 220,        Raimondo, G. 2009, ApJ, 700, 1247, arXiv:0907.1408
+  75                                                                               Raimondo, G., Brocato, E., Cantiello, M., & Capaccioli, M. 2005, AJ, 130,
+Gibson, B. K., Stetson, P. B., Freedman, W. L., et al. 2000, ApJ, 529, 723,          2625, arXiv:astro-ph/0509020
+  arXiv:astro-ph/9908149                                                           Retzlaff, J., Rosati, P., Dickinson, M., et al. 2010, A&A, 511, A50,
+Greene, J. E., Janish, R., Ma, C.-P., McConnell, N. J., Blakeslee, J. P.,            arXiv:0912.1306
+  Thomas, J., & Murphy, J. D. 2015, ApJ, in press, arXiv:1504.02483                Riess, A. G., Filippenko, A. V., Challis, P., et al. 1998, AJ, 116, 1009,
+Greenhill, L. J., Jiang, D. R., Moran, J. M., et al. 1995, ApJ, 440, 619             arXiv:astro-ph/9805201
+Harris, W. E. 2001, Star Clusters, Saas-Fee Advanced Courses, Volume 28,           Riess, A. G., Macri, L., Casertano, S., et al. 2011, ApJ, 730, 119,
+  223                                                                                arXiv:1103.2976
+                                                                                   Saha, A., Sandage, A., Labhardt, L., et al. 1996, ApJ, 466, 55
+                                                         Infrared SBF Distances Using WFC3                                                                  19
+
+Saha, A., Sandage, A., Labhardt, L., et al. 1997, ApJ, 486, 1                  Tonry, J. L. & Schneider 1988, AJ, 96, 807
+Sakai, S., Mould, J. R., Hughes, S. M. G., et al. 2000, ApJ, 529, 698,         Trager, S. C., Faber, S. M., Worthey, G., & González, J. J. 2000, AJ, 119,
+   arXiv:astro-ph/9909269                                                        1645, arXiv:astro-ph/0001072
+Schlafly, E. F. & Finkbeiner, D. P. 2011, ApJ, 737, 103, arXiv:1012.4804       van der Wel, A., Franx, M., van Dokkum, P. G., et al. 2014, ApJ, 788, 28,
+Silbermann, N. A., Harding, P., Ferrarese, L., et al. 1999, ApJ, 515, 1,         arXiv:1404.2844
+   arXiv:astro-ph/9806017                                                      van Dokkum, P. G., Whitaker, K. E., Brammer, G., et al. 2010, ApJ, 709,
+Sorce, J. G., Tully, R. B., & Courtois, H. M. 2012, ApJ, 758, L12,               1018, arXiv:0912.0514
+   arXiv:1208.3311                                                             Windhorst, R. A., Cohen, S. H., Hathi, N. P., et al. 2011, ApJS, 193, 27,
+Stritzinger, M., Burns, C. R., Phillips, M. M., et al. 2010, AJ, 140, 2036       arXiv:1005.2776
+Thompson, R. I., Storrie-Lombardi, L. J., Weymann, R. J., Rieke, M. J.,        Worthey, G. 1993, ApJ, 409, 530
+   Schneider, G., Stobie, E. & Lytle, D. 1999, AJ, 117, 17                     Worthey, G. 1994, ApJS, 95, 107
+Tonry, J. L., Ajhar, E. A. & Luppino, G. A. 1990, AJ, 100, 1416
+Tonry, J. L., Blakeslee, J. P., Ajhar, E. A., & Dressler, A. 1997, ApJ, 475,
+   399, arXiv:astro-ph/9609113
+Tonry, J. L., Dressler, A., Blakeslee, J. P., Ajhar, E. A., Fletcher, A. B.,
+   Luppino, G. A., Metzger, M. R., & Moore, C. B. 2001, ApJ, 546, 681,
+   arXiv:astro-ph/0011223
+
