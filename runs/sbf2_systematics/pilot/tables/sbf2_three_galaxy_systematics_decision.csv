@@ -1,0 +1,5 @@
+check,passed,criterion
+Все 6 production-измерений воспроизведены,True,обязательно
+Размах винзорирования везде < 0.03 mag,False,0.03 mag
+Сдвиг PSF везде < 0.03 mag,True,0.03 mag
+Все N(k)-решения физичны,False,доля = 1

@@ -1,0 +1,2 @@
+galaxy,finite_mask_mismatch_pixels,compared_pixels,median_absolute_difference,maximum_absolute_difference,passed
+NGC 4486,0,6059514,0.0,0.0,True

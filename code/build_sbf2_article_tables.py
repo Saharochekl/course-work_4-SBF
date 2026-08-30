@@ -51,6 +51,11 @@ def distance_cell(distance: float, uncertainty: float) -> str:
     return f"${distance:.2f}\\pm{uncertainty:.2f}$"
 
 
+def environment_label(value: str) -> str:
+    """Printed label: Virgo is a broad sky-region class, not strict membership."""
+    return "Virgo region" if value == "Virgo" else value
+
+
 # Paper III, Table 1 and Eq. (2).  These are HST/WFC3-IR F110W values,
 # deliberately kept separate from the five legacy F160W reconstructions.
 paper3 = pd.DataFrame(
@@ -100,13 +105,34 @@ comparison = distances.merge(
     how="left",
     validate="one_to_one",
 )
-comparison.to_csv(TABLE_DIR / "go3055_distance_comparison_all_methods.csv", index=False)
+distance_main = comparison[
+    [
+        "galaxy",
+        "environment",
+        "D_trgb_mpc",
+        "sigma_D_trgb_mpc",
+        "D_sbf_constant_mpc",
+        "sigma_D_sbf_constant_mpc",
+        "D_jensen_paper3_f110w_mpc",
+        "sigma_D_jensen_paper3_f110w_mpc",
+        "D_jensen_f160w_mpc",
+        "sigma_D_jensen_f160w_mpc",
+    ]
+].rename(
+    columns={
+        "D_sbf_constant_mpc": "D_sbf_adopted_mpc",
+        "sigma_D_sbf_constant_mpc": "sigma_D_sbf_adopted_mpc",
+    }
+)
+distance_main.to_csv(
+    TABLE_DIR / "go3055_distance_comparison_all_methods.csv", index=False
+)
 
 distance_tex = [
-    r"\begin{tabular}{llccccc}",
+    r"\begin{tabular}{llcccc}",
     r"\toprule",
-    r"Galaxy & Env. & TRGB IV & SBF const. & SBF linear & Jensen III & Jensen 2015 \\",
-    r" & & & & & F110W & F160W \\",
+    r"Galaxy & Env. & TRGB IV & SBF adopted & Jensen III & Jensen 2015 \\",
+    r" & & & & F110W & F160W \\",
     r"\midrule",
 ]
 for row in comparison.itertuples(index=False):
@@ -114,10 +140,9 @@ for row in comparison.itertuples(index=False):
         " & ".join(
             [
                 row.galaxy.replace(" ", "~"),
-                row.environment,
+                environment_label(row.environment),
                 distance_cell(row.D_trgb_mpc, row.sigma_D_trgb_mpc),
                 distance_cell(row.D_sbf_constant_mpc, row.sigma_D_sbf_constant_mpc),
-                distance_cell(row.D_sbf_linear_mpc, row.sigma_D_sbf_linear_mpc),
                 distance_cell(
                     row.D_jensen_paper3_f110w_mpc,
                     row.sigma_D_jensen_paper3_f110w_mpc,
@@ -173,7 +198,7 @@ common_tex = [r"\begin{tabular}{lrp{4.5cm}}", r"\toprule", r"Component & $\sigma
 common_labels = {
     "TRGB / NGC 4258 common zero point": "TRGB/NGC 4258 zero point",
     "JWST/NIRCam F150W absolute flux scale": "NIRCam F150W flux scale",
-    "STPSF 129-pixel stamp normalization": "STPSF stamp normalization",
+    "STPSF 129-pixel finite-stamp term": "STPSF finite-stamp term",
     "Combined absolute-Mbar zero point": r"Combined absolute $\overline M_{150}$ scale",
     "Same-filter SBF distance-scale zero point": "Same-filter SBF distance scale",
 }
@@ -233,7 +258,8 @@ measurement_tex = [
 for row in constant_measurements.itertuples(index=False):
     high_quality = "+" if str(row.paper_iv_high_quality).lower() == "true" else "-"
     measurement_tex.append(
-        f"{row.galaxy} & {row.environment} & {row.color_F090W_F150W:.3f} & "
+        f"{row.galaxy} & {environment_label(row.environment)} & "
+        f"{row.color_F090W_F150W:.3f} & "
         f"{row.mbar_F150W:.3f} & {row.Mbar_F150W:.3f} & "
         f"{row.sigma_Mbar_internal:.3f} & {row.annulus_delta_mag:.3f} & "
         f"{row.mu_lit:.3f} & {row.delta_mu_sbf_minus_trgb:+.3f} & "
@@ -262,7 +288,7 @@ for environment, group in constant_predictions.groupby("environment", sort=False
         group["mu_trgb"], group["mu_sbf_loo"],
         xerr=group["sigma_mu_trgb"], yerr=group["sigma_mu_sbf_internal"],
         fmt=marker, color=color, mec="black", mew=0.6, ms=7,
-        capsize=3, linestyle="none", label=environment,
+        capsize=3, linestyle="none", label=environment_label(environment),
     )
 for row in constant_predictions.itertuples(index=False):
     ax.annotate(row.galaxy.replace("NGC ", ""), (row.mu_trgb, row.mu_sbf_loo),
@@ -391,36 +417,26 @@ prediction_summary.to_csv(
     TABLE_DIR / "go3055_predictive_error_summary.csv", index=False
 )
 
+adopted_prediction_definitions = [
+    item for item in prediction_definitions
+    if item[1] != "sigma_color_prediction_mag"
+]
 prediction_tex = [
-    r"\begin{tabular}{lcc}",
+    r"\begin{tabular}{lc}",
     r"\toprule",
-    r"Component & Constant & Linear \\",
+    r"Component & Adopted constant \\",
     r"\midrule",
 ]
-for label, _ in prediction_definitions:
-    cells = []
-    for model in ["constant", "linear"]:
-        row = prediction_summary.loc[
-            (prediction_summary["model"] == model)
-            & (prediction_summary["component"] == label)
-        ].iloc[0]
-        if row.max_sigma_mag < 1.0e-4 and row.max_sigma_mag > 0:
-            def scientific(value: float) -> str:
-                exponent = int(np.floor(np.log10(abs(value))))
-                mantissa = value / 10**exponent
-                return rf"${mantissa:.1f}\times10^{{{exponent}}}$"
-
-            cells.append(
-                f"{scientific(row.median_sigma_mag)} "
-                f"({scientific(row.min_sigma_mag)}--"
-                f"{scientific(row.max_sigma_mag)})"
-            )
-        else:
-            cells.append(
-                f"{row.median_sigma_mag:.4f} "
-                f"({row.min_sigma_mag:.4f}--{row.max_sigma_mag:.4f})"
-            )
-    prediction_tex.append(f"{label} & {cells[0]} & {cells[1]} " + r"\\")
+for label, _ in adopted_prediction_definitions:
+    row = prediction_summary.loc[
+        (prediction_summary["model"] == "constant")
+        & (prediction_summary["component"] == label)
+    ].iloc[0]
+    cell = (
+        f"{row.median_sigma_mag:.4f} "
+        f"({row.min_sigma_mag:.4f}--{row.max_sigma_mag:.4f})"
+    )
+    prediction_tex.append(f"{label} & {cell} " + r"\\")
 prediction_tex.extend([r"\bottomrule", r"\end{tabular}", ""])
 (TABLE_DIR / "go3055_predictive_error_summary.tex").write_text(
     "\n".join(prediction_tex), encoding="utf-8"
@@ -474,6 +490,10 @@ software_rows.extend(
         ("Executed sbf-2.ipynb SHA256", provenance["template"]["sha256"]),
         ("Current sbf-2-graph.ipynb SHA256", sha256(ROOT / "code" / "sbf-2-graph.ipynb")),
         (
+            "Current sbf-2-systematics.ipynb SHA256",
+            sha256(ROOT / "code" / "sbf-2-systematics.ipynb"),
+        ),
+        (
             "Current article TeX SHA256",
             sha256(ROOT / "texts" / "paper_work" / "go3055_jwst_sbf_article_draft.tex"),
         ),
@@ -493,11 +513,11 @@ for row in software.itertuples(index=False):
     value = row.version_or_identifier.replace("_", r"\_")
     if len(value) > 24 and all(char in "0123456789abcdef" for char in value.lower()):
         value = r"\texttt{" + value[:12] + r"\ldots}"
-    software_tex.append(f"{row.item} & {value} \\\\ ")
+    software_tex.append(f"{row.item} & {value} \\\\")
 software_tex.extend([r"\bottomrule", r"\end{tabular}", ""])
 (TABLE_DIR / "go3055_software_provenance.tex").write_text(
     "\n".join(software_tex), encoding="utf-8"
 )
 
 print(f"Wrote article tables to {TABLE_DIR}")
-print(comparison[["galaxy", "D_trgb_mpc", "D_sbf_constant_mpc", "D_sbf_linear_mpc", "D_jensen_paper3_f110w_mpc", "D_jensen_f160w_mpc"]].to_string(index=False))
+print(distance_main.to_string(index=False))

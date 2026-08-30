@@ -1,0 +1,9 @@
+galaxy,ring,variant,changed_pixels,changed_fraction
+NGC 1380,inner,raw,0,0.0
+NGC 1380,inner,winsor_3.0,37504,0.057987058668913745
+NGC 1380,inner,winsor_3.5,14707,0.022739325721088804
+NGC 1380,inner,winsor_4.0,5876,0.009085216423275842
+NGC 1380,outer,raw,0,0.0
+NGC 1380,outer,winsor_3.0,14431,0.007438429739286414
+NGC 1380,outer,winsor_3.5,3849,0.0019839592589919897
+NGC 1380,outer,winsor_4.0,1055,0.0005437976145067678

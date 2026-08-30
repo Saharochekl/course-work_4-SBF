@@ -1,0 +1,203 @@
+\documentclass[10pt,reqno,intlimits,twoside]{amsart}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english, russian]{babel}
+
+\usepackage{amsfonts,amsmath,amsxtra,amsthm,amssymb,latexsym}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{floatflt}
+\usepackage{array}
+\usepackage{multicol}
+\usepackage{textcase}
+\usepackage{fancyhdr}
+\usepackage{tabularx}
+\usepackage{amsopn}
+\usepackage{subfigure}
+\usepackage{cite}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+\usepackage{xcolor,colortbl}
+\usepackage{graphicx, xcolor} 
+\usepackage{float}
+\usepackage{anysize}
+\usepackage{graphics}
+\usepackage{longtable}
+\usepackage{caption} %заголовки плавающих объектов
+\captionsetup[figure]{justification=centering}
+\captionsetup[table]{justification=centering, position=above}
+
+
+\definecolor{green}{RGB}{0,200,0.}
+\definecolor{darkishgreen}{RGB}{39,203,22}
+\definecolor{LightCyan}{rgb}{0.88,1,1}
+\definecolor{Gray}{gray}{0.9}
+\definecolor{lightRed}{RGB}{230,170,150}
+\definecolor{modRed}{RGB}{230,82,90}
+\definecolor{strongRed}{RGB}{230,6,6}
+\evensidemargin=0.3cm \oddsidemargin=2.5cm
+
+\righthyphenmin=2
+\emergencystretch=5pt
+\hfuzz=2pt
+\mathsurround=0.1em
+\clubpenalty=1000%
+\widowpenalty=1000%
+\brokenpenalty=2000%
+\frenchspacing%
+\tolerance=9000%
+\hbadness=1500%
+\doublehyphendemerits=50000%
+\finalhyphendemerits=25000%
+\adjdemerits=50000%
+\pagestyle{myheadings}
+\setlength{\topmargin}{-0.75cm}%{-1.5cm}
+\setlength{\headheight}{1.0cm}
+%----------------------
+\setlength{\headsep}{0.65cm} %g_n
+\setlength{\textheight}{21.72cm}
+\setlength{\oddsidemargin}{1.25cm}
+\setlength{\evensidemargin}{1.25cm}
+\setlength{\textwidth}{13.3cm}
+\renewcommand{\baselinestretch}{1.0}
+%%%%%%%%%%%%%%%Нумерованные окружения%%%%%%%%%%%%%%%%%%%%
+
+\newtheorem{definition}{Определение}
+\newtheorem{theorem}{Теорема}
+\newtheorem{lemma}{Лемма}
+\newtheorem{corollary}{Следствие}
+\newtheorem{proposition}{Утверждение}
+\newtheorem{examp}{Пример}
+\newtheorem{property}{Свойство}
+\newtheorem{remark}{Замечание}
+
+%%%%%%%%%%%%%%%%Окружения без номера%%%%%%%%%%%%%%%%
+
+\newtheorem*{definition*}{Определение}
+\newtheorem*{theorem*}{Теорема}
+\newtheorem*{lemma*}{Лемма}
+\newtheorem*{corollary*}{Следствие}
+\newtheorem*{proposition*}{Утверждение}
+\newtheorem*{examp*}{Пример}
+\newtheorem*{property*}{Свойство}
+\newtheorem*{remark*}{Замечание}
+\renewenvironment{proof}{\par \noindent \textbf{Доказательство.}}{\hfill \qedsymbol \par}
+
+%%%%%%%%%%%%%%%%%%%Операторы%%%%%%%%%%%%%%%
+
+\renewcommand{\arg}{\mathop{\mathrm{arg}}}
+\renewcommand{\mod}{\mathop{\mathrm{mod}}}
+\renewcommand{\det}{\mathop{\mathrm{det}}}
+\DeclareMathOperator{\Ker}{Ker} \DeclareMathOperator{\im}{Im}
+\DeclareMathOperator{\re}{Re} \DeclareMathOperator{\Div}{div}
+\DeclareMathOperator{\Hom}{Hom} \DeclareMathOperator{\prlim}{pr\;lim}
+\DeclareMathOperator{\indlim}{ind\;lim} \DeclareMathOperator{\dist}{dist}
+\DeclareMathOperator{\col}{col} \DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\sgn}{sgn} \DeclareMathOperator{\exponent}{exp}
+\DeclareMathOperator{\diag}{diag} \DeclareMathOperator{\dom}{dom}
+\DeclareMathOperator{\sg}{sign} \DeclareMathOperator{\sq}{sq}
+\DeclareMathOperator{\ind}{ind} \DeclareMathOperator{\ray}{ray}
+\DeclareMathOperator{\loc}{loc} \DeclareMathOperator{\pr}{pr}
+\DeclareMathOperator{\per}{per} \DeclareMathOperator{\cov}{cov}
+\DeclareMathOperator{\non}{non} \DeclareMathOperator{\cf}{cf}
+\DeclareMathOperator{\add}{add} \DeclareMathOperator{\Cham}{Cham}
+\DeclareMathOperator{\IM}{Im} \DeclareMathOperator{\esssup}{ess\,sup}
+\DeclareMathOperator{\meas}{meas} \DeclareMathOperator{\seg}{seg}
+\DeclareMathOperator{\tr}{tr} \DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\Lat}{Lat} \DeclareMathOperator{\Hyplat}{Hyplat}
+\DeclareMathOperator{\Alg}{Alg} \DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\sn}{sn} \DeclareMathOperator{\Cyc}{Cyc}
+\DeclareMathOperator{\disc}{disc} \DeclareMathOperator{\clos}{clos}
+\DeclareMathOperator{\conv}{conv} \DeclareMathOperator{\od}{(\bot)}
+\DeclareMathOperator{\ran}{Ran} \DeclareMathOperator{\Obj}{Obj}
+\DeclareMathOperator{\Arg}{Arg} \DeclareMathOperator{\Ran}{R}
+\DeclareMathOperator{\D}{D} \DeclareMathOperator{\Is}{Is}
+\DeclareMathOperator{\Lin}{Lin} \DeclareMathOperator{\lc}{lc}
+\DeclareMathOperator{\Clos}{Clos} \DeclareMathOperator{\li}{l}
+\DeclareMathOperator{\Max}{Max} \DeclareMathOperator{\adj}{adj}
+\DeclareMathOperator{\Neutr}{Neutr} \DeclareMathOperator{\Subsp}{Subsp}
+\DeclareMathOperator{\Kr}{Kr} \DeclareMathOperator{\Sadj}{Sadj}
+\DeclareMathOperator{\Inv}{Inv} \DeclareMathOperator{\CInv}{CInv}
+\DeclareMathOperator{\Rep}{Rep} \DeclareMathOperator{\Mor}{Mor}
+
+%%%%%%%%%Сокращения%%%%%%%%%%%%%%%%
+
+\def\bR{{\mathbb R}}
+\def\bC{{\mathbb C}}
+\def\bZ{{\mathbb Z}}
+\def\eps{{\varepsilon}}
+\def\const{\textrm{const}}
+\def\Box{\square}
+\pagestyle{myheadings}
+
+\allowdisplaybreaks     
+\sloppy
+%\renewcommand{refname}{Список литературы}                 
+\renewcommand{\author}[1]{\medskip\begin{center}
+		{\large \scshape{#1}}
+	\end{center}\medskip}
+
+\renewcommand{\address}[1]{\begin{center}
+		{#1}\end{center}}
+
+\renewcommand{\thanks}[1]{\begin{center}
+		{\footnotesize {#1}}\end{center}}
+
+
+\renewcommand{\email}[1]{\begin{center}
+		\texttt{E-mail: #1}\end{center}}
+
+\renewcommand{\title}[1]{
+	\begin{center}
+		{\large{\bfseries{#1}}}
+	\end{center}\medskip}
+
+\setcounter{tocdepth}{0}
+
+\renewenvironment{abstract}{
+	\bigskip
+	\footnotesize}
+{\par\medskip}
+
+\makeatletter
+\newcommand{\l@art}[2]%
+%{\hbox to\textwidth{#1\dotfill #2}}
+{\pagebreak[0]\vspace{1 em plus 1pt}%
+	\@tempdima=3em%
+	{\rightskip=\@pnumwidth%
+		\leftskip=\@tempdima%
+		\noindent\hspace{-1.5em}%
+		#1\nolinebreak\dotfill\nolinebreak\rlap%
+		{\makebox[\@pnumwidth][r]{#2}}\par\nopagebreak[3]}}
+\makeatother
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\begin{document}
+
+    \thispagestyle{empty}
+    \begin{center}
+    \Huge     {\textbf{Сборник трудов}}\\
+        \bigskip
+    \LARGE     {\textbf {V Молодежных чтений имени М.~В.~Келдыша}}
+    \end{center}
+   \vspace{6cm}
+   \begin{center}
+    \LARGE    {\textbf {Факультет космических исследований\\ 
+       МГУ имени М.~В.~Ломоносова}}
+   \end{center}
+    \vspace*{\fill}
+    \begin{center}
+        \large {Москва, 2025}
+    \end{center}
+    \newpage
+    \tableofcontents
+    \newpage
+    
+    \include{BukanovIA/BukanovIA}
+
+    
+\end{document}

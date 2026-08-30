@@ -1,0 +1,394 @@
+
+\sloppy
+
+%\pagenumbering{arabic} \setcounter{page}{1}
+\thispagestyle{empty}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%Обязательно заполните следующие поля - для оглавления и колонтитулов!!!:
+
+
+\addtocontents{toc}{\protect\vspace{4pt}}
+\addtocontents{toc}{\noindent\textbf{Андреев Максим Игоревич} \quad \emph{МГУ имени М.В.Ломоносова (Россия, Москва)}
+\\} %Please, don't change the height of the letters!
+
+\addtocontents{toc}{\protect\vspace{-9.5pt}}
+\addcontentsline{toc}{art}{\qquad\textsc {Поиск оптимального диапазона длин волн для дистанционного измерения излучательной способности нагретого тела}} %Пожалуйста, не меняйте высоту букв! Название должно совпадать с названием Вашей курсовой (или выпускной) работы.
+
+%   6 обязательных для заполнения пунктов:
+\noindent {\footnotesize УДК: 536.3}
+
+\title{ПОИСК ОПТИМАЛЬНОГО ДИАПАЗОНА ДЛИН ВОЛН ДЛЯ ДИСТАНЦИОННОГО ИЗМЕРЕНИЯ ИЗЛУЧАТЕЛЬНОЙ СПОСОБНОСТИ НАГРЕТОГО ТЕЛА} %Пожалуйста, не меняйте высоту букв!
+\markboth{Поиск диапазона длин волн для измерения излучательной способности}{Поиск диапазона длин волн для измерения излучательной способности}%Это название будет печататься в колонтитулах. Если полное название слишком большое, запишите здесь краткое название статьи.
+
+\author{Андреев М.\;И.} %Пожалуйста, не меняйте высоту букв!
+
+\address{МГУ имени М.В. Ломоносова (Россия, Москва)}
+
+\email{makcim.andreev@list.ru}
+
+\begin{abstract}% аннотация с ключевыми словами
+
+В работе описан аналитический подход определения погрешностей измерения температуры и излучательной способности нагретого тела, когда указанные параметры измеряются дистанционно. Дистанционные методы определения температуры на поверхности нагретых тел проводится путём измерения интенсивности теплового излучения, испускаемого образцом. Подгонка экспериментально измеренного спектра теплового излучения и теоретической кривой  (закон Планка) с помощью метода наименьших квадратов позволяет определить температуру образца при лазерном нагреве.  Несмотря на широкое использование закона Планка для дистанционного измерения температуры, сохраняется проблема высокой погрешности измерений. В данной работе приведён краткий анализ погрешностей метода наименьших квадратов (МНК), получаемых при дистанционном измерении температуры и коэффициента теплового излучения с использованием формулы Планка. Результатом данной работы является алгоритм определения оптимального интервала длин волн для измерения температуры и излучательной способности в приближении серого тела. Данный алгоритм может иметь практическое применение при проектировании приборов для дистанционного измерения температуры и излучательной способности.\\
+\emph{Ключевые слова:} {излучательная способность, приближение серого тела, метод наименьших квадратов (МНК), закон Планка.}
+\end{abstract}
+
+
+
+\bigskip
+
+% для статьей на русском обязателен перевод 4 пунктов (кроме УДК и электронной почты) на английский:
+\title{\uppercase{THE OPTIMAL WAVELENGTH RANGE DETERMINATION FOR REMOTE EMISSIVITY MEASUREMENT OF A HEATED BODY}} %Пожалуйста, не меняйте высоту букв! Перевод должен совпадать с переводом названия Вашей курсовой (или выпускной) работы.
+
+\author{Andreev Maxim} %Пожалуйста, не меняйте высоту букв!
+
+\address{Moscow Lomonosov State University}
+
+\begin{abstract}
+  The paper describes an analytical approach for determining the measurement errors of temperature and emissivity of a heated body when these parameters are measured remotely. Remote methods for determining the temperature on the surface of heated bodies are carried out by measuring the intensity of thermal radiation emitted by the sample. The adjustment of the experimentally measured thermal radiation spectrum and the theoretical curve (Planck's law) using the least squares method makes it possible to determine the sample temperature during laser heating. Despite the widespread use of Planck's law for remote temperature measurement, the problem of high measurement error persists. This paper presents a brief analysis of the errors of the least squares method (LSM) obtained by remote measurement of temperature and thermal radiation coefficient using the Planck formula. The result of this work is an algorithm for determining the optimal wavelength interval for measuring temperature and emissivity in the gray body approximation. This algorithm can have practical application in the design of devices for remote measurement of temperature and emissivity.
+\emph{Keywords:} {emissivity, approaching the gray body, least squares method, Planck's law.}
+\end{abstract}
+
+
+%\bigskip
+\section{Введение}
+
+В настоящее время актуальной является проблема дистанционного исследования веществ по их спектру излучения: такая необходимость возникает при невозможности контакта с веществом для подробного изучения его состава, как например изучение поверхности Солнца \cite{1}, или изучение фазовых переходов веществ при лазерном нагреве в ячейках алмазных наковален \cite{2,3}. Хорошо известны способы определения температуры нагретых тел по испускаемому телом излучению. Помимо информации о температуре, спектр излучения несёт информацию о спектральном коэффициенте излучения или серости тела. Данная характеристика является важным параметром для дистанционного зондирования поверхности \cite{4}, т.к. позволяет различить отдельные вещества при одинаковых температурных условиях (считая температуру поверхности равной температуре окружающей среды $\approx 273 - 298$ К).\\
+Дистанционному измерению температуры посвящено множество работ \cite{2,3,4,5,6,7,8,9,10}. Существенно, что большинство подходов, описанных в них неприменимы для дистанционных измерений и температуры, и коэффициента излучения.
+
+\section{Описание методов минимизации}
+
+В рамках приближения серого тела закон Планка имеет вид:
+\begin{equation}
+	I(\lambda,T) = \dfrac{\varepsilon c_{1}}{\lambda^5 [exp(c_2/\lambda T)-1]}
+\end{equation}
+
+где $I(\lambda,T)$ – спектральная интенсивность, $\varepsilon$ – коэффициент теплового излучения нагретого объекта, $\lambda$ – длина волны, $T$ – температура, а $c_{1}$ и $c_{2}$ – физические константы. $c_{1} = 2p h c^2$ = $3.7814 \times 10^8$ (Вт$\cdot$мкм$^4/$м$^2$) = $3.7814 \times 10^{-16}$ Вт $\cdot$ м$^2$, $c_{2}  = hc/k = 14388$ (мкм$\cdot$ K) = $1,4388 \times 10^{-2}$  м$\cdot$К, $h$ – постоянная Планка, $c$ – скорость света, $k$ – постоянная Больцмана.
+
+В данном приближении излучательная способность не зависит от длины волны.
+\begin{equation}
+\label{eq::vin}
+	\varepsilon(\lambda) = const
+\end{equation}
+
+В приближении Вина формула излучения абсолютно черного тела будет выглядеть как:
+$$
+	\dfrac{c_{2}}{\lambda} \gg 1
+$$
+\begin{equation}
+	L_{BB}(\lambda,T) = \dfrac{c_{1}}{\lambda^5 [exp(c_2/\lambda T)-1]}
+\end{equation}
+
+Цифровая обработка подобных сигналов для определения температуры и излучательной способности осуществляется методом наименьших квадратов (МНК) \cite{7}.
+
+\subsection{Метод наименьших квадратов}
+
+Классический подход метода наименьших квадратов построен на объяснении зависимости набора значений функции от набора значений переменной, т.е. объяснение $I(\lambda_i)$, $i = 1...n$. Метрикой служит наикратчайшее расстояние от искомой точки до всех измерений в n-мерном пространстве:
+\begin{equation}
+\label{eq::sum_quad_div}
+	S(\varepsilon,T) = \sum\limits_{i=1}^n [I(\lambda_i )-\varepsilon(\lambda_i)L_{BB} (\lambda_i,T)]^2  
+\end{equation}
+
+Необходимое условие экстремума для двух независимых переменных можно записать следующим образом:
+\begin{equation}
+\begin{cases}
+    (\partial S / \partial T)|_{T_0, \varepsilon_0} = 0
+    \\
+    (\partial S / \partial \varepsilon)|_{T_0, \varepsilon_0} = 0
+\end{cases}  
+\end{equation}
+
+Вычисление производной по температуре дает трансцендентное уравнение:
+\begin{equation}
+\label{eq::dsdt}
+    \dfrac{\partial S}{\partial T} = \varepsilon \dfrac{c_2}{c_1} \cdot \dfrac{\lambda^4 exp(\dfrac{c_2}{\lambda T})}{T^2} L_{BB}^2 (\lambda, T)
+\end{equation}
+
+А вычисление производной по излучательной способности дает:
+\begin{equation*}
+    \dfrac{\partial S}{\partial T} = -2 \sum\limits_{i=1}^n [I_i - \varepsilon L_{BBi}(T)] L_{BBi}(T)
+\end{equation*}
+\begin{equation}
+\label{eq::emissivity}
+    \varepsilon(T) = \dfrac{\sum_{i=1}^n I_i L_{BBi}(T)}{\sum_{i=1}^n L_{BBi}^2(T)}
+\end{equation}
+
+Для выявления параметров спектра излучения выражение суммы квадратов отклонений минимизируется различными методами: классический подход приближения Вина, многомерная минимизация, гибридный метод.
+
+\subsection{Приближение Вина}
+При условии, что $\lambda T \ll c_2$, применимо приближение Вина. При этом, если принять условие независимости излучательной способности от длины волны и от температуры, то можно оценить параметры спектра излучения следующим образом: представить формулу Планка в приближении Вина в виде линейной зависимости комбинацией сигнала, длины волны и параметров, удовлетворить необходимое условие экстремума (равенство нулю первых производных) суммы квадратов отклонений, тем самым найдя параметры спектра излучения.
+
+МНК дает следующее решение для линеаризованных параметров в приближении Вина:
+\begin{equation*}
+    y = a x + b
+\end{equation*}
+\begin{equation*}
+    a = \dfrac{n \sum_{i=1}^n x_i y_i - (\sum_{i=1}^n x_i)(\sum_{i=1}^n y_i)}{n (\sum x_i^2) - (\sum x_i)^2}
+\end{equation*}
+\begin{equation}
+    b = \dfrac{(\sum_{i=1}^n x_i^2) (\sum_{i=1}^n y_i) - (\sum_{i=1}^n x_i) (\sum_{i=1}^n x_i y_i)}{n (\sum x_i^2) - (\sum x_i)^2}
+\end{equation}
+\begin{eqnarray*}
+    T = -\dfrac{1}{a}, \quad \varepsilon = exp(b)
+\end{eqnarray*}
+
+Дисперсию можно оценить:
+\begin{equation}
+    s_y^2 = \dfrac{\sum_{i=1}^n (y_i - a x_i - b)^2}{n - 2}
+\end{equation}
+\begin{eqnarray}
+     s_a^2 = \dfrac{s_y^2}{\sum x_i^2 - \dfrac{1}{n} (\sum x_i)^2}, \quad s_T^2 = T^2 s_a \\
+     s_b^2 = \dfrac{\dfrac{1}{n} \sum_{i=1}^n x_i^2 s_y^2 }{\sum x_i^2 - \dfrac{1}{n} (\sum x_i)^2}, \quad s_{\varepsilon}^2 = \varepsilon s_b
+\end{eqnarray}
+
+Можно заметить, что чем лучше применимо приближение Вина, тем хуже точность измерения (относительная ошибка) излучательной способности по сравнению с точностью измерения (относительной ошибкой) температуры:
+$$
+    \dfrac{\delta_{\varepsilon}}{\delta_T} \approx \dfrac{c_2}{T \lambda_0}
+$$
+
+Таким образом, нежелательно применять приближение Вина для определения излучательной способности.
+
+Хотя приближение Вина применимо не всегда ($\lambda T \ll c_2$), оно может служить хорошим начальным приближением определения температуры для вычислений другими численными методами.
+
+\subsection{Многомерная минимизация}
+
+Численная многомерная минимизация — это прямой метод. Он не требует выполнения условий приближения Вина и, соответственно, лишён недостатков последнего. Для решения подобной задачи применяются различные численные методы, например простой метод наискорейшего спуска или, при наличии неоднозначного рельефа поверхности суммы квадратов отклонений, метод Нелдера--Мида или симплекс-метод \cite{14}.
+
+Однако, даже использование симплекс-метода в предположении независимости излучательной способности от длины волны не гарантирует однозначное решение (Рис.~\ref{ris::first_graph}). На рисунке~\ref{ris::first_graph} видно, что сумма квадратов отклонений имеет множество локальных «ложных» минимумов, поэтому надежность многомерной минимизации напрямую зависит от качества начального приближения (приближение Вина позволяет сделать хорошую оценку для температуры).
+
+
+\begin{figure}[H]
+   \begin{center}
+\includegraphics[scale=0.4]{AndreevMI/first_graph.png}
+        
+       \caption{Вид суммы квадратов отклонений для температуры и излучательной способности для смоделированного спектра с параметрами: $T = 2000$ K, $\varepsilon = 0.3$, $650-850$ нм, $100$ точек, $SNR = 30$}
+       \label{ris::first_graph}
+    \end{center}
+\end{figure}
+
+\subsection{Гибридный метод}
+
+Суть гибридного метод заключается в том, чтобы использовать выражение для излучательной способности (\ref{eq::emissivity}) и численно искать решение (\ref{eq::dsdt}) или подставить выражение (\ref{eq::emissivity}) в сумму квадратов отклонений (\ref{eq::sum_quad_div}) и численно искать решение в виде (\ref{eq::s_of_T}) \cite{2}:
+\begin{equation}
+\label{eq::s_of_T}
+    S(T) = \sum\limits_{i=1}^n (I_i - \dfrac{\sum_{i=1}^n [I_k \cdot L_{BBk}(T)]}{\sum_{i=1}^n L_{BBk}^2 (T)} L_{BBi}(T))^2
+\end{equation}
+
+Видно, что функция $S(T)$ в выражении (\ref{eq::s_of_T}) зависит только от одного параметра – температуры. Это означает, что описанная выше операция сводит двумерную минимизацию суммы (\ref{eq::sum_quad_div}) к одномерному поиску минимума функции (\ref{eq::s_of_T}).
+
+Данный метод лишен недостатков приближения Вина, он не содержит в себе условий для его использования. При этом минимизация данным методом производится одномерная, поэтому выполняется однозначно и быстро.
+
+\section{Ошибки измерений}
+\subsection{Метод Фишера}
+Метод определения ошибок Фишера состоит в следующем:
+
+1. Вычисляется сумма квадратов отклонений для итогового решения задачи (т.е. при тех параметрах, которые дают минимум этой суммы).
+
+2. Вычисленная сумма $S (T_0,\varepsilon_0)$ умножается на коэффициент Фишера (\ref{eq::Fisher_coef}).
+\begin{equation}
+\label{eq::Fisher_coef}
+    S(T, \varepsilon) = S(T_0, \varepsilon_0) [1 + \dfrac{P}{N - P} F(N,P,\alpha)]
+\end{equation}
+где $N$ – число измерений, $P$ – число параметров, $\alpha$ – доверительная вероятность, выбранная в данной работе $0.95$, $S (T_0,\varepsilon_0)$ – сумма квадратов отклонений в минимуме.
+
+3. Для вычисленной суммы $S (T,\varepsilon)$ находят значение параметров $(T,\varepsilon)$, которые ей соответствуют.
+
+Пример использования метода оценки ошибок Фишера в комбинации с гибридным методом приведен на рисунке~\ref{ris::second_graph}. Пунктирной линией изображен уровень, отсекаемый критерием Фишера, который и определяет ошибку определения температуры. Ошибка излучательной способности вычисляется как разность ее значения  в точке $(T_0  + \Delta T)$ и значения в точке $T_0$ \cite{6}.
+\begin{figure}[ht!]
+    \begin{center}
+        \includegraphics[width=0.75\linewidth]{AndreevMI/second_graph.png}
+        \caption{Моделирование поведения суммы квадратов отклонений $S$ как функции температуры}
+        \label{ris::second_graph}
+    \end{center}
+\end{figure}
+
+\subsection{Метод матрицы ковариации}
+
+Матрица ковариаций является стандартным методом вычисления ошибок при использовании МНК \cite{16}. Для нахождения ковариационной матрицы необходимо вычислить матрицу Якоби, состоящую из частных производных функции Планка для серого тела по параметрам (температуре и коэффициенту излучения). 
+\begin{equation}
+    J = \begin{pmatrix}
+        \dfrac{\partial \varepsilon L_{BB}(\lambda_1, T)}{\partial T}& \dfrac{\partial \varepsilon L_{BB}(\lambda_1, T)}{\partial \varepsilon}\\
+        \vdots& \vdots& \\
+        \dfrac{\partial \varepsilon L_{BB}(\lambda_n, T)}{\partial T}& \dfrac{\partial \varepsilon L_{BB}(\lambda_n, T)}{\partial \varepsilon}
+    \end{pmatrix}
+\end{equation}
+
+Ковариационная матрица $C$ равна обратной матрице $(J^T J)^{-1}$. Запишем матрицу $(J^T J)$ в явном виде:
+\begin{equation}
+    (J^T J) = \begin{pmatrix}
+       (\dfrac{c_2}{c_1})^2 \cdot \dfrac{\varepsilon^2}{T^4} \sum \lambda_i^8 L_{BBi}^4 \exp{\dfrac{2 c_2}{\lambda_i T}}& \dfrac{c_2}{c_1} \cdot \dfrac{\varepsilon}{T^2} \sum \lambda_i^4 L_{BBi}^3 \exp{\dfrac{c_2}{\lambda_i T}} \\
+        \dfrac{c_2}{c_1} \cdot \dfrac{\varepsilon}{T^2} \sum \lambda_i^4 L_{BBi}^3 \exp{\dfrac{c_2}{\lambda_i T}}& \sum L_{BBi}^2
+    \end{pmatrix}
+\end{equation}
+
+Если ковариационная матрица $C=(J^T J)^{-1}$ известна, то ошибки измерений можно записать через элементы ковариационной матрицы \cite{12}:
+\begin{equation}
+    S_T^2 = C_{11} S_I^2
+\end{equation}
+\begin{equation}
+    S_{\varepsilon}^2 = C_{22} S_I^2
+\end{equation}
+
+Где
+\begin{equation}
+    S_I^2 = \dfrac{S_0^2}{n - 2}
+\end{equation}
+
+Несложно вычислить элементы $C_{11}$ и $C_{22}$ матрицы $(J^T J)^{-1}$. Для этого нужно вычислить определитель матрицы $(J^T J)$. Он имеет вид:
+\begin{equation}
+    D = (\dfrac{c_2}{c_1})^2 \cdot \dfrac{\varepsilon^2}{T^4} [\sum L_{BBi}^2 \sum \lambda_i^8 L_{BBi}^4 e^{\dfrac{2 c_2}{\lambda_i T}} - (\sum \lambda_i^4 L_{BBi}^3 e^{\dfrac{c_2}{\lambda_i T}})^2]
+\end{equation}
+
+Тогда
+\begin{equation}
+\label{eq::S_T}
+    S_T^2 = C_{11} S_I^2 = (\dfrac{T^2 c_1}{\varepsilon c_2})^2 \dfrac{\sum L_{BBi}^2}{\sum L_{BBi}^2 \sum \lambda_i^8 L_{BBi}^4 \exp{\dfrac{2 c_2}{\lambda_i T}} - (\sum \lambda_i^4 L_{BBi}^3 \exp{\dfrac{c_2}{\lambda_i T}})^2} \cdot S_I^2
+\end{equation}
+\begin{equation}
+\label{eq::S_epsilon}
+    S_{\varepsilon}^2 = C_{22} S_I^2 = \dfrac{\sum \lambda_i^8 L_{BBi}^4 \exp{\dfrac{2 c_2}{\lambda_i T}}}{\sum L_{BBi}^2 \sum \lambda_i^8 L_{BBi}^4 \exp{\dfrac{2 c_2}{\lambda_i T}} - (\sum \lambda_i^4 L_{BBi}^3 \exp{\dfrac{c_2}{\lambda_i T}})^2} \cdot S_I^2
+\end{equation}
+
+Используя (\ref{eq::S_T}) и (\ref{eq::S_epsilon}) можно определить отношение $\delta \varepsilon$ к $\delta T$:
+\begin{equation}
+    \dfrac{\delta \varepsilon}{\delta T} = \dfrac{1}{T} \sqrt{\dfrac{\sum \lambda_i^8 L_{BBi}^4 \exp{\dfrac{2 c_2}{\lambda_i T}}}{\sum L_{BBi}^2}}
+\end{equation}
+
+\section{Практическая часть}
+
+В данной работе анализ ошибки измерений представляется путем моделирования сигнала спектрометра путем расчета интенсивности теплового излучения с использованием формулы Планка и с последующим наложением шума.
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.6\linewidth]{AndreevMI/spectr.png}
+        \caption{Вид смоделированного спектра с параметрами: $T = 2000$ K, $\varepsilon = 0.3$, $650-850$ нм, $100$ точек, $SNR = 30$}
+        \label{ris::spectr}
+    \end{center}
+\end{figure}
+
+\subsection{Выбор метода оценки ошибки}
+
+Рассмотрим результат оценки ошибок для математически моделированного спектра излучения при условии независимости излучательной способности от длины волны (\ref{eq::vin}). Температура $2000$ К и показатель шума $30$ соответствуют тем шумам и температурам, которые присутствуют в ячейках алмазных наковален \cite{3,17,18}.
+
+Из таблицы~\ref{ris::table} видно, что оценки ошибок методом Фишера и методом матрицы ковариаций совпадают в пределах $1 \%$. Поэтому возможно использовать метод матрицы ковариаций в качестве основного метода оценки ошибок.
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.9\linewidth]{AndreevMI/table.png}
+        \caption{Зависимость относительной ошибки измерения температуры и коэффициента излучения от температуры $\varepsilon = 0.3$; $\lambda = 650-850$ нм; $SNR = 30$; $\Delta \lambda = 2$нм; $n=100$; $T = 300-6000 K$}
+        \label{ris::table}
+    \end{center}
+\end{figure}
+
+Также в таблице~\ref{ris::table} можно отметить следующую аномалию: ошибки измерений и температуры, и излучательной способности имеют минимум при температуре $4000$К. Для данного явления можно найти объяснение, если обратиться к рисунку~\ref{ris::risunok}.
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=0.91\linewidth]{AndreevMI/risunok.png}
+        \caption{Зависимость относительной ошибки измерения температуры от формы моделированного спектра. Параметры моделированного спектра: $T=300-6000$ К, $\varepsilon_0 = 0.3$, $\lambda_1 = 650$ нм, $\lambda_2 = 850$ нм, $SNR = 30$, $n = 100$}
+        \label{ris::risunok}
+    \end{center}
+\end{figure}
+
+\subsection{Объяснения минимума оценок ошибок измерения температуры}
+
+На рисунке~\ref{ris::risunok} соотнесены ошибки измерений и виды спектра при данных температурах. Таким образом, можно сделать вывод, что минимум ошибок измерений около температуры $4000$ К связан с видом спектра, и, следовательно, с «шириной спектрального окна». При заданных длинах волн $650-850$ нм именно при температуре $4000$ К моделированный спектр излучения имеет наиболее выраженную форму кривой Планка, когда при других температурах мы видим только лишь восходящую или убывающую её часть.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.7\linewidth]{AndreevMI/variation.png}
+		\caption{Относительная ошибка измерения температуры и излучательной способности в зависимости от левой границы спектрального диапазона. По левой оси отложены ошибки измерения температуры, по правой — излучательной способности. Вычисления по смоделированному спектру $T=2000$ К, $\varepsilon_0 = 0.3$, $\lambda_1 = (\lambda_1)$ нм, $\lambda_2 = (\lambda_1 + 200)$ нм, $SNR = 30$, $n = 100$}
+		\label{ris::variation}
+	\end{center}
+\end{figure}
+
+
+\subsection{Оценка влияния температуры моделирования и начальной длины волны спектрального диапазона на ошибки измерений излучательной способности}
+
+Для конструирования измерительных приборов, снимающих спектры излучения нагретых тел, важно определить интервал длин волн, в котором ведутся измерения. Принимая гипотезу серого тела, мы ограничиваемся шириной интервала длин волн $200$ нм, а варьируем начальную длину волны. С это целью было проведено моделирование спектральных зависимостей с начальной длиной волны в диапазоне $400-1600$ нм со сравнением возникающих при измерениях в данных диапазонах ошибок измерений температуры и излучательной способности (Рис.~\ref{ris::variation}).
+
+Как видно из рисунка~\ref{ris::variation} при температуре гипотетического серого тела $2000$ К и для температуры, и для излучательной способности наблюдается минимум ошибок при $\lambda_1 \approx 1350$ нм.
+
+
+Подобная вариация была проведена для температур в диапазоне $1000-6000$ К. В каждом случае выделили минимальные длины волн для относительных ошибок температуры и излучательной способности (в каждом случае мы также наблюдали совпадение этих минимумов) и представили в виде 3-д графика (рис.~\ref{ris::third_graph}) и в виде таблицы~\ref{table:table}.
+\begin{table}[H]
+	\centering
+	\caption{Зависимость относительной ошибки измерения температуры и коэффициента излучения от температуры и минимальной длины волны)}
+	\label{table:table}
+	\begin{tabular}{|l|l|l|l|}
+		\hline 
+            $T$ & $\min \lambda$ & $\Delta T/T_0$ & $\Delta \varepsilon/\varepsilon_0$  \\ \hline 
+		$1000$ & $2800$ & $0,00512$ & $0,0258$  \\ \hline  
+		$2000$ & $1350$ & $0,0079$ & $0,0422$ \\ \hline
+		$3000$ & $870$ & $0,0128$ & $0,065$  \\ \hline 
+		$4000$ & $620$ & $0,017$ & $0,0864$  \\ \hline 
+		$5000$ & $480$ & $0,0196$ & $0,0995$  \\ \hline 
+		$6000$ & $410$ & $0,0262$ & $0,134$ \\ \hline 
+	\end{tabular}
+\end{table}
+Из рисунка~\ref{ris::third_graph} можно заметить, что проекции на плоскость $(\min \lambda, T_0)$ минимумов относительных ошибок представляют собой гиперболические зависимости. При определении коэффициентов гипербол, получилось известное выражение:
+\begin{equation}
+\label{eq::fin}
+    \min \lambda * T = \dfrac{c_2}{5}
+\end{equation}
+
+Выражение (\ref{eq::fin}) можно использовать для определения оптимального интервала длин волн измерения излучательной способности и температуры тела при априорном предположении температуры: прибор нужно конструировать таким образом, чтобы в центре его спектрального интервала находилась $min \lambda_0$, определенная по формуле (\ref{eq::fin}).
+
+Также можно заметить, что для излучательной способности значение минимальной относительной ошибки растёт быстрее, чем для температуры, с ростом температуры моделированного сигнала и уменьшением минимальной длины волны.
+
+
+\section{Выводы}
+• В работе описаны стандартные методы (приближение Вина, двумерная минимизация) к определению параметров спектра излучения и гибридный метод. Гибридный метод лишён недостатков приближения Вина, он не содержит в себе условий для его использования. При этом минимизация данным методом производится одномерная, поэтому выполняется однозначно и быстро.
+
+• Описаны методы определения ошибок: метод Фишера и метод матрицы ковариации для МНК. На основании моделированных экспериментов показано, что метод матрицы ковариаций и метод Фишера дают схожие результаты оценок ошибок, но применение метода матрицы ковариаций представляет собой решение системы линейных уравнений, а метода Фишера — одномерная минимизация. Поэтому возможно использовать метод матрицы ковариаций в качестве основного метода оценки ошибок.
+
+• Предложен алгоритм определения оптимального интервала длин волн для измерения температуры и излучательной способности в приближении серого тела. Ширина интервала принимается равной $200$ нм для выполнения приближения серого тела, а начальная длина волны выбирается таким образом, чтобы в центре спектрального интервала прибора оказалась длина волны, определенная по закону смещения Вина.
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=0.7\linewidth]{AndreevMI/third_graph.png}
+		\caption{Относительная ошибка измерения температуры и излучательной способности ($\varepsilon$)  в зависимости от левой границы спектрального диапазона и температуры смоделированного сигнала. Вычисления по смоделированному спектру $T=1000-6000$ К, $\varepsilon_0 = 0.3$, $\lambda_1 = (\lambda_1)$ нм, $\lambda_2 = (\lambda_1 + 200)$ нм, $SNR = 30$, $n = 100$}
+		\label{ris::third_graph}
+	\end{center}
+\end{figure}
+
+\begin{thebibliography}{99}
+	
+\bibitem{1}
+Noguchi T., Kozuka T. Temperature and emissivity measurement at $\mu$ with a solar furnace // Solar Energy. Pergamon, 1966. Vol. 10, №3. P. 125–131.
+\bibitem{2}
+Bulatov K.M. et al. Multi-spectral image processing for the measurement of spatial temperature distribution on the surface of the laser heated microscopic object // Computer Optics. 2017. Vol. 41, №6. P. 864–868.
+\bibitem{3}
+Shen G.Y. et al. Laser heated diamond cell system at the Advanced Photon Source for in situ x-ray measurements at high pressure and temperature // Review of Scientific Instruments. 2001. Vol. 72, № 2. P. 1273–1282.
+\bibitem{4}
+Babaeian E., Tuller M. Proximal sensing of land surface temperature // Reference Module in Earth Systems and Environmental Sciences. Elsevier, 2022.
+\bibitem{5}
+Benedetti L.R., Loubeyre P. Temperature gradients, wavelength-dependent emissivity, and accuracy of high and very-high temperatures measured in the laser-heated diamond cell // High Press Res. Taylor $\land$ Francis Ltd, 2004. Vol. 24, № 4. P. 423–445.
+\bibitem{6}
+Zinin P. V et al. Measurement of the temperature distribution on the surface of the laser heated specimen in a diamond anvil cell system by the tandem imaging acousto-optical filter // High Press Res. 2019. Vol. 39, № 1. P. 131–149.
+\bibitem{7}
+Zinin Bykov A. A. Machikhin A. S. Troyan I. A. Bulatov K. M. Mantrova Y. V. Batshev V.I. Gaponov M Kutuza I. B. Rashchenko S V Prakapenka V B Shiv K Sharma P. V. Measurement of the temperature distribution on the surface of the laser heated specimen in a diamond anvil cell system by the tandem imaging acousto-optical filter // High Press Res. 2019. Vol. №131. P. 39.
+\bibitem{8}
+Krapez B.-C. Radiative Measurements of Temperature // Thermal measurements and inverse techniques / ed. Orlande H. et al. Boca Raton, FL: CRC Press, 2011. P. 185–230.
+\bibitem{9}
+Zhang Z.M., Tsai B.K., Machin G. Radiometric Temperature Measurements  I. Fundamentals. Elsevier, 2010. Vol. 42.
+\bibitem{10}
+Fukuyama H., Waseda Y. High-Temperature Measurements of Materials. 2009. Vol. 11.
+\bibitem{11}
+Ribaud G. Traite De Pyrometrie Optique. Revue De Optique, 1931. 
+\bibitem{12}
+Strutz T. Data Fitting and Uncertainty. A practical introduction to weighted least squares and beyond. Wiesbaden, Germany: Springer, 2011.
+\bibitem{13}
+Мантрова Ю.В. et al. Измерение распределения коэффициента излучения и температуры поверхности вольфрама, нагретого излучением мощного лазера // Оптический журнал. 2020. Vol. 87, № 11. P. 10–20.
+\bibitem{14}
+Nelder J.A., Mead R. A Simplex Method for Function Minimization // Comput. J. 1965. Vol. 7. P. 308–313.
+\bibitem{15}
+A. Machikhin. P. Zinin D. Khokhlov A.S. Imaging system based on a tandem acousto-optical tunable filter for in-situ measurements of the high temperature distribution // Opt Lett. 2016. Vol. 41. P. 901–904.
+\bibitem{16}
+Tong Y.L. The Role of the Covariance Matrix in the Least-Squares Estimation for a Common Mean*. 1997.
+\bibitem{17}
+Зинин П.В. et al. Дистанционное измерение распределения температуры на поверхности твёрдых тел при воздействии мощного лазера в ячейках высокого давления // Успехи физических наук. 2022. Vol. 192, № 8. P. 1–13.
+\bibitem{18}
+Bassett W.A. The birth and development of laser heating in diamond anvil cells // Review of Scientific Instruments. 2001. Vol. 72, № 2. P. 1270–1272.
+\end{thebibliography}
+
+

@@ -1,6 +1,6 @@
 component,sigma_mag,included_in_point_errors,applies_to_absolute_Mbar,applies_to_same_filter_distance,source
 TRGB / NGC 4258 common zero point,0.047,False,True,True,Paper IV
-JWST/NIRCam F150W absolute flux scale,0.010803434456606446,False,True,False,STScI calibration status; adopted 1%
-STPSF 129-pixel stamp normalization,0.016693153820979283,False,True,False,129 versus 257 pixel STPSF test; treated as common
+JWST/NIRCam F150W absolute flux scale,0.010803434456606446,False,True,False,"Conservative common analysis allowance; adopted 1%, not measured here"
+STPSF 129-pixel finite-stamp term,0.016693153820979283,False,True,False,129 versus 257 pixel STPSF test; treated as common
 Combined absolute-Mbar zero point,0.051033083196580106,False,True,False,"quadrature of TRGB, NIRCam, and PSF-stamp rows"
 Same-filter SBF distance-scale zero point,0.047,False,False,True,TRGB anchor; common F150W flux and PSF-stamp terms cancel
