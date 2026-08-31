@@ -1,16 +1,16 @@
 {
-  "candidate_branch": "normalized_union_3p5",
+  "candidate_branch": "normalized_full_3p5",
   "candidate_limits": {
-    "lower": -1.0343233288040738,
-    "median": -0.03494824708673362,
-    "n_pixels": 2836840,
-    "scale": 0.28553573763352574,
+    "lower": -1.0293256151232095,
+    "median": -0.059919824884480145,
+    "n_pixels": 5874095,
+    "scale": 0.2769730829253512,
     "sigma": 3.5,
-    "upper": 0.9644268346306065
+    "upper": 0.9094859653542492
   },
   "closure_passed": true,
   "compact_cache": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/cache/inputs/NGC_4649_7714418b0963fa2c.npz",
-  "compact_cache_hit": false,
+  "compact_cache_hit": true,
   "config": {
     "e_realizations": 64,
     "fft_workers": -1,
@@ -27,43 +27,61 @@
     "save_all_branch_fits": false,
     "save_ring_fft_fits": false
   },
-  "config_key": "649155aa572ea7a7ba76f8a204b34f8f7670359042eb8576d42c356ad0d7d291",
+  "config_key": "ed0005f7d9317f2882467dc2f9311cf7cd7f0093e6d194b1928dd1b94802e8ba",
   "expectation_bootstrapped_from": null,
   "expectation_cache": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/cache/expectation/NGC_4649_62c2c9ead474875c.npz",
-  "expectation_cache_hit": false,
-  "experiment_key": "57b6fdea348144012c8847330ed65b34fdefd0262acda5ea6a2705d872e517c3",
+  "expectation_cache_hit": true,
+  "experiment_key": "62959c97d4c6afa758fdafddb92bead2dae2c9d283e267ef5df0d8e55392415b",
   "full_normalized_residual": {
-    "clipped_fraction": 0.00032856125071181177,
+    "clip_limits": {
+      "lower": -1.0293256151232095,
+      "median": -0.059919824884480145,
+      "n_pixels": 5874095,
+      "scale": 0.2769730829253512,
+      "sigma": 3.5,
+      "upper": 0.9094859653542492
+    },
+    "clip_space": "normalized_full",
+    "clipped_fraction": 0.0005910697733012489,
     "dtype": "float32",
     "mean_subtracted": false,
-    "n_clipped": 1930,
+    "n_clipped": 3472,
     "n_valid": 5874095,
     "next_step": "select ring, subtract its mean, then FFT",
     "normalized_by": "sqrt(model)",
-    "path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/57b6fdea34814401/normalized_fits/jw03055-o010_t010_nircam_clear-f150w_i2d_sbf_resid_catalog_mask_normalized_clip_3p5sigma.fits",
+    "path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/62959c97d4c6afa7/normalized_fits/jw03055-o010_t010_nircam_clear-f150w_i2d_sbf_resid_catalog_mask_normalized_full_clip_3p5sigma.fits",
     "shape": [
       4390,
       9891
     ]
   },
-  "full_normalized_residual_fits": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/57b6fdea34814401/normalized_fits/jw03055-o010_t010_nircam_clear-f150w_i2d_sbf_resid_catalog_mask_normalized_clip_3p5sigma.fits",
+  "full_normalized_residual_fits": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/62959c97d4c6afa7/normalized_fits/jw03055-o010_t010_nircam_clear-f150w_i2d_sbf_resid_catalog_mask_normalized_full_clip_3p5sigma.fits",
   "galaxy": "NGC 4649",
   "n_psf": 5,
   "normalized_fits": [],
   "result_cache_hit": false,
   "result_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/batch/results/NGC_4649_result.json",
-  "run_dir": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/57b6fdea34814401",
+  "run_dir": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/62959c97d4c6afa7",
   "source_job_id": "job-17ca5ccdbc5a35e5a809587c34c2aa4d8eeb332d38f372d48a47ff9f7d5d6168",
   "source_key": "9e3149dfcce3425591ec80dafbb85fcacaf186e6d031e9909afffa2ab76551f6",
   "source_result": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/NGC_4649_result.json",
   "status": "ok",
   "table_paths": {
-    "clipping": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/57b6fdea34814401/tables/clipping_summary.csv",
-    "combined_annuli": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/57b6fdea34814401/tables/combined_annuli.csv",
-    "fit_per_psf": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/57b6fdea34814401/tables/fit_per_psf.csv",
-    "fit_summary": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/57b6fdea34814401/tables/fit_summary.csv",
-    "power_spectra": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/57b6fdea34814401/tables/power_spectra.csv",
-    "production_closure": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/57b6fdea34814401/tables/production_closure.csv"
+    "clipping": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/62959c97d4c6afa7/tables/clipping_summary.csv",
+    "combined_annuli": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/62959c97d4c6afa7/tables/combined_annuli.csv",
+    "fit_per_psf": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/62959c97d4c6afa7/tables/fit_per_psf.csv",
+    "fit_summary": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/62959c97d4c6afa7/tables/fit_summary.csv",
+    "power_spectra": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/62959c97d4c6afa7/tables/power_spectra.csv",
+    "production_closure": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4649/62959c97d4c6afa7/tables/production_closure.csv"
   },
-  "version": "sbf2-normalized-winsor-v2"
+  "union_branch": "normalized_union_3p5",
+  "union_limits": {
+    "lower": -1.0343233288040738,
+    "median": -0.03494824708673362,
+    "n_pixels": 2836840,
+    "scale": 0.28553573763352574,
+    "sigma": 3.5,
+    "upper": 0.9644268346306065
+  },
+  "version": "sbf2-normalized-winsor-v3"
 }

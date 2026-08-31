@@ -10,11 +10,14 @@ stpsf,2.1.0
 scipy,1.16.3
 matplotlib,3.10.8
 pandas,2.3.3
+Adopted F150W SBF contract,sbf2-normalized-winsor-v3; normalized_full_3p5; kmin=0.04
+Normalized SBF core SHA256,33f9e794e329a505b6eb8eadbb9f2c9f44f91b0843407cd770be2ce00b8550cd
+Normalized SBF runner SHA256,2505a6de87dc5325d1b9f245e680ffc9ee19430ab6b28cc1b60754d993446880
 Product-generation Git HEAD,5d0fd14964741e2f25dbac4b62dac4ea2e043217
 Executed sbf-2.ipynb SHA256,a1828d2d8d975c193707df9ff95516750e8a410623fe7a2f1eb149fef17bcd4a
-Current sbf-2-graph.ipynb SHA256,f4041734b2e905b155dfb4935c941b8ac01df332f82656365e8334da4b273525
+Current sbf-2-graph.ipynb SHA256,a2cdd8058fda596a93f6963c4961af581e807a550158124299d00f8b2be07496
 Current sbf-2-systematics.ipynb SHA256,082e3fa4c2e00e1696de972e7cc48938c014350413c26ebd37741836c6f278a6
-Current article TeX SHA256,0f04208de6b59472990e93ed5acbd617e01aa4b0175a0122bb479edbc69475f4
-Article-table builder SHA256,b3bde1890ae6b68dd130bc787e79f403ad8885363424b789ee59a65eacecb391
-Current article-worktree Git HEAD,12989ca663e379481cb97585b050b814de2fa1cb
+Current article TeX SHA256,50cb4c34c4cc1bcec64b014b67a4eafb3eb47a203a1b2f780967fa3a36459b80
+Article-table builder SHA256,bd78dc3a7f56b83ca0617706658d42e72937d347d87e64ff5882a44dc26d48d8
+Current article-worktree Git HEAD,b0b7be9fea30ebbd84af55c41ce7ee0d77fb8ba5
 Current article worktree clean,no

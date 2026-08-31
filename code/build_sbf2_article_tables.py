@@ -26,6 +26,9 @@ ROOT = Path(__file__).resolve().parents[1]
 TABLE_DIR = ROOT / "runs" / "sbf2_go3055" / "analysis" / "tables"
 FIGURE_DIR = ROOT / "runs" / "sbf2_go3055" / "analysis" / "figures"
 RUN_DIR = ROOT / "runs" / "sbf2_go3055"
+NORMALIZED_RUN_DIR = ROOT / "runs" / "sbf2_normalized_winsor"
+ADOPTED_SBF_VERSION = "sbf2-normalized-winsor-v3"
+ADOPTED_SBF_BRANCH = "normalized_full_3p5"
 TABLE_DIR.mkdir(parents=True, exist_ok=True)
 FIGURE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -90,7 +93,23 @@ paper3["sigma_D_jensen_paper3_f110w_mpc"] = (
     * paper3["sigma_mu_jensen_paper3_f110w"]
 )
 
-distances = pd.read_csv(TABLE_DIR / "go3055_distances_mpc.csv")
+# The compact public CSV contains only the adopted constant calibration.
+# This builder also needs the research-only columns for the comparison table.
+distances = pd.read_csv(TABLE_DIR / "go3055_distances_mpc_all_models.csv")
+normalized_results = [
+    json.loads(path.read_text(encoding="utf-8"))
+    for path in sorted((NORMALIZED_RUN_DIR / "batch" / "results").glob(
+        "NGC_*_result.json"
+    ))
+]
+if (
+    len(normalized_results) != 14
+    or any(row.get("status") != "ok" for row in normalized_results)
+    or any(row.get("version") != ADOPTED_SBF_VERSION for row in normalized_results)
+    or any(row.get("candidate_branch") != ADOPTED_SBF_BRANCH
+           for row in normalized_results)
+):
+    raise RuntimeError("The 14-target normalized_full_3p5 result contract is incomplete")
 comparison = distances.merge(
     paper3[
         [
@@ -486,6 +505,18 @@ for package in ["numpy", "astropy", "photutils", "stpsf", "scipy", "matplotlib",
     software_rows.append((package, str(package_versions.get(package, "unknown"))))
 software_rows.extend(
     [
+        (
+            "Adopted F150W SBF contract",
+            f"{ADOPTED_SBF_VERSION}; {ADOPTED_SBF_BRANCH}; kmin=0.04",
+        ),
+        (
+            "Normalized SBF core SHA256",
+            sha256(ROOT / "code" / "sbf2_normalized_winsor_core.py"),
+        ),
+        (
+            "Normalized SBF runner SHA256",
+            sha256(ROOT / "code" / "run_sbf_2_normalized_winsor.py"),
+        ),
         ("Product-generation Git HEAD", provenance["git"]["head"]),
         ("Executed sbf-2.ipynb SHA256", provenance["template"]["sha256"]),
         ("Current sbf-2-graph.ipynb SHA256", sha256(ROOT / "code" / "sbf-2-graph.ipynb")),

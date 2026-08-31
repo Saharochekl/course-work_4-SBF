@@ -9,11 +9,11 @@
 ``raw_global_3p5``
     Текущая production-ветвь: ограничение сырых остатков, затем нормировка.
 ``normalized_full_3p5``
-    Чистая проверка порядка: нормировка раньше ограничения, но статистика порога
-    всё ещё берётся по всей положительной области модели.
+    Принятая F150W-ветвь: сначала нормировка, затем общий порог
+    3.5 sigma, оценённый по всей положительной области модели.
 ``normalized_union_<sigma>``
-    Проверяемая ветвь: сначала нормировка, затем один общий порог по объединению
-    двух рабочих колец.
+    Сохранённая сравнительная ветвь: один общий порог по объединению двух
+    рабочих колец.
 
 Модуль намеренно ничего не делает при импорте.  Его используют отдельный
 ноутбук и отдельный последовательный runner.
@@ -37,9 +37,13 @@ from astropy.stats import sigma_clipped_stats
 from scipy.fft import fft2, fftfreq, set_workers
 
 
-# Bump whenever a numerical operation or the mandatory FITS contract changes.
-# It is part of every result/cache key and prevents stale science products.
-EXPERIMENT_VERSION = "sbf2-normalized-winsor-v2"
+# The result/FITS contract changed in v3.  The compact inputs and E(k)
+# algorithms did not: their independent versions deliberately retain the v2
+# cache keys so the adopted branch can be remeasured without rebuilding galaxy
+# products or Monte-Carlo expectations.
+EXPERIMENT_VERSION = "sbf2-normalized-winsor-v3"
+INPUT_CACHE_VERSION = "sbf2-normalized-winsor-v2"
+EXPECTATION_CACHE_VERSION = "sbf2-normalized-winsor-v2"
 RAW_PRODUCTION_SIGMA = 3.5
 RAW_PRODUCTION_MAXITERS = 5
 REGION_NAMES = {
@@ -70,6 +74,10 @@ class ExperimentConfig:
 
     @property
     def candidate_branch(self) -> str:
+        return "normalized_full_3p5"
+
+    @property
+    def union_branch(self) -> str:
         return f"normalized_union_{sigma_tag(self.normalized_sigma)}"
 
     @property
@@ -77,8 +85,8 @@ class ExperimentConfig:
         return (
             "no_winsor",
             "raw_global_3p5",
-            "normalized_full_3p5",
             self.candidate_branch,
+            self.union_branch,
         )
 
 
@@ -660,7 +668,7 @@ def _build_compact_input_cache(
         raise RuntimeError(f"{source['galaxy']}: в PSF FITS нет моделей")
 
     metadata = {
-        "version": EXPERIMENT_VERSION,
+        "version": INPUT_CACHE_VERSION,
         "galaxy": source["galaxy"],
         "source_key": source["source_key"],
         "source": {
@@ -727,7 +735,7 @@ def load_or_build_compact_cache(
 ) -> tuple[dict[str, Any], Path, bool]:
     cache_root = Path(cache_root).resolve()
     input_key = _stable_hash({
-        "version": EXPERIMENT_VERSION,
+        "version": INPUT_CACHE_VERSION,
         "source_key": source["source_key"],
         "production_kmax": config.kmax,
     })
@@ -744,7 +752,7 @@ def load_or_build_compact_cache(
     data = _load_compact_cache(cache_path)
     if (
         data["metadata"].get("source_key") != source["source_key"]
-        or data["metadata"].get("version") != EXPERIMENT_VERSION
+        or data["metadata"].get("version") != INPUT_CACHE_VERSION
     ):
         raise RuntimeError("Ключ компактного кэша не совпадает с входами")
     return data, cache_path, cache_hit
@@ -904,7 +912,7 @@ def load_or_build_expectation_cache(
 ) -> tuple[dict[str, Any], Path, bool]:
     metadata = compact["metadata"]
     e_payload = {
-        "version": EXPERIMENT_VERSION,
+        "version": EXPECTATION_CACHE_VERSION,
         "source_key": metadata["source_key"],
         "k_bins": config.k_bins,
         "realizations": config.e_realizations,
@@ -1109,10 +1117,11 @@ def _save_full_normalized_residual(
     """Creates the full-frame field used by the candidate SBF branch.
 
     The saved primary image is already the final residual divided by
-    ``sqrt(model)`` and winsorized with the common two-annulus limits.  Pixels
-    rejected by the final catalogue mask, invalid science pixels and pixels
-    outside the positive galaxy model remain NaN.  Ring-specific mean
-    subtraction is intentionally deferred until a ring is selected for FFT.
+    ``sqrt(model)`` and winsorized with the limits measured over the complete
+    valid positive-model support.  Pixels rejected by the final catalogue
+    mask, invalid science pixels and pixels outside the positive galaxy model
+    remain NaN.  Ring-specific mean subtraction is intentionally deferred
+    until a ring is selected for FFT.
     """
 
     paths = {name: Path(path) for name, path in source["paths"].items()}
@@ -1120,8 +1129,8 @@ def _save_full_normalized_residual(
     output_dir = run_dir / "normalized_fits"
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / (
-        f"{source['stem']}_sbf_resid_catalog_mask_normalized_clip_"
-        f"{sigma_tag(config.normalized_sigma)}sigma.fits"
+        f"{source['stem']}_sbf_resid_catalog_mask_normalized_"
+        f"full_clip_{sigma_tag(limits['sigma'])}sigma.fits"
     )
 
     with fits.open(paths["signal"], memmap=True) as signal_hdul, \
@@ -1159,10 +1168,7 @@ def _save_full_normalized_residual(
                 (science_chunk - background) - model_chunk64,
                 dtype=np.float32,
             )
-            values = (
-                np.asarray(raw_chunk32[valid], dtype=np.float64)
-                / np.sqrt(np.asarray(model_chunk32[valid], dtype=np.float64))
-            )
+            values = raw_chunk32[valid] / np.sqrt(model_chunk32[valid])
             changed = (values < limits["lower"]) | (values > limits["upper"])
             values = np.clip(values, limits["lower"], limits["upper"])
             normalized_chunk = normalized[y0:y1]
@@ -1187,8 +1193,8 @@ def _save_full_normalized_residual(
     header["SOURCEKY"] = source["source_key"][:16]
     header["BKGDSCAL"] = background
     header["NORMBY"] = "SQRTMODEL"
-    header["CLIPSPC"] = "NORMUNION"
-    header["CLIPSIG"] = float(config.normalized_sigma)
+    header["CLIPSPC"] = "NORMFULL"
+    header["CLIPSIG"] = float(limits["sigma"])
     header["CLIPMED"] = float(limits["median"])
     header["CLIPSCL"] = float(limits["scale"])
     header["CLIPNPIX"] = int(limits["n_pixels"])
@@ -1234,6 +1240,13 @@ def _save_full_normalized_residual(
         "n_clipped": n_clipped,
         "clipped_fraction": clipped_fraction,
         "normalized_by": "sqrt(model)",
+        "clip_space": "normalized_full",
+        "clip_limits": {
+            key: limits[key]
+            for key in (
+                "sigma", "median", "scale", "lower", "upper", "n_pixels"
+            )
+        },
         "mean_subtracted": False,
         "next_step": "select ring, subtract its mean, then FFT",
     }
@@ -1297,11 +1310,12 @@ def _run_spectral_experiment(
 ) -> dict[str, Any]:
     metadata = compact["metadata"]
     production = _production_frame(metadata)
-    candidate_limits = _normalized_threshold(
+    union_limits = _normalized_threshold(
         compact, config.normalized_sigma
     )
     raw_limits = metadata["raw_global"]
     normalized_full_limits = metadata["normalized_full"]
+    candidate_limits = normalized_full_limits
     branches = config.branches
 
     tables_dir = run_dir / "tables"
@@ -1331,6 +1345,23 @@ def _run_spectral_experiment(
         # the candidate spectrum is measured from the persisted product, not
         # from an equivalent in-memory precursor.
         with fits.open(candidate_full_path, memmap=True) as candidate_hdul:
+            candidate_header = candidate_hdul[0].header
+            expected_header = {
+                "SBFBRNCH": config.candidate_branch,
+                "SBFVERS": EXPERIMENT_VERSION,
+                "EXPTKEY": experiment_key[:16],
+                "CLIPSPC": "NORMFULL",
+            }
+            mismatched = {
+                key: (candidate_header.get(key), expected)
+                for key, expected in expected_header.items()
+                if candidate_header.get(key) != expected
+            }
+            if mismatched:
+                raise RuntimeError(
+                    f"{metadata['galaxy']} {ring}: saved normalized FITS "
+                    f"failed contract check: {mismatched}"
+                )
             candidate_crop = np.array(
                 candidate_hdul[0].data[y0:y1, x0:x1],
                 dtype=np.float64, copy=True,
@@ -1366,8 +1397,20 @@ def _run_spectral_experiment(
                     (raw[window] < limits["lower"])
                     | (raw[window] > limits["upper"])
                 )
-            elif branch == "normalized_full_3p5":
+            elif branch == config.candidate_branch:
                 clip_space, limits = "normalized_full", normalized_full_limits
+                changed = np.zeros(raw.shape, dtype=bool)
+                changed[window] = (
+                    (working[window] < limits["lower"])
+                    | (working[window] > limits["upper"])
+                )
+                # The adopted measurement deliberately starts from the
+                # float32 full-frame FITS product saved above.  Therefore the
+                # file is not merely a picture: selecting a ring and
+                # subtracting its mean reproduces the actual FFT input.
+                working[window] = candidate_crop[window]
+            elif branch == config.union_branch:
+                clip_space, limits = "normalized_union", union_limits
                 changed = np.zeros(raw.shape, dtype=bool)
                 changed[window] = (
                     (working[window] < limits["lower"])
@@ -1376,18 +1419,6 @@ def _run_spectral_experiment(
                 working[window] = np.clip(
                     working[window], limits["lower"], limits["upper"]
                 )
-            elif branch == config.candidate_branch:
-                clip_space, limits = "normalized_union", candidate_limits
-                changed = np.zeros(raw.shape, dtype=bool)
-                changed[window] = (
-                    (working[window] < limits["lower"])
-                    | (working[window] > limits["upper"])
-                )
-                # The candidate measurement deliberately starts from the
-                # float32 full-frame FITS product saved above.  Therefore the
-                # file is not merely a picture: selecting a ring and
-                # subtracting its mean reproduces the actual FFT input.
-                working[window] = candidate_crop[window]
             else:
                 raise RuntimeError(f"Unknown experiment branch: {branch}")
 
@@ -1711,6 +1742,7 @@ def _run_spectral_experiment(
         "normalized_fits": fits_products,
         "closure_passed": bool(not closure.empty and closure["passed"].all()),
         "candidate_limits": candidate_limits,
+        "union_limits": union_limits,
     }
 
 
@@ -1820,6 +1852,7 @@ def process_target(
         "experiment_key": experiment_key,
         "config": asdict(config),
         "candidate_branch": config.candidate_branch,
+        "union_branch": config.union_branch,
         "source_result": source["result_path"],
         "source_job_id": source["result"].get("job_id"),
         "source_key": source["source_key"],
@@ -1930,12 +1963,16 @@ def build_evaluation_table(
         combined = tables["combined_annuli"]
         clipping = tables["clipping"]
         candidate = result["candidate_branch"]
+        union_branch = result.get(
+            "union_branch",
+            f"normalized_union_{sigma_tag(result['config']['normalized_sigma'])}",
+        )
 
         main = combined[np.isclose(combined["requested_kmin"], main_kmin)]
         by_branch = main.set_index("branch")
         required_branches = {
             "no_winsor", "raw_global_3p5",
-            "normalized_full_3p5", candidate,
+            "normalized_full_3p5", union_branch, candidate,
         }
         missing_branches = sorted(required_branches - set(by_branch.index))
         if missing_branches:
@@ -1987,6 +2024,9 @@ def build_evaluation_table(
             "mbar_normalized_full_3p5": float(
                 by_branch.loc["normalized_full_3p5", "mbar_weighted"]
             ),
+            "mbar_normalized_union": float(
+                by_branch.loc[union_branch, "mbar_weighted"]
+            ),
             "mbar_candidate": float(by_branch.loc[candidate, "mbar_weighted"]),
             "candidate_minus_no_winsor": float(
                 by_branch.loc[candidate, "mbar_weighted"]
@@ -2000,6 +2040,10 @@ def build_evaluation_table(
                 by_branch.loc["normalized_full_3p5", "mbar_weighted"]
                 - by_branch.loc["raw_global_3p5", "mbar_weighted"]
             ),
+            "normalized_union_minus_raw_global_3p5": float(
+                by_branch.loc[union_branch, "mbar_weighted"]
+                - by_branch.loc["raw_global_3p5", "mbar_weighted"]
+            ),
             "annulus_abs_no_winsor": abs(float(
                 by_branch.loc["no_winsor", "annulus_difference"]
             )),
@@ -2008,6 +2052,9 @@ def build_evaluation_table(
             )),
             "annulus_abs_candidate": abs(float(
                 by_branch.loc[candidate, "annulus_difference"]
+            )),
+            "annulus_abs_normalized_union": abs(float(
+                by_branch.loc[union_branch, "annulus_difference"]
             )),
             "candidate_k_window_span": k_span,
             "candidate_changed_inner": inner_fraction,
@@ -2154,18 +2201,22 @@ def plot_normalized_inputs(
 
 
 def plot_power_comparison(result: dict[str, Any], kmin: float = 0.04):
-    """Сравнивает три ветви при неизменных PSF, маске и k-окне."""
+    """Сравнивает четыре ветви при неизменных PSF, маске и k-окне."""
 
     import matplotlib.pyplot as plt
 
     tables = load_result_tables(result)
     power = tables["power_spectra"]
     summary = tables["fit_summary"]
+    union_branch = result.get(
+        "union_branch",
+        f"normalized_union_{sigma_tag(result['config']['normalized_sigma'])}",
+    )
     colors = {
         "no_winsor": "black",
         "raw_global_3p5": "#d95f02",
-        "normalized_full_3p5": "#7570b3",
         result["candidate_branch"]: "#1b9e77",
+        union_branch: "#7570b3",
     }
     fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), constrained_layout=True)
     for axis, ring in zip(axes, ["inner", "outer"]):

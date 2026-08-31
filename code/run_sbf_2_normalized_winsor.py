@@ -42,8 +42,8 @@ def _timestamped_print(*args, **kwargs):
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Сравнить no-winsor, production raw 3.5σ и обрезку после "
-            "residual/sqrt(model) на готовых продуктах SBF-2"
+            "Пересчитать F150W-спектры с принятой ветвью "
+            "normalized_full_3p5 и сохранить три сравнительные ветви"
         )
     )
     parser.add_argument(
@@ -58,7 +58,13 @@ def parse_args() -> argparse.Namespace:
         "--galaxies", nargs="+",
         help='Подвыборка, например --galaxies "NGC 3379" "NGC 1380"',
     )
-    parser.add_argument("--sigma", type=float, default=3.5)
+    parser.add_argument(
+        "--sigma", type=float, default=3.5,
+        help=(
+            "Sigma только для сравнительной normalized_union; "
+            "принятая normalized_full фиксирована на 3.5 sigma"
+        ),
+    )
     parser.add_argument("--e-realizations", type=int, default=64)
     parser.add_argument("--random-seed", type=int, default=1489)
     parser.add_argument("--fft-workers", type=int, default=-1)
@@ -111,6 +117,8 @@ def main() -> int:
     print(f"Source: {source_batch_root}")
     print(f"Output: {output_root}")
     print(f"Targets: {len(galaxies)}")
+    print(f"Adopted branch: {config.candidate_branch}")
+    print(f"Comparison union branch: {config.union_branch}")
     print(json.dumps(asdict(config), ensure_ascii=False, indent=2))
 
     readiness = inspect_sources(galaxies, source_batch_root)

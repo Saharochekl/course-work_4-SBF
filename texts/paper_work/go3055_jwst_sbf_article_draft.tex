@@ -62,16 +62,16 @@ galaxies, individual Paper IV thin-slice distances, no manual rejection, and
 one color-independent F150W zero point. A linear color term is tested before
 the distance analysis, but is not adopted because it does not improve either
 the information criterion or cross-validation. The resulting calibration is
-$\Mbar_{150,0}=-3.172\pm0.024_{\rm stat}\pm0.051_{\rm common}$ mag, with
-fitted intrinsic scatter 0.084 mag (bootstrap 16th--84th percentile interval
-0.068--0.092 mag). Its
-leave-one-out (LOO) distance-modulus bias is $-0.0004$ mag and its RMS is
-0.0955 mag, corresponding to 4.4 per cent in distance. The median predicted
-internal uncertainty is 0.0902 mag (4.2 per cent); including the common TRGB
-absolute-scale uncertainty gives 0.1018 mag (4.8 per cent). The normalized
-LOO residuals have RMS 1.08; nine of 14 objects are within $1\sigma$ and all
+$\Mbar_{150,0}=-3.208\pm0.024_{\rm stat}\pm0.051_{\rm common}$ mag, with
+fitted intrinsic scatter 0.081 mag (bootstrap 16th--84th percentile interval
+0.064--0.088 mag). Its
+leave-one-out (LOO) distance-modulus bias is $-0.0010$ mag and its RMS is
+0.0925 mag, corresponding to 4.3 per cent in distance. The median predicted
+internal uncertainty is 0.0865 mag (4.1 per cent); including the common TRGB
+absolute-scale uncertainty gives 0.0984 mag (4.6 per cent). The normalized
+LOO residuals have RMS 1.08; eight of 14 objects are within $1\sigma$ and all
 14 are within $2\sigma$. For comparison, a linear color law gives a worse
-LOO RMS of 0.0992 mag, is disfavored by $\Delta{\rm AICc}=2.58$, and has a
+LOO RMS of 0.0981 mag, is disfavored by $\Delta{\rm AICc}=3.15$, and has a
 bootstrap slope interval that includes zero. The data therefore do not
 require a color dependence, and all primary distances and uncertainties below
 use the constant zero point.
@@ -172,7 +172,7 @@ $8.2$ arcsec are excluded, obvious non-elliptical features enter the object
 mask, and the sample contains no retained strong dust lane. As a quantitative
 sensitivity bound, an unrecognized screen with $A_V^{\rm int}\leq0.05$ mag
 would give $A_{150}^{\rm int}\lesssim0.01$ mag for a standard near-infrared
-extinction curve, well below the observed 0.0955-mag LOO scatter. This is a
+extinction curve, well below the observed 0.0925-mag LOO scatter. This is a
 bound, not a measurement of internal dust.
 
 All targets have $z<0.007$. For a deliberately broad local spectral-slope
@@ -212,38 +212,53 @@ is used only to fill detector gaps while solving the isophotes. The final model
 at every real science pixel comes from the measured isophotal profile. Filled
 gap pixels never enter a power spectrum.
 
-After subtraction, residual values in the science region are limited
-symmetrically to the robust median plus or minus $3.5$ robust standard
-deviations. Pixels are not rejected. This operation is therefore
-\emph{winsorization}, not sigma-clipping; sigma-clipped statistics are used only
-to estimate its centre and scale. The raw and winsorized residual products are
-both retained for diagnostics. This robustification is a deliberate
+After sky and galaxy-model subtraction, the residual is first divided by
+$\sqrt{M_i}$.  The centre and scale of this \emph{normalized} field are then
+estimated with up to five iterations of symmetric $3.5\sigma$-clipped statistics,
+using every catalogue-unmasked pixel for which the science image is finite and
+$M_i>0$.  This support is the complete valid positive-model region: it is not
+the raw-residual distribution and not the union of the two measurement
+annuli.  Values outside the resulting median plus or minus $3.5$ scale
+interval are replaced by the corresponding boundary value.  Pixels are not
+rejected.  This operation is therefore \emph{winsorization}, not
+sigma-clipping; sigma clipping is used only to estimate the centre and scale.
+
+The resulting full-frame normalized and winsorized image is saved as a FITS
+product before any annulus is selected.  Pixels rejected by the catalogue
+mask, invalid science pixels, and pixels with a non-positive model remain
+NaN in this product and never enter either the threshold estimate or a Fourier
+spectrum.  The previous raw-residual and annulus-union prescriptions are
+retained only as comparison branches.  Robustification is a deliberate
 implementation change relative to Jensen and is therefore tested explicitly
 rather than presented as part of the reproduced method.
 
-Figure~\ref{fig:working-residuals} shows the final normalized residual fields
-that actually enter the Fourier measurement. Masked pixels are plotted in
-black; they are absent from both $P(k)$ and $E(k)$ rather than being assigned a
-numerical residual value.
+Figure~\ref{fig:working-residuals} shows these saved full-frame residual
+products.  Masked pixels are plotted in black; they are absent from both
+$P(k)$ and $E(k)$ rather than being assigned a numerical residual value.  The
+mean of each selected annulus is removed only when its exact FFT input is
+constructed, so that mean subtraction is not baked into the saved full-frame
+FITS.
 
 \begin{figure*}
 \centering
 \paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_final_working_residuals.png}{0.98\textwidth}
-\caption{Final normalized F150W residual fields used for the SBF measurement.
-The smooth galaxy model has been subtracted, compact sources and invalid image
-regions have been masked, and the two adopted circular annuli are retained.
+\caption{Full-frame F150W residual products after division by
+$\sqrt{M_i}$ and symmetric $3.5\sigma$ winsorization.  The smooth galaxy model
+has been subtracted and compact sources and invalid image regions are masked.
 Black pixels are excluded from the analysis; visible grey-scale structure in
-the unmasked area is real residual structure, not a mask value.}
+the unmasked area is real residual structure, not a mask value.  The saved
+FITS still contains the full valid support and has not been mean-subtracted.
+An annulus is selected and its mean is removed only immediately before its
+FFT is calculated.}
 \label{fig:working-residuals}
 \end{figure*}
 
 \subsection{Normalized residual and expectation spectrum}
 
-For a smooth model $M_i$, sky-subtracted data $I_i$, and binary usable-pixel
-window $W_i$, the field entering the Fourier analysis is
+For a smooth model $M_i$ and sky-subtracted data $I_i$, define the normalized
+residual
 \begin{equation}
- R_i=W_i\frac{I_i-M_i}{\sqrt{M_i}}.
- \label{eq:normalized-residual}
+ Q_i=\frac{I_i-M_i}{\sqrt{M_i}}.
 \end{equation}
 The division by $\sqrt{M_i}$ converts the Poisson stellar variance, which is
 proportional to local galaxy intensity, into an approximately stationary SBF
@@ -251,8 +266,20 @@ amplitude. It does not measure a difference between the brightest and faintest
 pixels. SBF is the variance of the unresolved stellar luminosity function per
 unit mean light, recovered statistically from all usable pixels.
 
-For each annulus we subtract the mean of $R$, calculate the two-dimensional
-FFT, and use
+Let $Q_i^{\rm win}$ be $Q_i$ after applying the single full-support
+winsorization interval described above, and let $W_i$ be the binary window of
+one selected annulus.  For that annulus the exact field entering the Fourier
+analysis is
+\begin{equation}
+ R_i=W_i\left(Q_i^{\rm win}
+ -\left\langle Q^{\rm win}\right\rangle_W\right).
+ \label{eq:normalized-residual}
+\end{equation}
+Thus the threshold is estimated once over the full valid image, whereas the
+mean is estimated separately after selecting each ring.  NaN pixels in the
+saved FITS are absent from the mean and from the FFT; zeros outside $W_i$ in
+the explicit FFT array represent multiplication by the binary window, not
+measured zero-valued residuals.  We calculate the two-dimensional FFT and use
 \begin{equation}
  P(\boldsymbol{k})=\frac{|\mathcal{F}[R](\boldsymbol{k})|^2}{N_{\rm use}}.
 \end{equation}
@@ -561,15 +588,16 @@ distances, no manual rejection, and one color-independent absolute F150W SBF
 zero point. The linear relation is a pre-specified test of whether a population
 correction is needed; quadratic and broken-line relations are exploratory.
 NGC 1399 remains in the primary fit; its constant-zero-point LOO residual is
-$-0.157$ mag, or $1.81\sigma$ with the validation uncertainty, and does not
+$-0.143$ mag, or $1.68\sigma$ with the validation uncertainty, and does not
 justify post-hoc removal.
 
 Before inspecting the final distance residuals, the following sensitivity
 experiments were fixed: Paper IV thick-slice and Paper-III-style cluster
 anchors; constant and linear color laws; visually and automatically selected
 quality subsets; inner and outer annuli; $P_r=0$, the adopted $P_r$, and
-$2P_r$; GCLF-width variants; PSF stamp size and detector position; residual
-winsorization; and an optional correlated-noise template. Nonlinear color
+$2P_r$; GCLF-width variants; PSF stamp size and detector position; the order
+and support used for residual winsorization; and an optional correlated-noise
+template. Nonlinear color
 laws and removal of individual galaxies remain exploratory and cannot replace
 the primary experiment.
 
@@ -605,8 +633,8 @@ We first ask whether color is needed before constructing the primary distance
 estimator. The color-independent fit gives
 \begin{equation}
  \begin{aligned}
- \Mbar_{150,0}&=-3.172\pm0.024_{\rm stat}\pm0.051_{\rm common}~{\rm mag},\\
- \sigma_{\rm int}&=0.084~{\rm mag}.
+ \Mbar_{150,0}&=-3.208\pm0.024_{\rm stat}\pm0.051_{\rm common}~{\rm mag},\\
+ \sigma_{\rm int}&=0.081~{\rm mag}.
  \end{aligned}
  \label{eq:f150-constant-calibration}
 \end{equation}
@@ -614,14 +642,14 @@ The statistical term is the standard deviation of 2000 galaxy-level
 bootstrap zero points. The common term combines the TRGB/NGC 4258 scale, the
 adopted F150W flux-scale allowance, and the finite-PSF-stamp term; only the
 TRGB term remains in a same-filter SBF distance. The bootstrap 16th--84th
-percentile interval of $\sigma_{\rm int}$ is 0.068--0.092 mag.
+percentile interval of $\sigma_{\rm int}$ is 0.064--0.088 mag.
 At the median corrected color $C_0=0.5675$, the alternative linear fit is
 \begin{equation}
- \Mbar_{150,0}=-3.1756+0.4985(C_{090-150,0}-0.5675),
+ \Mbar_{150,0}=-3.2094+0.2244(C_{090-150,0}-0.5675),
  \label{eq:f150-linear-test}
 \end{equation}
-with intrinsic scatter 0.0809 mag. Bootstrap 16th--84th percentiles are
-$[-3.1975,-3.1486]$ mag for the intercept and $[-0.0576,0.9931]$ for the
+with intrinsic scatter 0.0798 mag. Bootstrap 16th--84th percentiles are
+$[-3.2313,-3.1815]$ mag for the intercept and $[-0.3044,0.7136]$ for the
 slope, so the slope interval includes zero.
 
 \begin{table}
@@ -634,32 +662,34 @@ tests whether a population correction improves on the adopted constant.}
 \toprule
 Model & $a$ & $b$ & $\sigma_{\rm int}$ & AICc / LOO RMS \\
 \midrule
-Constant & -3.172 & 0.000 & 0.084 & -22.83 / 0.0955 \\
-Linear & -3.176 & 0.498 & 0.081 & -20.26 / 0.0992 \\
+Constant & -3.208 & 0.000 & 0.081 & -23.75 / 0.0925 \\
+Linear & -3.209 & 0.224 & 0.080 & -20.60 / 0.0981 \\
 \bottomrule
 \end{tabular}}
 \end{table}
 
 The constant model is better than the linear relation by
-$\Delta{\rm AICc}=2.58$ and also has lower LOO RMS. Color therefore does not
+$\Delta{\rm AICc}=3.15$ and also has lower LOO RMS. Color therefore does not
 improve the distance estimate in the present sample. This conclusion is not
-caused by the treatment of horizontal errors: the linear LOO RMS is 0.09924
-mag with no color errors, with the measured errors, or after adding a 0.01-mag
-floor; using the old half-ring proxy gives 0.09960 mag. We consequently adopt
+caused by the treatment of horizontal errors: the linear LOO RMS is 0.09809
+mag with no color errors and 0.09810 mag either with the measured errors or
+after adding a 0.01-mag floor; using the old half-ring proxy gives 0.09847
+mag. We consequently adopt
 Eq.~\ref{eq:f150-constant-calibration}; all subsequent primary distances and
 error budgets are color independent.
 
 Quadratic and fixed-break broken-line relations were also tested only as
-exploratory shape checks. Their AICc/LOO-RMS pairs are $-18.28/0.0989$ and
-$-18.65/0.0974$ mag, respectively. Neither outperforms the constant model;
-their additional coefficients are therefore not promoted to a calibration
-table or a physical law.
+exploratory shape checks. Their AICc/LOO-RMS pairs are $-19.77/0.0945$ and
+$-20.32/0.0922$ mag, respectively. The broken-line RMS is only 0.0003 mag
+below the constant-model value while its AICc is worse by 3.43. Neither model
+improves both criteria; their additional coefficients are therefore not
+promoted to a calibration table or a physical law.
 
 The cleanest comparison with Paper III uses the same eight galaxies rather
 than comparing two different samples. For our F150W measurements versus
-$F090W-F150W$, the constant and linear models have LOO RMS values of 0.1111
-and 0.1152 mag, respectively; the corresponding AICc values are $-8.18$ and
-$-4.07$. For the Paper III F110W measurements of those same galaxies versus
+$F090W-F150W$, the constant and linear models have LOO RMS values of 0.1014
+and 0.1104 mag, respectively; the corresponding AICc values are $-9.65$ and
+$-4.63$. For the Paper III F110W measurements of those same galaxies versus
 $g-z$, the linear model reduces the LOO RMS from 0.1114 to 0.0465 mag and has
 AICc $-11.94$, compared with $-7.97$ for a constant. Thus the discrepancy is
 not produced merely by changing the galaxy list.
@@ -667,7 +697,7 @@ not produced merely by changing the galaxy list.
 A crossed test of both SBF bands against both available colors constrains,
 but does not uniquely identify, the source of the discrepancy. On the same
 eight galaxies, F150W has Pearson
-$r=0.48$ ($p=0.224$) against $F090W-F150W$ and $r=0.45$ ($p=0.263$)
+$r=0.28$ ($p=0.504$) against $F090W-F150W$ and $r=0.21$ ($p=0.611$)
 against $g-z$. F110W gives $r=0.82$ ($p=0.0125$) and $r=0.93$
 ($p=0.0010$), respectively. The two color indices themselves remain strongly
 correlated. Thus the F110W relation survives either color choice whereas the
@@ -684,7 +714,10 @@ sample.
 \caption{Extinction-corrected JWST F150W SBF calibration and the tested color
 dependence. The constant zero point is adopted; sloped and subset fits are
 diagnostics and do not define the primary distances. Marker shape gives
-environment and marker color the F150W aperture-luminosity proxy.}
+environment and marker color the F150W aperture-luminosity proxy. For each
+displayed regression, the darker 68 per cent bootstrap band is the uncertainty
+of the mean relation; the lighter 68 per cent predictive band additionally
+includes the fitted intrinsic scatter.}
 \label{fig:calibration}
 \end{figure*}
 
@@ -695,19 +728,21 @@ environment and marker color the F150W aperture-luminosity proxy.}
 Paper III. Each SBF band is tested against both $F090W-F150W$ and $g-z$.
 F110W retains a strong relation with either population tracer, whereas F150W
 does not; changing only the color index therefore does not recover a useful
-F150W color correction.}
+F150W color correction. In every panel the darker 68 per cent bootstrap band
+is the confidence interval for the mean relation and the lighter 68 per cent
+band is the predictive interval including intrinsic scatter.}
 \label{fig:same8-crossed-color}
 \end{figure*}
 
 \subsection{Distance recovery and precision}
 
-The adopted color-independent relation gives LOO bias $-0.0004$ mag and RMS
-0.0955 mag, corresponding to approximately 4.4 per cent scatter in distance.
-Its median predicted internal uncertainty is 0.0902 mag (4.2 per cent), and
-the median absolute uncertainty after the common zero point is 0.1018 mag
-(4.8 per cent).
+The adopted color-independent relation gives LOO bias $-0.0010$ mag and RMS
+0.0925 mag, corresponding to approximately 4.3 per cent scatter in distance.
+Its median predicted internal uncertainty is 0.0865 mag (4.1 per cent), and
+the median absolute uncertainty after the common zero point is 0.0984 mag
+(4.6 per cent).
 
-The constant-zero-point validation pulls have RMS 1.08; nine of 14 objects lie within
+The constant-zero-point validation pulls have RMS 1.08; eight of 14 objects lie within
 $1\sigma$ and all 14 within $2\sigma$. Thus the error model is not obviously
 underestimated or inflated. The empirical LOO RMS and the median predicted
 uncertainty are distinct quantities and agree at the expected level for this
@@ -756,7 +791,7 @@ that comparison sample. Quoted errors exclude common absolute zero points.}
 
 Individual calibration-point errors are typically dominated by the TRGB
 anchor and power-spectrum measurement. NGC 4486 is exceptional because its
-background term is 0.045 mag. In the predictive distance budget, intrinsic
+background term is 0.0456 mag. In the predictive distance budget, intrinsic
 scatter is the largest component, followed by finite-calibration uncertainty;
 improving the formal $P_0$ error alone cannot reduce the total distance error
 below the present 4--5 per cent floor.
@@ -790,7 +825,7 @@ Table~\ref{tab:predictive-errors} propagates them through an actual LOO
 prediction; and Table~\ref{tab:common-errors} lists coherent scale errors that
 must not be added as though they were independent for each galaxy. The largest
 median calibration-point component is the individual TRGB error. The
-exceptional 0.0449-mag sky term belongs to NGC 4486.
+exceptional 0.0456-mag sky term belongs to NGC 4486.
 
 \begin{table}
 \centering
@@ -866,24 +901,25 @@ available. The detailed PSF diagnostics are shown in
 Appendix~\ref{app:pipeline-diagnostics}; they are numerical validation plots,
 not additional astrophysical measurements.
 
-The adopted $3.5\sigma$ residual winsorization was also checked explicitly.
-It replaces values beyond the symmetric limits by the limiting values; it
-does not delete pixels or alter the binary Fourier window. In the three-target
-pilot, the fractions modified over the complete SBF region are 2.55 per cent
-for NGC 3379, 1.93 per cent for NGC 1380, and 1.23 per cent for NGC 4486. At
-the annular level the affected fractions are 4.31, 2.27, and 5.96 per cent in
-the inner rings, but only 0.19, 0.20, and 0.22 per cent in the outer rings.
-Thus most pixels are untouched, but the operation is not numerically
-irrelevant: rare high-amplitude residuals carry disproportionate variance,
-and the raw-to-$3.5\sigma$ inner-ring shifts are 0.064, 0.124, and 0.139 mag
-for NGC 1380, NGC 3379, and NGC 4486, respectively. The corresponding outer
-shifts are only 0.004--0.006 mag. We retain $3.5\sigma$ as the pre-specified
-robustification used in this implementation, not because it has zero effect,
-and show the pixel distributions and exact refits in
-Appendix~\ref{app:pipeline-diagnostics}; it is not folded into the formal
-random error after seeing the result. This winsorization is an explicit
-departure from the Jensen pipeline and its sensitivity is therefore reported
-rather than absorbed into the claim of a literal replication.
+The adopted $3.5\sigma$ residual winsorization was checked for all 14 galaxies
+with the galaxy model, catalogue mask, annular windows, PSFs, $E(k)$, and
+$P_r$ held fixed.  Four spectral branches were compared: no winsorization;
+winsorization of the raw residual before normalization; winsorization after
+normalization with a threshold estimated over the complete valid
+positive-model support; and the same operation with a threshold estimated
+only from the union of the two annuli.  The third prescription is adopted
+because its threshold is defined in the same normalized variable that is
+Fourier analysed, while still producing a reusable full-frame FITS before the
+annuli are selected.
+
+Relative to the former raw-residual prescription, the adopted full-support
+branch changes the weighted $\mbar_{150}$ by a median of $-0.02954$ mag over
+the 14 galaxies.  The largest absolute change is $0.08798$ mag for NGC 4649.
+The ordering of these operations is consequently part of the final
+measurement definition, not a negligible perturbation and not an extra random
+error added after the fact.  This winsorization remains an explicit departure
+from the Jensen pipeline; all alternative branches are retained as a
+sensitivity experiment rather than mixed into the primary calibration.
 
 An extended model $P(k)=P_0E(k)+P_nN(k)$ was tested using an empirical
 correlated-noise spectrum. Over the available frequency interval, the
@@ -895,9 +931,9 @@ as negative physical noise power.
 
 The unresolved-source correction is negligible at the present precision.
 Across all galaxies, replacing the adopted $P_r$ by either zero or $2P_r$
-changes an individual weighted SBF magnitude by at most 0.0053 mag. The
-constant-model LOO RMS ranges only from 0.0950 to 0.0961 mag, and the linear
-value from 0.0985 to 0.1001 mag. Re-fitting NGC 1399 and NGC 4472 with the
+changes an individual weighted SBF magnitude by at most 0.0053 mag within a
+fixed residual measurement. This is much smaller than the 0.0925-mag
+cross-validated scatter of the adopted calibration. Re-fitting NGC 1399 and NGC 4472 with the
 Jensen-specific GCLF width of 1.35 mag changes any weighted magnitude by at
 most 0.00046 mag. Artificial-source completeness remains desirable, but it
 cannot alter the present calibration at a scientifically relevant level
@@ -911,6 +947,20 @@ trial-to-trial RMS is 0.0382 mag. The test validates the core unit conversion
 and spectral normalization, but not isophotal modelling, source detection, or
 the correlated i2d noise. The $P_r$ and FFT-stage diagnostic plots are also
 collected in Appendix~\ref{app:pipeline-diagnostics}.
+
+A separate branch-recovery experiment isolates the order of normalization and
+winsorization.  Sixty-four independent synthetic fields per annulus use a
+known $P_0$, a radially varying positive galaxy model, the saved 129-pixel
+PSF, catalogue-like holes, and the same four spectral branches.  Relative to
+the no-winsorization result for the same realization, the adopted
+full-support branch shifts the recovered magnitude by
+$0.00104\pm0.00008$ mag in the inner annulus and
+$0.00098\pm0.00005$ mag in the outer annulus (mean and standard error).
+Thus the chosen ordering does not introduce a detectable additional bias for
+an injected Gaussian SBF field.  This is deliberately not described as a full
+end-to-end validation: it does not reproduce sky subtraction, isophotal
+modelling, source detection, unresolved-source completeness, or the
+non-Gaussian residual structure of the real mosaics.
 
 \subsection{Distance-anchor sensitivity}
 
@@ -934,9 +984,9 @@ galaxy-by-galaxy validation because different galaxies share an anchor.}
 Anchor & $a$ & $\sigma_{\rm int}$ &
 LOO RMS vs anchor & LOO RMS vs thin \\
 \midrule
-Paper IV thin & -3.172 & 0.084 & 0.0955 & 0.0955 \\
-Paper IV thick & -3.166 & 0.083 & 0.0953 & 0.0956 \\
-Paper III cluster means & -3.196 & 0.068 & 0.0931 & 0.0980 \\
+Paper IV thin & -3.208 & 0.081 & 0.0925 & 0.0925 \\
+Paper IV thick & -3.202 & 0.081 & 0.0932 & 0.0927 \\
+Paper III cluster means & -3.231 & 0.070 & 0.0924 & 0.0949 \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -948,17 +998,17 @@ TRGB noise are suppressed, yet the gain against individual thin-slice
 distances is small. No conclusion depends on selecting the thin variant over
 the Paper IV preferred thick estimator. For the thin, thick, and cluster-mean
 anchors, the diagnostic linear-model LOO RMS values against their own anchors
-are 0.0992, 0.0988, and 0.0937 mag, respectively; none improves on the
+are 0.0981, 0.0994, and 0.0961 mag, respectively; none improves on the
 corresponding constant result.
 
 \subsection{Independent-band comparison with legacy F160W SBF}
 
 Five galaxies overlap the independently reduced Jensen et al. (2015) F160W
 sample. Their weighted mean modulus difference is
-$\mu_{150}-\mu_{160}=-0.109\pm0.070$ mag and the weighted RMS is 0.133 mag.
+$\mu_{150}-\mu_{160}=-0.117\pm0.070$ mag and the weighted RMS is 0.107 mag.
 The rank correlation between the two absolute SBF measurements is suggestive
 (Spearman $\rho=0.87$, $p=0.054$), but the ordinary Pearson test is not
-significant ($r=0.69$, $p=0.195$). A fluctuation-color slope is likewise not
+significant ($r=0.65$, $p=0.233$). A fluctuation-color slope is likewise not
 detected. With only five common galaxies, this is a useful cross-band
 consistency check and a possible small offset to monitor, not an independent
 validation of the F150W distance scale. The object-level comparison is shown
@@ -967,22 +1017,23 @@ in Appendix~\ref{app:auxiliary-diagnostics}.
 \subsection{Annular behavior and environment}
 \label{sec:annular-results}
 
-The inner annuli give slope 1.24 and intrinsic scatter 0.068 mag; the outer
-annuli give slope 0.08 and scatter 0.089 mag. The two points per galaxy are
+The inner annuli give slope 0.98 and intrinsic scatter 0.051 mag; the outer
+annuli give slope 0.07 and scatter 0.091 mag. The two points per galaxy are
 correlated and are not 28 independent calibrators. NGC 3379 has an
-exceptionally uniform residual image but a 0.168 mag annular SBF difference,
+exceptionally uniform residual image but a 0.269 mag annular SBF difference,
 demonstrating why the annular difference cannot be treated automatically as
 random measurement noise.
 
 For the eight galaxies shared with Paper III, the direct F150W--F110W
 comparison is also substantially more coherent in the inner annulus
-(Pearson $r=0.78$, $p=0.024$; slope $0.83\pm0.27$) than in the outer annulus
-($r=0.33$, $p=0.425$; slope $0.31\pm0.36$). In this population-sensitive
+(Pearson $r=0.74$, $p=0.035$; slope $0.56\pm0.21$) than in the outer annulus
+($r=0.31$, $p=0.448$; slope $0.29\pm0.36$). In this population-sensitive
 sense, the inner measurements are more stable: they show the clearer
 cross-filter ordering and lower inter-galaxy scatter. This is not a blanket
-statement that the inner ring is numerically more robust. The winsorization
-pilot gives the opposite result for sensitivity to high-amplitude residuals:
-the outer rings change much less as the threshold is varied. The two notions
+statement that the inner ring is numerically more robust. The all-14 spectral
+branch comparison gives the opposite result for sensitivity to
+high-amplitude residuals: the outer rings change less when the normalization
+and winsorization prescription is varied. The two notions
 of ``stability'' must not be conflated, and the present results do not support
 an order-of-magnitude precision claim for either ring.
 
@@ -1000,16 +1051,18 @@ new calibration experiment rather than a literal replication.
 Circles and the solid orange line denote inner-annulus measurements and their
 fit; squares and the dashed cyan line denote the outer annulus. Point color
 encodes environment. Grey segments connect the two measurements of each
-galaxy.}
+galaxy. For each annular regression, the darker 68 per cent bootstrap band
+shows uncertainty in the mean relation and the lighter 68 per cent predictive
+band also includes intrinsic scatter.}
 \label{fig:annuli}
 \end{figure*}
 
 For the strict Virgo/Fornax subset, the seven Virgo members are NGC 4374,
 NGC 4406, NGC 4472, NGC 4486, NGC 4552, NGC 4621, and NGC 4649; the three
 Fornax members are NGC 1380, NGC 1399, and NGC 1404. A fitted Fornax shift is
-$-0.150$ mag. However, an exact permutation test gives $p=0.183$, color and
+$-0.157$ mag. However, an exact permutation test gives $p=0.150$, color and
 cluster membership are strongly confounded, and the step model is worse by
-$\Delta{\rm AICc}=1.76$. The step is a diagnostic, not a detection. Foreground
+$\Delta{\rm AICc}=0.59$. The step is a diagnostic, not a detection. Foreground
 extinction does not remove this pattern.
 
 \subsection{Structural-quality sensitivity}
@@ -1020,9 +1073,9 @@ NGC 4649 have strong residual structure; and NGC 1380 and NGC 4697 have
 incomplete outer model coverage. The primary sample nevertheless remains
 14/14. Restricting it to the 11 visually acceptable or 10 automatically clean
 objects does not improve cross-validation: the constant-model LOO RMS becomes
-0.0983 and 0.1034 mag, respectively, compared with 0.0955 mag for all 14.
-The nine Paper IV high-quality objects give 0.0907 mag; their linear model is
-worse at 0.1086 mag and therefore does not restore a useful color term. The
+0.0982 and 0.1036 mag, respectively, compared with 0.0925 mag for all 14.
+The nine Paper IV high-quality objects give 0.0869 mag; their linear model is
+worse at 0.1037 mag and therefore does not restore a useful color term. The
 test supports retaining the full sample while reporting the flags rather than
 using image appearance for post-hoc rejection.
 
@@ -1032,7 +1085,7 @@ using image appearance for post-hoc rejection.
 \subsection{Accuracy of the method}
 
 The central empirical result is a cross-validated F150W SBF precision of
-approximately 4.4 per cent in distance for this 14-galaxy sample using one
+approximately 4.3 per cent in distance for this 14-galaxy sample using one
 color-independent F150W zero point. The tested color correction does not
 improve this result and is not used in the adopted distances.
 
@@ -1048,16 +1101,18 @@ Three measurement systematics remain physically important. First, i2d noise is
 correlated. The attempted empirical $N(k)$ component is too degenerate with
 $E(k)$ over the fitted interval to stabilize a third coefficient, so the
 failure of that extension is documented rather than hidden behind a more
-complicated fit. Second, the retained $3.5\sigma$ winsorization modifies only
-1.2--2.6 per cent of all SBF-region pixels in the three-target pilot, but the
-inner-ring amplitude remains sensitive to those rare tails. The selected
-threshold is therefore a fixed methodological choice, not a negligible
-correction. Third, the empirical PSF comparison is not closed by a confirmed
-isolated star. The 129--257-pixel model comparison does, however, bound the
-current finite-stamp shape effect. Compact-source completeness and the $P_r$
-model remain approximate; the explicit $0$--$2P_r$ test bounds their impact
-on this calibration without pretending that completeness itself has been
-measured.
+complicated fit. Second, the retained $3.5\sigma$ winsorization is applied only
+after normalization, with one object-specific threshold estimated from the
+complete valid positive-model support.  The all-galaxy branch comparison shows
+that changing the order relative to the former raw-residual prescription is
+measurable, even though the synthetic branch-recovery test finds no additional
+bias for an injected Gaussian field.  The selected threshold and ordering are
+therefore fixed methodological choices, not negligible corrections. Third,
+the empirical PSF comparison is not closed by a confirmed isolated star. The
+129--257-pixel model comparison does, however, bound the current finite-stamp
+shape effect. Compact-source completeness and the $P_r$ model remain
+approximate; the explicit $0$--$2P_r$ test bounds their impact on this
+calibration without pretending that completeness itself has been measured.
 
 \section{Conclusions}
 
@@ -1065,14 +1120,14 @@ measured.
 \item All 14 GO-3055 galaxies are retained in the primary analysis with
 individual Paper IV thin-slice TRGB anchors and no manual exclusions.
 \item The calibrated constant is
-$\Mbar_{150,0}=-3.172\pm0.024_{\rm stat}\pm0.051_{\rm common}$ mag. It
-recovers the TRGB distances with 0.0955 mag LOO RMS (4.4 per cent) and
+$\Mbar_{150,0}=-3.208\pm0.024_{\rm stat}\pm0.051_{\rm common}$ mag. It
+recovers the TRGB distances with 0.0925 mag LOO RMS (4.3 per cent) and
 negligible mean bias.
-\item The median predicted color-independent precision is 4.2 per cent
-internally and 4.8 per cent after the common TRGB zero point. The observed pull
+\item The median predicted color-independent precision is 4.1 per cent
+internally and 4.6 per cent after the common TRGB zero point. The observed pull
 distribution is consistent with the adopted errors.
 \item The data do not require a color dependence: a linear color law worsens
-the LOO RMS to 0.0992 mag, its AICc is worse by 2.58, and its slope interval
+the LOO RMS to 0.0981 mag, its AICc is worse by 3.15, and its slope interval
 includes zero. It is therefore retained only as a diagnostic and is not used
 for the primary distances.
 \item Paper IV thick-slice distances and Paper III cluster means do not
@@ -1146,11 +1201,12 @@ frequency range into an SBF-magnitude shift.}
 \paperfigure{../../runs/sbf2_systematics/NGC_1380/figures/ngc_1380_full_sbf_pixel_brightness_histogram_english.pdf}{0.46\textwidth}
 \par\medskip
 \paperfigure{../../runs/sbf2_systematics/NGC_4486/figures/ngc_4486_full_sbf_pixel_brightness_histogram_english.pdf}{0.46\textwidth}
-\caption{Full-SBF-region residual-pixel distributions for the three
-representative winsorization tests. The colored tails mark values modified by
-the 3, 3.5, and $4\sigma$ limits; the adopted $3.5\sigma$ boundary changes only
-1.23--2.55 per cent of all region pixels, although the exact $P(k)$ refits show
-that the inner annulus remains sensitive to these rare tails.}
+\caption{Residual-pixel distributions before and after normalization for three
+representative galaxies.  The colored tails mark the values affected by the
+3, 3.5, and $4\sigma$ limits.  These panels diagnose the change of variable;
+the final object-specific $3.5\sigma$ limits are estimated after normalization
+from the complete valid positive-model support, not separately in either
+annulus.}
 \label{fig:winsor-histograms}
 \end{figure}
 
@@ -1177,6 +1233,17 @@ the synthetic FFT-stage test.}
 \label{fig:pr-synthetic}
 \end{figure}
 
+\begin{figure}[!ht]
+\centering
+\paperfigure{../../runs/sbf2_normalized_winsor/recovery/synthetic_branch_recovery.png}{0.76\textwidth}
+\caption{Synthetic recovery test for the order of normalization and
+winsorization.  Each spectral branch is applied to the same injected SBF and
+white-noise realization before the inner and outer annuli are fitted.  The
+comparison isolates this ordering only; it is not an end-to-end test of sky,
+isophotal, catalogue, or correlated-noise systematics.}
+\label{fig:winsor-branch-recovery}
+\end{figure}
+
 \FloatBarrier
 \clearpage
 \twocolumn
@@ -1197,7 +1264,9 @@ F160W overlaps. The sample is too small for a new calibration claim; the plot
 is retained only as the separately labelled cross-band consistency check
 described in the main text. The black line in the left panel is the fitted
 fluctuation-color trend; the dashed black line in the right panel is equality.
-The middle panel has no fitted black line.}
+The middle panel has no fitted black line. Around the fitted relation in the
+left panel, the darker 68 per cent bootstrap band describes uncertainty in the
+mean and the lighter 68 per cent predictive band includes intrinsic scatter.}
 \label{fig:f150-f160}
 \end{figure*}
 
@@ -1208,14 +1277,17 @@ The middle panel has no fitted black line.}
 $32.8$-arcsec aperture. This quantity is an aperture luminosity, not a total
 galaxy magnitude, and the same angular radius covers different physical
 radii. The right panel subtracts the rejected linear color relation only as an
-exploratory diagnostic; neither panel enters the adopted distance estimator.}
+exploratory diagnostic; neither panel enters the adopted distance estimator.
+In both panels the darker 68 per cent bootstrap band is the confidence
+interval for the mean relation and the lighter 68 per cent predictive band
+also includes intrinsic scatter.}
 \label{fig:aperture-magnitude}
 \end{figure*}
 
 The aperture-magnitude test detects no direct correlation for all 14 objects
-(Pearson $p=0.220$), Virgo alone ($p=0.910$), or the three Fornax objects
+(Pearson $p=0.089$), Virgo alone ($p=0.452$), or the three Fornax objects
 ($p=0.954$). After subtracting the rejected linear color relation, the
-corresponding diagnostic values are 0.083, 0.514, and 0.836. These numbers
+corresponding diagnostic values are 0.053, 0.321, and 0.900. These numbers
 cannot be interpreted as a total-luminosity dependence because the fixed
 angular aperture itself is confounded with environment and distance.
 
@@ -1254,6 +1326,12 @@ The consolidated three-galaxy noise, winsorization, and PSF experiment is
 \nolinkurl{runs/sbf2_systematics/pilot/tables/sbf2_three_galaxy_systematics_pilot.csv};
 its adopted decisions are recorded separately in
 \nolinkurl{runs/sbf2_systematics/pilot/tables/sbf2_three_galaxy_systematics_decision.csv}.
+The final all-14 normalization/winsorization comparison is retained under
+\nolinkurl{runs/sbf2_normalized_winsor/batch/aggregates/}; its per-target
+status table is
+\nolinkurl{runs/sbf2_normalized_winsor/batch/target_status.csv}, and the
+synthetic branch-recovery summaries are in
+\nolinkurl{runs/sbf2_normalized_winsor/recovery/}.
 The compact uncertainty summaries printed in the article are also available
 as
 \nolinkurl{runs/sbf2_go3055/analysis/tables/go3055_individual_error_summary.csv},
@@ -1266,13 +1344,21 @@ and
 \section{Reproducibility}
 \label{app:reproducibility}
 
-The measurement notebook is \nolinkurl{code/sbf-2.ipynb}; the dedicated
-GO-3055 runner is \nolinkurl{code/run_sbf_2_batch.py}. Exploratory fits and
+The galaxy modelling and source-mask notebook is
+\nolinkurl{code/sbf-2.ipynb}; its dedicated GO-3055 runner is
+\nolinkurl{code/run_sbf_2_batch.py}.  The final normalized-full spectral branch
+is implemented in \nolinkurl{code/sbf2_normalized_winsor_core.py} and executed
+sequentially by \nolinkurl{code/run_sbf_2_normalized_winsor.py}.  It reuses the
+saved galaxy model, masks, PSFs, annular geometry, and cached $E(k)$ rather
+than repeating isophotal modelling.  Exploratory fits and
 diagnostic figures are generated and displayed inline by
 \nolinkurl{code/sbf-2-graph.ipynb}, which reads completed batch products and
 does not repeat the SBF measurement. The three-galaxy winsorization, noise,
 and 129-versus-257-pixel PSF diagnostics are generated by
-\nolinkurl{code/sbf-2-systematics.ipynb}. The adopted constant-calibration tables,
+\nolinkurl{code/sbf-2-systematics.ipynb}.  The all-galaxy spectral-branch
+comparison is summarized in
+\nolinkurl{code/sbf-2-normalized-winsor.ipynb}; its synthetic recovery is
+implemented by \nolinkurl{code/sbf2_normalized_winsor_recovery.py}.  The adopted constant-calibration tables,
 distance-recovery figures, error-budget figure, comparison tables, and
 provenance records are generated from those saved products by
 \nolinkurl{code/build_sbf2_article_tables.py}.
@@ -1290,7 +1376,7 @@ Input and bands & JWST/NIRCam i2d; F150W SBF signal; F090W--F150W color; native 
 Science regions & circular $8.2$--$16.4$ and $16.4$--$32.8$ arcsec annuli \\
 Isophotes & initial semimajor axis 50 pixels; free ellipticity and position angle; 10-pixel sampling; maximum 2000 pixels; real-pixel fit with filled-gap fallback \\
 Compact masks & primary $3.5\sigma$, 9 connected pixels, 2-pixel dilation; residual catalogue $2.5\sigma$, 4 connected pixels, deblending, 3-pixel dilation \\
-Residual limiting & symmetric $3.5\sigma$ winsorization; raw residual retained \\
+Residual limiting & divide by $\sqrt{M}$ first; estimate one symmetric $3.5\sigma$ interval from the complete valid positive-model support; winsorize and save the full normalized FITS; select each ring and subtract its mean only immediately before the FFT. Raw, no-winsorization, and annulus-union branches are diagnostics only \\
 PSF & STPSF; nearest time-matched WSS OPD; nominal plus four detector offsets; 129 pixels; 7 wavelengths; unit normalization \\
 Fourier model & 80 radial bins; 64 Monte Carlo realizations per $E(k)$ and PSF; $P_0E(k)+P_1$; primary $k=0.04$--0.25; $k_{\min}=0.01,0.03$ sensitivity windows \\
 Unresolved sources & Gaussian GCLF plus background-galaxy power law; 12-mag faint integration; 25 per cent $P_r$ uncertainty; $0$, $P_r$, and $2P_r$ tests \\
