@@ -1,0 +1,69 @@
+{
+  "candidate_branch": "normalized_union_3p5",
+  "candidate_limits": {
+    "lower": -0.9062038150482433,
+    "median": -0.04434786138938805,
+    "n_pixels": 2704896,
+    "scale": 0.24624455818824437,
+    "sigma": 3.5,
+    "upper": 0.8175080922694672
+  },
+  "closure_passed": true,
+  "compact_cache": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/cache/inputs/NGC_4406_c3c7d436f8994d6c.npz",
+  "compact_cache_hit": false,
+  "config": {
+    "e_realizations": 64,
+    "fft_workers": -1,
+    "k_bins": 80,
+    "kmax": 0.25,
+    "kmins": [
+      0.01,
+      0.03,
+      0.04
+    ],
+    "min_modes_per_bin": 10,
+    "normalized_sigma": 3.5,
+    "random_seed": 1489,
+    "save_all_branch_fits": false,
+    "save_ring_fft_fits": false
+  },
+  "config_key": "649155aa572ea7a7ba76f8a204b34f8f7670359042eb8576d42c356ad0d7d291",
+  "expectation_bootstrapped_from": null,
+  "expectation_cache": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/cache/expectation/NGC_4406_0c928f38247f17b9.npz",
+  "expectation_cache_hit": false,
+  "experiment_key": "c45fdcc215a3821842eb3ca5a7678f7b4ec5c889eaeb284700bec04dd24fdbcd",
+  "full_normalized_residual": {
+    "clipped_fraction": 0.001778530328835085,
+    "dtype": "float32",
+    "mean_subtracted": false,
+    "n_clipped": 5943,
+    "n_valid": 3341523,
+    "next_step": "select ring, subtract its mean, then FFT",
+    "normalized_by": "sqrt(model)",
+    "path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4406/c45fdcc215a38218/normalized_fits/jw03055-o005_t005_nircam_clear-f150w_i2d_sbf_resid_catalog_mask_normalized_clip_3p5sigma.fits",
+    "shape": [
+      4390,
+      9891
+    ]
+  },
+  "full_normalized_residual_fits": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4406/c45fdcc215a38218/normalized_fits/jw03055-o005_t005_nircam_clear-f150w_i2d_sbf_resid_catalog_mask_normalized_clip_3p5sigma.fits",
+  "galaxy": "NGC 4406",
+  "n_psf": 5,
+  "normalized_fits": [],
+  "result_cache_hit": false,
+  "result_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/batch/results/NGC_4406_result.json",
+  "run_dir": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4406/c45fdcc215a38218",
+  "source_job_id": "job-b841860d848479f07e18c7ebf4da6ad1293dcb19c0288a7dd032d7d5f2d09c44",
+  "source_key": "794953d033e8159f61758610041d6715df2702503dc4511a791158ac5d8cd0ae",
+  "source_result": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/NGC_4406_result.json",
+  "status": "ok",
+  "table_paths": {
+    "clipping": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4406/c45fdcc215a38218/tables/clipping_summary.csv",
+    "combined_annuli": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4406/c45fdcc215a38218/tables/combined_annuli.csv",
+    "fit_per_psf": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4406/c45fdcc215a38218/tables/fit_per_psf.csv",
+    "fit_summary": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4406/c45fdcc215a38218/tables/fit_summary.csv",
+    "power_spectra": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4406/c45fdcc215a38218/tables/power_spectra.csv",
+    "production_closure": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4406/c45fdcc215a38218/tables/production_closure.csv"
+  },
+  "version": "sbf2-normalized-winsor-v2"
+}

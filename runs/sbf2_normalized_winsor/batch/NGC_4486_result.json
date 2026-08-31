@@ -1,0 +1,69 @@
+{
+  "candidate_branch": "normalized_union_3p5",
+  "candidate_limits": {
+    "lower": -1.0844152747404634,
+    "median": -0.027484674893115037,
+    "n_pixels": 2710747,
+    "scale": 0.3019801713849567,
+    "sigma": 3.5,
+    "upper": 1.0294459249542334
+  },
+  "closure_passed": true,
+  "compact_cache": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/cache/inputs/NGC_4486_02c449309ac5f9da.npz",
+  "compact_cache_hit": false,
+  "config": {
+    "e_realizations": 64,
+    "fft_workers": -1,
+    "k_bins": 80,
+    "kmax": 0.25,
+    "kmins": [
+      0.01,
+      0.03,
+      0.04
+    ],
+    "min_modes_per_bin": 10,
+    "normalized_sigma": 3.5,
+    "random_seed": 1489,
+    "save_all_branch_fits": false,
+    "save_ring_fft_fits": false
+  },
+  "config_key": "649155aa572ea7a7ba76f8a204b34f8f7670359042eb8576d42c356ad0d7d291",
+  "expectation_bootstrapped_from": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_systematics/NGC_4486/tables/ngc_4486_expectation_spectra.csv",
+  "expectation_cache": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/cache/expectation/NGC_4486_6c483a93454d78e5.npz",
+  "expectation_cache_hit": false,
+  "experiment_key": "23b21366c5a3217695918be70859dc06dda60fbd8859397d831598420eb9ac4a",
+  "full_normalized_residual": {
+    "clipped_fraction": 0.00046967463067170074,
+    "dtype": "float32",
+    "mean_subtracted": false,
+    "n_clipped": 2846,
+    "n_valid": 6059514,
+    "next_step": "select ring, subtract its mean, then FFT",
+    "normalized_by": "sqrt(model)",
+    "path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4486/23b21366c5a32176/normalized_fits/jw03055-o007_t007_nircam_clear-f150w_i2d_sbf_resid_catalog_mask_normalized_clip_3p5sigma.fits",
+    "shape": [
+      4390,
+      9892
+    ]
+  },
+  "full_normalized_residual_fits": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4486/23b21366c5a32176/normalized_fits/jw03055-o007_t007_nircam_clear-f150w_i2d_sbf_resid_catalog_mask_normalized_clip_3p5sigma.fits",
+  "galaxy": "NGC 4486",
+  "n_psf": 5,
+  "normalized_fits": [],
+  "result_cache_hit": false,
+  "result_path": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/batch/results/NGC_4486_result.json",
+  "run_dir": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4486/23b21366c5a32176",
+  "source_job_id": "job-40594e432fd4530f698c118f5fb4ff416e42b570b307142984b6b3308b8613e7",
+  "source_key": "7c269ae9b5e5680069454bb287d59d8c2a8bfbd8a8e0e242626c69cbf3a446ae",
+  "source_result": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_go3055/batch/NGC_4486_result.json",
+  "status": "ok",
+  "table_paths": {
+    "clipping": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4486/23b21366c5a32176/tables/clipping_summary.csv",
+    "combined_annuli": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4486/23b21366c5a32176/tables/combined_annuli.csv",
+    "fit_per_psf": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4486/23b21366c5a32176/tables/fit_per_psf.csv",
+    "fit_summary": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4486/23b21366c5a32176/tables/fit_summary.csv",
+    "power_spectra": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4486/23b21366c5a32176/tables/power_spectra.csv",
+    "production_closure": "/Users/zuha/Desktop/FKI/4 курс 2025-2026/course_work-SBF/runs/sbf2_normalized_winsor/products/NGC_4486/23b21366c5a32176/tables/production_closure.csv"
+  },
+  "version": "sbf2-normalized-winsor-v2"
+}
