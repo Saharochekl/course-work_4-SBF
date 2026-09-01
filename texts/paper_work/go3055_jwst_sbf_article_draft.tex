@@ -730,7 +730,7 @@ F110W retains a strong relation with either population tracer, whereas F150W
 does not; changing only the color index therefore does not recover a useful
 F150W color correction. In every panel the darker 68 per cent bootstrap band
 is the confidence interval for the mean relation and the lighter 68 per cent
-band is the predictive interval including intrinsic scatter.}
+band includes the empirical residual scatter of the corresponding fit.}
 \label{fig:same8-crossed-color}
 \end{figure*}
 
@@ -1197,29 +1197,43 @@ frequency range into an SBF-magnitude shift.}
 
 \begin{figure}[!ht]
 \centering
+\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_winsorization_diagnostics.png}{0.96\textwidth}
+\caption{All-galaxy diagnostic for the adopted normalized-full $3.5\sigma$
+winsorization. Left: change in ring SBF magnitude relative to no
+winsorization against the fraction of affected pixels. Right: affected-pixel
+fractions for the inner and outer annuli. These values come from the final
+\texttt{normalized\_full\_3p5} products and define the quantitative
+winsorization check used in this work.}
+\label{fig:winsor-adopted}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering
 \paperfigure{../../runs/sbf2_systematics/NGC_3379/figures/ngc_3379_full_sbf_pixel_brightness_histogram_english.pdf}{0.46\textwidth}
 \paperfigure{../../runs/sbf2_systematics/NGC_1380/figures/ngc_1380_full_sbf_pixel_brightness_histogram_english.pdf}{0.46\textwidth}
 \par\medskip
 \paperfigure{../../runs/sbf2_systematics/NGC_4486/figures/ngc_4486_full_sbf_pixel_brightness_histogram_english.pdf}{0.46\textwidth}
-\caption{Residual-pixel distributions before and after normalization for three
-representative galaxies.  The colored tails mark the values affected by the
-3, 3.5, and $4\sigma$ limits.  These panels diagnose the change of variable;
-the final object-specific $3.5\sigma$ limits are estimated after normalization
-from the complete valid positive-model support, not separately in either
-annulus.}
+\caption{Legacy three-galaxy raw-residual pilot retained to show why the order
+of normalization and winsorization was revisited. The colored tails belong to
+that earlier experiment: they neither define the final thresholds nor give
+the adopted affected-pixel fractions. The quantitative final-branch check is
+Figure~\ref{fig:winsor-adopted}.}
 \label{fig:winsor-histograms}
 \end{figure}
 
 \begin{figure}[!ht]
 \centering
 \paperfigure{../../runs/sbf2_systematics/NGC_1380/figures/ngc_1380_noise_model_fits_english.pdf}{0.82\textwidth}
-\caption{Representative inner- and outer-annulus power-spectrum fits. Black
+\caption{Legacy raw-residual pilot fits for representative inner and outer
+annuli. Black
 points are radial-bin means of the measured two-dimensional Fourier power;
 their error bars are standard errors over contributing Fourier modes. The red
 curve is the adopted $P_0E(k)+P_1$ model. The blue curve is the rejected
 $P_0E(k)+P_nN(k)$ diagnostic; its poorer behavior follows from the near
 degeneracy of $E(k)$ and $N(k)$, not from an additional detected noise
-component. Lower panels show residuals divided by the bin errors.}
+component. Lower panels show residuals divided by the bin errors. This panel
+supports the retained functional form only; its numerical coefficients are
+not used by the adopted normalized-full branch.}
 \label{fig:noise-model-diagnostic}
 \end{figure}
 
@@ -1266,7 +1280,8 @@ described in the main text. The black line in the left panel is the fitted
 fluctuation-color trend; the dashed black line in the right panel is equality.
 The middle panel has no fitted black line. Around the fitted relation in the
 left panel, the darker 68 per cent bootstrap band describes uncertainty in the
-mean and the lighter 68 per cent predictive band includes intrinsic scatter.}
+mean and the lighter 68 per cent predictive band includes the empirical
+residual scatter of the fitted relation.}
 \label{fig:f150-f160}
 \end{figure*}
 
@@ -1280,7 +1295,7 @@ radii. The right panel subtracts the rejected linear color relation only as an
 exploratory diagnostic; neither panel enters the adopted distance estimator.
 In both panels the darker 68 per cent bootstrap band is the confidence
 interval for the mean relation and the lighter 68 per cent predictive band
-also includes intrinsic scatter.}
+also includes the empirical residual scatter of the fitted relation.}
 \label{fig:aperture-magnitude}
 \end{figure*}
 
@@ -1407,30 +1422,43 @@ and \nolinkurl{jwst_1413.pmap}; 22 record pipeline 1.20.2, CRDS 13.0.6, and
 from the files used by the batch and retained in
 \nolinkurl{go3055_input_calibration_provenance.csv}. This records the reduction
 state exactly, but does not prove that mixing contexts is harmless; uniform
-reprocessing is a residual reproducibility/systematics check. The
-product-generation run records Git HEAD
-\texttt{5d0fd1496474...} and the exact executed \nolinkurl{sbf-2.ipynb}
-SHA256 \texttt{a1828d2d8d97...}. Full identifiers are retained in
-\nolinkurl{go3055_software_provenance.csv}.
-Its provenance also records that the worktree was dirty. Consequently the
-commit alone is not sufficient; the saved notebook snapshot and its hash are
-the authoritative measurement recipe. The final article commit/tag must be
-inserted after the present edits are committed.
+reprocessing is a residual reproducibility/systematics check. The base
+model-and-mask run records Git HEAD \texttt{5d0fd1496474...} and the exact
+executed \nolinkurl{sbf-2.ipynb} SHA256 \texttt{a1828d2d8d97...}. That snapshot
+defines the galaxy model, masks, annuli, PSFs, and reusable $E(k)$ caches, but
+does not by itself define the adopted spectrum measurement. The latter is
+fixed jointly by the hashes of \nolinkurl{sbf2_normalized_winsor_core.py} and
+\nolinkurl{run_sbf_2_normalized_winsor.py}, the version/branch pair
+\texttt{sbf2-normalized-winsor-v3}/\texttt{normalized\_full\_3p5}, and the
+per-target experiment keys in the v3 result JSON files. The frozen F150W
+science-result commit is \texttt{d89e09482978...}. Full identifiers are
+retained in \nolinkurl{go3055_software_provenance.csv}.
 
 From the project root, the reproducible analysis commands are
 \small
 \begin{verbatim}
 export MPLBACKEND=Agg
+export MPLCONFIGDIR=.matplotlib
+astro_env/bin/python code/run_sbf_2_batch.py \
+  --no-download --no-cleanup-inputs
+astro_env/bin/python \
+  code/run_sbf_2_normalized_winsor.py \
+  --stop-on-error
+astro_env/bin/python \
+  code/sbf2_normalized_winsor_recovery.py
 astro_env/bin/jupyter nbconvert \
   --to notebook --execute --inplace \
   code/sbf-2-graph.ipynb \
-  --ExecutePreprocessor.timeout=3600
+  --ExecutePreprocessor.timeout=7200
 astro_env/bin/jupyter nbconvert \
   --to notebook --execute --inplace \
   code/sbf-2-systematics.ipynb \
   --ExecutePreprocessor.timeout=7200
 astro_env/bin/python \
   code/build_sbf2_article_tables.py
+(cd texts/paper_work && latexmk -pdf \
+  -outdir=build -interaction=nonstopmode \
+  -halt-on-error go3055_jwst_sbf_article_draft.tex)
 \end{verbatim}
 \normalsize
 The Agg backend is mandatory for non-interactive execution on macOS; figures

@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import subprocess
 from pathlib import Path
 
 import matplotlib
@@ -29,6 +28,7 @@ RUN_DIR = ROOT / "runs" / "sbf2_go3055"
 NORMALIZED_RUN_DIR = ROOT / "runs" / "sbf2_normalized_winsor"
 ADOPTED_SBF_VERSION = "sbf2-normalized-winsor-v3"
 ADOPTED_SBF_BRANCH = "normalized_full_3p5"
+SCIENCE_FREEZE_GIT_HEAD = "d89e09482978a4df01324e3fd532ad2e3c03c924"
 TABLE_DIR.mkdir(parents=True, exist_ok=True)
 FIGURE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -39,13 +39,6 @@ def sha256(path: Path) -> str:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
-
-
-def git_value(*args: str) -> str:
-    result = subprocess.run(
-        ["git", *args], cwd=ROOT, check=True, capture_output=True, text=True
-    )
-    return result.stdout.strip()
 
 
 def distance_cell(distance: float, uncertainty: float) -> str:
@@ -529,11 +522,7 @@ software_rows.extend(
             sha256(ROOT / "texts" / "paper_work" / "go3055_jwst_sbf_article_draft.tex"),
         ),
         ("Article-table builder SHA256", sha256(Path(__file__).resolve())),
-        ("Current article-worktree Git HEAD", git_value("rev-parse", "HEAD")),
-        (
-            "Current article worktree clean",
-            "yes" if not git_value("status", "--porcelain") else "no",
-        ),
+        ("F150W science-freeze Git commit", SCIENCE_FREEZE_GIT_HEAD),
     ]
 )
 software = pd.DataFrame(software_rows, columns=["item", "version_or_identifier"])
