@@ -714,10 +714,11 @@ sample.
 \caption{Extinction-corrected JWST F150W SBF calibration and the tested color
 dependence. The constant zero point is adopted; sloped and subset fits are
 diagnostics and do not define the primary distances. Marker shape gives
-environment and marker color the F150W aperture-luminosity proxy. For each
-displayed regression, the darker 68 per cent bootstrap band is the uncertainty
-of the mean relation; the lighter 68 per cent predictive band additionally
-includes the fitted intrinsic scatter.}
+environment, while marker color repeats the same classification for immediate
+readability. The black horizontal line is the adopted constant calibration;
+the orange dashed line is the rejected linear diagnostic. The single grey
+strip is not a confidence interval: it is the fitted intrinsic scatter of the
+constant model, shown as $\pm1\sigma_{\rm int}$ about its zero point.}
 \label{fig:calibration}
 \end{figure*}
 
@@ -1048,12 +1049,11 @@ new calibration experiment rather than a literal replication.
 \centering
 \paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_annulus_local_color_sbf.png}{0.78\textwidth}
 \caption{Local color and absolute F150W SBF magnitude in matched annuli.
-Circles and the solid orange line denote inner-annulus measurements and their
-fit; squares and the dashed cyan line denote the outer annulus. Point color
-encodes environment. Grey segments connect the two measurements of each
-galaxy. For each annular regression, the darker 68 per cent bootstrap band
-shows uncertainty in the mean relation and the lighter 68 per cent predictive
-band also includes intrinsic scatter.}
+Blue circles and the solid blue line denote inner-annulus measurements and
+their fit; orange squares and the dashed orange line denote the outer annulus.
+Grey segments connect the two measurements of each galaxy. No uncertainty
+corridors are added: the figure is a direct radial comparison, and neither
+annular fit defines the adopted calibration.}
 \label{fig:annuli}
 \end{figure*}
 
@@ -1254,7 +1254,10 @@ the synthetic FFT-stage test.}
 winsorization.  Each spectral branch is applied to the same injected SBF and
 white-noise realization before the inner and outer annuli are fitted.  The
 comparison isolates this ordering only; it is not an end-to-end test of sky,
-isophotal, catalogue, or correlated-noise systematics.}
+isophotal, catalogue, or correlated-noise systematics. In the left panel the
+line inside each box is the median, the box spans the interquartile range, and
+the whiskers extend to the most extreme values within $1.5$ interquartile
+ranges; these elements do not denote a 68 per cent interval.}
 \label{fig:winsor-branch-recovery}
 \end{figure}
 
@@ -1278,10 +1281,9 @@ F160W overlaps. The sample is too small for a new calibration claim; the plot
 is retained only as the separately labelled cross-band consistency check
 described in the main text. The black line in the left panel is the fitted
 fluctuation-color trend; the dashed black line in the right panel is equality.
-The middle panel has no fitted black line. Around the fitted relation in the
-left panel, the darker 68 per cent bootstrap band describes uncertainty in the
-mean and the lighter 68 per cent predictive band includes the empirical
-residual scatter of the fitted relation.}
+The middle panel has no fitted black line. No uncertainty corridor is shown in
+the left panel: with only five overlapping objects it would visually dominate
+a diagnostic that is not used for the adopted calibration.}
 \label{fig:f150-f160}
 \end{figure*}
 
@@ -1293,9 +1295,9 @@ $32.8$-arcsec aperture. This quantity is an aperture luminosity, not a total
 galaxy magnitude, and the same angular radius covers different physical
 radii. The right panel subtracts the rejected linear color relation only as an
 exploratory diagnostic; neither panel enters the adopted distance estimator.
-In both panels the darker 68 per cent bootstrap band is the confidence
-interval for the mean relation and the lighter 68 per cent predictive band
-also includes the empirical residual scatter of the fitted relation.}
+The black lines are ordinary exploratory regressions, and their Pearson
+$p$-values are given in the panel titles. No confidence or predictive corridor
+is shown because neither relation is statistically detected.}
 \label{fig:aperture-magnitude}
 \end{figure*}
 

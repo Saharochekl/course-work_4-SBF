@@ -282,9 +282,9 @@ def run_recovery_test(
     summary.to_csv(output_dir / "synthetic_branch_recovery_summary.csv", index=False)
 
     figure_path = output_dir / "synthetic_branch_recovery.png"
-    fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.8))
+    fig, axes = plt.subplots(1, 2, figsize=(13.2, 4.8))
     positions = np.arange(len(BRANCHES))
-    colors = {"inner": "#2563eb", "outer": "#dc2626"}
+    colors = {"inner": "#2f6f9f", "outer": "#c95b2b"}
     offsets = {"inner": -0.13, "outer": 0.13}
     for ring in ("inner", "outer"):
         groups = [
@@ -305,10 +305,14 @@ def run_recovery_test(
             box.set(facecolor=colors[ring], alpha=0.55)
         for item in plot["medians"]:
             item.set(color="black")
-        axes[0].plot([], [], color=colors[ring], lw=7, alpha=0.55, label=ring)
-    axes[0].axhline(p0_true, color="black", ls="--", lw=1.3, label="input $P_0$")
+        axes[0].plot(
+            [], [], color=colors[ring], lw=7, alpha=0.55,
+            label=f"{ring.capitalize()} annulus",
+        )
+    axes[0].axhline(
+        p0_true, color="black", ls="--", lw=1.3, label="Injected $P_0$"
+    )
     axes[0].set(ylabel=r"Recovered $P_0$", title="Known-amplitude recovery")
-    axes[0].legend(frameon=False)
 
     for ring in ("inner", "outer"):
         ring_summary = summary[summary["ring"].eq(ring)].set_index("branch")
@@ -332,15 +336,22 @@ def run_recovery_test(
         ylabel=r"Additional $\Delta\overline{m}$ relative to no clipping (mag)",
         title="Bias introduced by winsorization",
     )
-    axes[1].legend(frameon=False)
+    tick_labels = [
+        "No clipping",
+        "Raw\n3.5$\\sigma$",
+        "Normalized\n3.5$\\sigma$ (full)",
+        "Normalized\n3.5$\\sigma$ (annuli)",
+    ]
     for axis in axes:
-        axis.set_xticks(
-            positions,
-            ["none", "raw", "norm. full", "norm. annuli"],
-            rotation=18,
-        )
-        axis.grid(alpha=0.2)
-    fig.tight_layout()
+        axis.set_xticks(positions, tick_labels)
+        axis.tick_params(axis="x", labelsize=8.5)
+        axis.grid(alpha=0.14)
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(
+        handles, labels, loc="upper center", bbox_to_anchor=(0.5, 1.01),
+        ncol=3, frameon=False,
+    )
+    fig.tight_layout(rect=(0, 0, 1, 0.91))
     fig.savefig(figure_path, dpi=240, bbox_inches="tight")
     plt.close(fig)
 
