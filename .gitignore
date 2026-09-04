@@ -19,3 +19,6 @@ __pycache__/
 *.pyc
 *.code-workspace
 runs/**/cache/
+runs/sbf_f090w_go3055/
+runs/.runtime_cache/
+.codebase-memory/
