@@ -1,0 +1,6 @@
+method,method_label,band,uncertainty_convention
+trgb_paper4,TRGB Paper IV,TRGB,Individual Paper IV uncertainty plus the shared 0.047-mag TRGB scale
+jensen_paper3_f110w,Jensen Paper III,F110W,"Measurement, color, slope and 0.060-mag population scatter; plus the 0.063-mag Paper III common scale, which already includes the 0.016-mag zero-point term"
+jensen2015_f160w,Jensen et al. (2015),F160W,Final combined uncertainty supplied by the existing five-object reconstruction; internal/common split unavailable
+this_work_f150w,This work,F150W,Color-independent leave-one-out prediction; absolute error includes the shared 0.047-mag TRGB scale
+this_work_f090w,This work,F090W,Adopted linear-color leave-one-out prediction; absolute error includes the shared 0.047-mag TRGB scale

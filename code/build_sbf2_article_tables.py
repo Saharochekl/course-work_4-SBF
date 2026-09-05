@@ -24,11 +24,14 @@ from astropy.io import fits
 ROOT = Path(__file__).resolve().parents[1]
 TABLE_DIR = ROOT / "runs" / "sbf2_go3055" / "analysis" / "tables"
 FIGURE_DIR = ROOT / "runs" / "sbf2_go3055" / "analysis" / "figures"
+F090_TABLE_DIR = ROOT / "runs" / "sbf_f090w_go3055" / "analysis" / "tables"
 RUN_DIR = ROOT / "runs" / "sbf2_go3055"
 NORMALIZED_RUN_DIR = ROOT / "runs" / "sbf2_normalized_winsor"
 ADOPTED_SBF_VERSION = "sbf2-normalized-winsor-v3"
 ADOPTED_SBF_BRANCH = "normalized_full_3p5"
 SCIENCE_FREEZE_GIT_HEAD = "d89e09482978a4df01324e3fd532ad2e3c03c924"
+TRGB_IV_COMMON_SIGMA_MAG = 0.047
+JENSEN_III_COMMON_SIGMA_MAG = 0.063
 TABLE_DIR.mkdir(parents=True, exist_ok=True)
 FIGURE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -44,7 +47,22 @@ def sha256(path: Path) -> str:
 def distance_cell(distance: float, uncertainty: float) -> str:
     if not np.isfinite(distance):
         return r"\ldots"
+    if not np.isfinite(uncertainty):
+        return f"${distance:.2f}$"
     return f"${distance:.2f}\\pm{uncertainty:.2f}$"
+
+
+def distance_from_modulus(mu: pd.Series | np.ndarray | float):
+    return 10 ** ((mu - 25) / 5)
+
+
+def distance_uncertainty(distance, sigma_mu):
+    return np.log(10) / 5 * distance * sigma_mu
+
+
+def common_part(total, internal):
+    """Recover a common quadrature term without numerical round-off failures."""
+    return np.sqrt(np.maximum(np.asarray(total) ** 2 - np.asarray(internal) ** 2, 0.0))
 
 
 def environment_label(value: str) -> str:
@@ -68,27 +86,110 @@ paper3 = pd.DataFrame(
     columns=["galaxy", "mbar110_0", "sigma_mbar110", "g_z_ps_0", "sigma_g_z_ps_0"],
 )
 paper3["Mbar110"] = 1.86 * (paper3["g_z_ps_0"] - 1.30) - 2.760
-paper3["sigma_Mbar110_formal"] = np.sqrt(
-    (1.86 * paper3["sigma_g_z_ps_0"]) ** 2
-    + (0.16 * (paper3["g_z_ps_0"] - 1.30)) ** 2
-    + 0.016**2
-)
+paper3["sigma_color_term_mag"] = 1.86 * paper3["sigma_g_z_ps_0"]
+paper3["sigma_slope_term_mag"] = 0.16 * np.abs(paper3["g_z_ps_0"] - 1.30)
+paper3["sigma_population_mag"] = 0.060
 paper3["mu_jensen_paper3_f110w"] = paper3["mbar110_0"] - paper3["Mbar110"]
-paper3["sigma_mu_jensen_paper3_f110w"] = np.hypot(
-    paper3["sigma_mbar110"], paper3["sigma_Mbar110_formal"]
+paper3["sigma_mu_jensen_paper3_f110w_internal"] = np.sqrt(
+    paper3["sigma_mbar110"] ** 2
+    + paper3["sigma_color_term_mag"] ** 2
+    + paper3["sigma_slope_term_mag"] ** 2
+    + paper3["sigma_population_mag"] ** 2
 )
-paper3["D_jensen_paper3_f110w_mpc"] = 10 ** (
-    (paper3["mu_jensen_paper3_f110w"] - 25) / 5
+paper3["sigma_mu_jensen_paper3_f110w_common"] = JENSEN_III_COMMON_SIGMA_MAG
+paper3["sigma_mu_jensen_paper3_f110w_total"] = np.hypot(
+    paper3["sigma_mu_jensen_paper3_f110w_internal"],
+    paper3["sigma_mu_jensen_paper3_f110w_common"],
 )
-paper3["sigma_D_jensen_paper3_f110w_mpc"] = (
-    np.log(10) / 5
-    * paper3["D_jensen_paper3_f110w_mpc"]
-    * paper3["sigma_mu_jensen_paper3_f110w"]
+paper3["D_jensen_paper3_f110w_mpc"] = distance_from_modulus(
+    paper3["mu_jensen_paper3_f110w"]
+)
+for component in ["internal", "common", "total"]:
+    paper3[f"sigma_D_jensen_paper3_f110w_{component}_mpc"] = distance_uncertainty(
+        paper3["D_jensen_paper3_f110w_mpc"],
+        paper3[f"sigma_mu_jensen_paper3_f110w_{component}"],
+    )
+# Backward-compatible aliases now deliberately mean the full absolute error.
+paper3["sigma_mu_jensen_paper3_f110w"] = paper3[
+    "sigma_mu_jensen_paper3_f110w_total"
+]
+paper3["sigma_D_jensen_paper3_f110w_mpc"] = paper3[
+    "sigma_D_jensen_paper3_f110w_total_mpc"
+]
+
+# The compact public F150W CSV predates the final error decomposition.  Central
+# values come from it, while internal and absolute uncertainties come from the
+# explicit leave-one-out prediction table.
+distances = pd.read_csv(TABLE_DIR / "go3055_distances_mpc_all_models.csv")
+predictions = pd.read_csv(TABLE_DIR / "go3055_distance_predictions_full_errors.csv")
+f150 = predictions.loc[predictions["model"] == "constant"].copy()
+f150["sigma_mu_sbf_common"] = common_part(
+    f150["sigma_mu_sbf_absolute"], f150["sigma_mu_sbf_internal"]
+)
+f150["D_sbf_f150w_mpc"] = distance_from_modulus(f150["mu_sbf_loo"])
+for component, column in [
+    ("internal", "sigma_mu_sbf_internal"),
+    ("common", "sigma_mu_sbf_common"),
+    ("total", "sigma_mu_sbf_absolute"),
+]:
+    f150[f"sigma_D_sbf_f150w_{component}_mpc"] = distance_uncertainty(
+        f150["D_sbf_f150w_mpc"], f150[column]
+    )
+
+master = pd.read_csv(TABLE_DIR / "go3055_master_measurements.csv")
+trgb = master[["galaxy", "environment", "mu_lit", "sigma_mu_lit"]].copy()
+trgb = trgb.rename(
+    columns={"mu_lit": "mu_trgb_paper4", "sigma_mu_lit": "sigma_mu_trgb_paper4_internal"}
+)
+trgb["sigma_mu_trgb_paper4_common"] = TRGB_IV_COMMON_SIGMA_MAG
+trgb["sigma_mu_trgb_paper4_total"] = np.hypot(
+    trgb["sigma_mu_trgb_paper4_internal"], trgb["sigma_mu_trgb_paper4_common"]
+)
+trgb["D_trgb_paper4_mpc"] = distance_from_modulus(trgb["mu_trgb_paper4"])
+for component in ["internal", "common", "total"]:
+    trgb[f"sigma_D_trgb_paper4_{component}_mpc"] = distance_uncertainty(
+        trgb["D_trgb_paper4_mpc"], trgb[f"sigma_mu_trgb_paper4_{component}"]
+    )
+
+f090_budget = pd.read_csv(F090_TABLE_DIR / "go3055_f090w_distance_error_budget.csv")
+f090 = f090_budget.loc[f090_budget["model"] == "linear"].copy()
+f090 = f090.rename(
+    columns={
+        "mu_sbf": "mu_sbf_f090w",
+        "sigma_mu_internal": "sigma_mu_sbf_f090w_internal",
+        "sigma_mu_total": "sigma_mu_sbf_f090w_total",
+        "distance_sbf_mpc": "D_sbf_f090w_mpc",
+        "sigma_distance_sbf_mpc": "sigma_D_sbf_f090w_total_mpc",
+        "sigma_common_trgb_mag": "sigma_mu_sbf_f090w_common",
+    }
+)
+for component in ["internal", "common"]:
+    f090[f"sigma_D_sbf_f090w_{component}_mpc"] = distance_uncertainty(
+        f090["D_sbf_f090w_mpc"], f090[f"sigma_mu_sbf_f090w_{component}"]
+    )
+
+jensen2015 = pd.read_csv(
+    ROOT / "code" / "sbf2_batch_outputs" / "jensen2015_f160w_comparison.csv"
+)[
+    [
+        "galaxy",
+        "mu_f160w_jensen2015_reconstructed",
+        "sigma_mu_f160w_jensen2015_reconstructed",
+    ]
+].rename(
+    columns={
+        "mu_f160w_jensen2015_reconstructed": "mu_jensen2015_f160w",
+        "sigma_mu_f160w_jensen2015_reconstructed": "sigma_mu_jensen2015_f160w_total",
+    }
+)
+jensen2015["D_jensen2015_f160w_mpc"] = distance_from_modulus(
+    jensen2015["mu_jensen2015_f160w"]
+)
+jensen2015["sigma_D_jensen2015_f160w_total_mpc"] = distance_uncertainty(
+    jensen2015["D_jensen2015_f160w_mpc"],
+    jensen2015["sigma_mu_jensen2015_f160w_total"],
 )
 
-# The compact public CSV contains only the adopted constant calibration.
-# This builder also needs the research-only columns for the comparison table.
-distances = pd.read_csv(TABLE_DIR / "go3055_distances_mpc_all_models.csv")
 normalized_results = [
     json.loads(path.read_text(encoding="utf-8"))
     for path in sorted((NORMALIZED_RUN_DIR / "batch" / "results").glob(
@@ -103,48 +204,143 @@ if (
            for row in normalized_results)
 ):
     raise RuntimeError("The 14-target normalized_full_3p5 result contract is incomplete")
-comparison = distances.merge(
+comparison = trgb.merge(
     paper3[
         [
             "galaxy",
             "D_jensen_paper3_f110w_mpc",
-            "sigma_D_jensen_paper3_f110w_mpc",
+            "sigma_D_jensen_paper3_f110w_internal_mpc",
+            "sigma_D_jensen_paper3_f110w_common_mpc",
+            "sigma_D_jensen_paper3_f110w_total_mpc",
             "mu_jensen_paper3_f110w",
-            "sigma_mu_jensen_paper3_f110w",
+            "sigma_mu_jensen_paper3_f110w_internal",
+            "sigma_mu_jensen_paper3_f110w_common",
+            "sigma_mu_jensen_paper3_f110w_total",
         ]
     ],
     on="galaxy",
     how="left",
     validate="one_to_one",
-)
-distance_main = comparison[
-    [
-        "galaxy",
-        "environment",
-        "D_trgb_mpc",
-        "sigma_D_trgb_mpc",
-        "D_sbf_constant_mpc",
-        "sigma_D_sbf_constant_mpc",
-        "D_jensen_paper3_f110w_mpc",
-        "sigma_D_jensen_paper3_f110w_mpc",
-        "D_jensen_f160w_mpc",
-        "sigma_D_jensen_f160w_mpc",
-    ]
-].rename(
-    columns={
-        "D_sbf_constant_mpc": "D_sbf_adopted_mpc",
-        "sigma_D_sbf_constant_mpc": "sigma_D_sbf_adopted_mpc",
-    }
-)
-distance_main.to_csv(
-    TABLE_DIR / "go3055_distance_comparison_all_methods.csv", index=False
+).merge(
+    jensen2015, on="galaxy", how="left", validate="one_to_one"
+).merge(
+    f150[
+        [
+            "galaxy", "mu_sbf_loo", "sigma_mu_sbf_internal",
+            "sigma_mu_sbf_common", "sigma_mu_sbf_absolute", "D_sbf_f150w_mpc",
+            "sigma_D_sbf_f150w_internal_mpc", "sigma_D_sbf_f150w_common_mpc",
+            "sigma_D_sbf_f150w_total_mpc",
+        ]
+    ],
+    on="galaxy", how="left", validate="one_to_one",
+).merge(
+    f090[
+        [
+            "galaxy", "mu_sbf_f090w", "sigma_mu_sbf_f090w_internal",
+            "sigma_mu_sbf_f090w_common", "sigma_mu_sbf_f090w_total",
+            "D_sbf_f090w_mpc", "sigma_D_sbf_f090w_internal_mpc",
+            "sigma_D_sbf_f090w_common_mpc", "sigma_D_sbf_f090w_total_mpc",
+        ]
+    ],
+    on="galaxy", how="left", validate="one_to_one",
 )
 
+# A long-form machine-readable table preserves the uncertainty level for every
+# method.  Missing Jensen (2015) internal/common components are intentional:
+# the supplied reconstruction reports only its final combined uncertainty.
+method_specs = [
+    (
+        "trgb_paper4", "TRGB Paper IV", "TRGB",
+        "mu_trgb_paper4", "sigma_mu_trgb_paper4_internal",
+        "sigma_mu_trgb_paper4_common", "sigma_mu_trgb_paper4_total",
+        "D_trgb_paper4_mpc", "sigma_D_trgb_paper4_internal_mpc",
+        "sigma_D_trgb_paper4_common_mpc", "sigma_D_trgb_paper4_total_mpc",
+        "Individual Paper IV uncertainty plus the shared 0.047-mag TRGB scale",
+    ),
+    (
+        "jensen_paper3_f110w", "Jensen Paper III", "F110W",
+        "mu_jensen_paper3_f110w", "sigma_mu_jensen_paper3_f110w_internal",
+        "sigma_mu_jensen_paper3_f110w_common", "sigma_mu_jensen_paper3_f110w_total",
+        "D_jensen_paper3_f110w_mpc", "sigma_D_jensen_paper3_f110w_internal_mpc",
+        "sigma_D_jensen_paper3_f110w_common_mpc", "sigma_D_jensen_paper3_f110w_total_mpc",
+        "Measurement, color, slope and 0.060-mag population scatter; plus the 0.063-mag Paper III common scale, which already includes the 0.016-mag zero-point term",
+    ),
+    (
+        "jensen2015_f160w", "Jensen et al. (2015)", "F160W",
+        "mu_jensen2015_f160w", None, None, "sigma_mu_jensen2015_f160w_total",
+        "D_jensen2015_f160w_mpc", None, None, "sigma_D_jensen2015_f160w_total_mpc",
+        "Final combined uncertainty supplied by the existing five-object reconstruction; internal/common split unavailable",
+    ),
+    (
+        "this_work_f150w", "This work", "F150W",
+        "mu_sbf_loo", "sigma_mu_sbf_internal", "sigma_mu_sbf_common",
+        "sigma_mu_sbf_absolute", "D_sbf_f150w_mpc",
+        "sigma_D_sbf_f150w_internal_mpc", "sigma_D_sbf_f150w_common_mpc",
+        "sigma_D_sbf_f150w_total_mpc",
+        "Color-independent leave-one-out prediction; absolute error includes the shared 0.047-mag TRGB scale",
+    ),
+    (
+        "this_work_f090w", "This work", "F090W",
+        "mu_sbf_f090w", "sigma_mu_sbf_f090w_internal",
+        "sigma_mu_sbf_f090w_common", "sigma_mu_sbf_f090w_total",
+        "D_sbf_f090w_mpc", "sigma_D_sbf_f090w_internal_mpc",
+        "sigma_D_sbf_f090w_common_mpc", "sigma_D_sbf_f090w_total_mpc",
+        "Adopted linear-color leave-one-out prediction; absolute error includes the shared 0.047-mag TRGB scale",
+    ),
+]
+
+long_rows = []
+for row in comparison.itertuples(index=False):
+    values = row._asdict()
+    for (
+        method, label, band, mu_col, mu_internal_col, mu_common_col, mu_total_col,
+        distance_col, distance_internal_col, distance_common_col, distance_total_col,
+        convention,
+    ) in method_specs:
+        long_rows.append(
+            {
+                "galaxy": values["galaxy"],
+                "environment": values["environment"],
+                "method": method,
+                "method_label": label,
+                "band": band,
+                "mu_mag": values.get(mu_col, np.nan),
+                "sigma_mu_internal_mag": values.get(mu_internal_col, np.nan) if mu_internal_col else np.nan,
+                "sigma_mu_common_mag": values.get(mu_common_col, np.nan) if mu_common_col else np.nan,
+                "sigma_mu_total_mag": values.get(mu_total_col, np.nan),
+                "distance_mpc": values.get(distance_col, np.nan),
+                "sigma_distance_internal_mpc": values.get(distance_internal_col, np.nan) if distance_internal_col else np.nan,
+                "sigma_distance_common_mpc": values.get(distance_common_col, np.nan) if distance_common_col else np.nan,
+                "sigma_distance_total_mpc": values.get(distance_total_col, np.nan),
+                "uncertainty_convention": convention,
+            }
+        )
+distance_long = pd.DataFrame(long_rows)
+distance_long.to_csv(
+    TABLE_DIR / "go3055_final_distances_error_components.csv", index=False
+)
+
+distance_main = comparison[
+    [
+        "galaxy", "environment",
+        "D_trgb_paper4_mpc", "sigma_D_trgb_paper4_total_mpc",
+        "D_jensen_paper3_f110w_mpc", "sigma_D_jensen_paper3_f110w_total_mpc",
+        "D_jensen2015_f160w_mpc", "sigma_D_jensen2015_f160w_total_mpc",
+        "D_sbf_f150w_mpc", "sigma_D_sbf_f150w_total_mpc",
+        "D_sbf_f090w_mpc", "sigma_D_sbf_f090w_total_mpc",
+    ]
+].copy()
+for filename in [
+    "go3055_final_distance_comparison.csv",
+    "go3055_distance_comparison_all_methods.csv",
+]:
+    distance_main.to_csv(TABLE_DIR / filename, index=False)
+
 distance_tex = [
-    r"\begin{tabular}{llcccc}",
+    r"\begin{tabular}{lccccc}",
     r"\toprule",
-    r"Galaxy & Env. & TRGB IV & SBF adopted & Jensen III & Jensen 2015 \\",
-    r" & & & & F110W & F160W \\",
+    r"Galaxy & TRGB IV & Jensen III & Jensen 2015 & This work & This work \\",
+    r" & & F110W & F160W & F150W & F090W \\",
     r"\midrule",
 ]
 for row in comparison.itertuples(index=False):
@@ -152,21 +348,166 @@ for row in comparison.itertuples(index=False):
         " & ".join(
             [
                 row.galaxy.replace(" ", "~"),
-                environment_label(row.environment),
-                distance_cell(row.D_trgb_mpc, row.sigma_D_trgb_mpc),
-                distance_cell(row.D_sbf_constant_mpc, row.sigma_D_sbf_constant_mpc),
+                distance_cell(row.D_trgb_paper4_mpc, row.sigma_D_trgb_paper4_total_mpc),
                 distance_cell(
                     row.D_jensen_paper3_f110w_mpc,
-                    row.sigma_D_jensen_paper3_f110w_mpc,
+                    row.sigma_D_jensen_paper3_f110w_total_mpc,
                 ),
-                distance_cell(row.D_jensen_f160w_mpc, row.sigma_D_jensen_f160w_mpc),
+                distance_cell(
+                    row.D_jensen2015_f160w_mpc,
+                    row.sigma_D_jensen2015_f160w_total_mpc,
+                ),
+                distance_cell(row.D_sbf_f150w_mpc, row.sigma_D_sbf_f150w_total_mpc),
+                distance_cell(row.D_sbf_f090w_mpc, row.sigma_D_sbf_f090w_total_mpc),
             ]
         )
         + r" \\"
     )
 distance_tex.extend([r"\bottomrule", r"\end{tabular}", ""])
-(TABLE_DIR / "go3055_distance_comparison_all_methods.tex").write_text(
-    "\n".join(distance_tex), encoding="utf-8"
+for filename in [
+    "go3055_final_distance_comparison.tex",
+    "go3055_distance_comparison_all_methods.tex",
+]:
+    (TABLE_DIR / filename).write_text("\n".join(distance_tex), encoding="utf-8")
+
+convention_tex = [
+    r"\begin{tabular}{lp{7.4cm}p{3.2cm}}",
+    r"\toprule",
+    r"Method & Included terms & Common term \\",
+    r"\midrule",
+    r"TRGB Paper IV & Published individual uncertainty & Add 0.047 mag \\",
+    r"Jensen III F110W & $\overline m$, color, slope, and 0.060-mag population scatter & Add 0.063 mag \\",
+    r"Jensen 2015 F160W & Published final combined uncertainty & Already included \\",
+    r"This work F150W & Measurement, intrinsic scatter, and finite LOO calibration & Add 0.047 mag \\",
+    r"This work F090W & Measurement, color, intrinsic scatter, and finite LOO calibration & Add 0.047 mag \\",
+    r"\bottomrule",
+    r"\end{tabular}",
+    "",
+]
+(TABLE_DIR / "go3055_distance_uncertainty_conventions.tex").write_text(
+    "\n".join(convention_tex), encoding="utf-8"
+)
+
+uncertainty_conventions = pd.DataFrame(
+    [
+        {
+            "method": method,
+            "method_label": label,
+            "band": band,
+            "uncertainty_convention": convention,
+        }
+        for method, label, band, *_, convention in method_specs
+    ]
+)
+uncertainty_conventions.to_csv(
+    TABLE_DIR / "go3055_distance_uncertainty_conventions.csv", index=False
+)
+
+jensen_paper3_errors = paper3[
+    [
+        "galaxy", "mu_jensen_paper3_f110w",
+        "sigma_mu_jensen_paper3_f110w_internal",
+        "sigma_mu_jensen_paper3_f110w_common",
+        "sigma_mu_jensen_paper3_f110w_total",
+        "D_jensen_paper3_f110w_mpc",
+        "sigma_D_jensen_paper3_f110w_internal_mpc",
+        "sigma_D_jensen_paper3_f110w_common_mpc",
+        "sigma_D_jensen_paper3_f110w_total_mpc",
+    ]
+].copy()
+jensen_paper3_errors.to_csv(
+    TABLE_DIR / "go3055_jensen_paper3_f110w_final_errors.csv", index=False
+)
+jensen_tex = [
+    r"\begin{tabular}{lrrrr}",
+    r"\toprule",
+    r"Galaxy & $\mu_{110}$ & $\sigma_{\rm int}$ & $\sigma_{\rm common}$ & $\sigma_{\rm total}$ \\",
+    r" & (mag) & (mag) & (mag) & (mag) \\",
+    r"\midrule",
+]
+for row in jensen_paper3_errors.itertuples(index=False):
+    jensen_tex.append(
+        f"{row.galaxy.replace(' ', '~')} & {row.mu_jensen_paper3_f110w:.3f} & "
+        f"{row.sigma_mu_jensen_paper3_f110w_internal:.3f} & "
+        f"{row.sigma_mu_jensen_paper3_f110w_common:.3f} & "
+        f"{row.sigma_mu_jensen_paper3_f110w_total:.3f} " + r"\\"
+    )
+jensen_tex.extend([r"\bottomrule", r"\end{tabular}", ""])
+(TABLE_DIR / "go3055_jensen_paper3_f110w_final_errors.tex").write_text(
+    "\n".join(jensen_tex), encoding="utf-8"
+)
+
+# Compact F090W calibration-point table.  These absolute magnitudes use the
+# individual Paper IV TRGB anchors; the common 0.047-mag scale is kept separate
+# from the listed per-object calibration-point uncertainty.
+f090_master = pd.read_csv(F090_TABLE_DIR / "go3055_f090w_master.csv")
+f090_measurements = comparison[["galaxy", "environment"]].merge(
+    f090_master[
+        [
+            "galaxy", "color_F090W_F150W", "sigma_color_adopted_mag",
+            "mbar_F090W_0", "sigma_mbar_internal", "Mbar_F090W",
+            "sigma_Mbar_F090W", "annulus_difference_mag",
+            "paper_iv_high_quality",
+        ]
+    ],
+    on="galaxy", how="left", validate="one_to_one",
+)
+f090_measurements.to_csv(
+    TABLE_DIR / "go3055_article_measurements_f090w.csv", index=False
+)
+f090_measurement_tex = [
+    r"\begin{tabular}{llrrrrrrc}",
+    r"\toprule",
+    r"Galaxy & Env. & $C_{090-150,0}$ & $\overline m_{090,0}$ & $\sigma_{\overline m}$ & $\overline M_{090,0}$ & $\sigma_{\overline M}$ & $|\Delta\overline m|_{\rm ann}$ & HQ IV \\",
+    r" & & (mag) & (mag) & (mag) & (mag) & (mag) & (mag) & \\",
+    r"\midrule",
+]
+for row in f090_measurements.itertuples(index=False):
+    high_quality = "+" if bool(row.paper_iv_high_quality) else "-"
+    f090_measurement_tex.append(
+        f"{row.galaxy.replace(' ', '~')} & {environment_label(row.environment)} & "
+        f"{row.color_F090W_F150W:.3f} & {row.mbar_F090W_0:.3f} & "
+        f"{row.sigma_mbar_internal:.3f} & {row.Mbar_F090W:.3f} & "
+        f"{row.sigma_Mbar_F090W:.3f} & {abs(row.annulus_difference_mag):.3f} & "
+        f"${high_quality}$ " + r"\\"
+    )
+f090_measurement_tex.extend([r"\bottomrule", r"\end{tabular}", ""])
+(TABLE_DIR / "go3055_article_measurements_f090w.tex").write_text(
+    "\n".join(f090_measurement_tex), encoding="utf-8"
+)
+
+f090_models = pd.read_csv(F090_TABLE_DIR / "go3055_f090w_color_model_comparison.csv")
+f090_precision = pd.read_csv(F090_TABLE_DIR / "go3055_f090w_constant_vs_color_precision.csv")
+f090_models = (
+    f090_models.loc[f090_models["model"].isin(["constant", "linear"])]
+    .merge(
+        f090_precision[["model", "loo_rms_mpc", "median_reported_sigma_mpc"]],
+        on="model", how="left", validate="one_to_one",
+    )
+    .set_index("model")
+    .loc[["constant", "linear"]]
+    .reset_index()
+)
+f090_models.to_csv(
+    TABLE_DIR / "go3055_f090w_constant_vs_linear_model_comparison.csv", index=False
+)
+f090_model_tex = [
+    r"\begin{tabular}{lrrrrrr}",
+    r"\toprule",
+    r"Model & $a$ & $b$ & $\sigma_{\rm int}$ & AICc & LOO RMS & Median $\sigma_D$ \\",
+    r" & (mag) & & (mag) & & (mag) & (Mpc) \\",
+    r"\midrule",
+]
+for row in f090_models.itertuples(index=False):
+    f090_model_tex.append(
+        f"{row.description} & ${row.intercept_mag:.3f}\\pm{row.intercept_sigma_bootstrap_mag:.3f}$ & "
+        f"${row.slope_at_center:.2f}\\pm{row.slope_sigma_bootstrap:.2f}$ & "
+        f"{row.sigma_int_mag:.3f} & {row.aicc:.2f} & {row.loo_rms_mag:.3f} & "
+        f"{row.median_reported_sigma_mpc:.2f} " + r"\\"
+    )
+f090_model_tex.extend([r"\bottomrule", r"\end{tabular}", ""])
+(TABLE_DIR / "go3055_f090w_constant_vs_linear_model_comparison.tex").write_text(
+    "\n".join(f090_model_tex), encoding="utf-8"
 )
 
 
@@ -518,8 +859,16 @@ software_rows.extend(
             sha256(ROOT / "code" / "sbf-2-systematics.ipynb"),
         ),
         (
-            "Current article TeX SHA256",
-            sha256(ROOT / "texts" / "paper_work" / "go3055_jwst_sbf_article_draft.tex"),
+            "Current sbf-f090w-graph.ipynb SHA256",
+            sha256(ROOT / "code" / "sbf-f090w-graph.ipynb"),
+        ),
+        (
+            "F090W runner SHA256",
+            sha256(ROOT / "code" / "run_sbf_f090w.py"),
+        ),
+        (
+            "F090W graph builder SHA256",
+            sha256(ROOT / "code" / "build_sbf_f090w_graph_notebook.py"),
         ),
         ("Article-table builder SHA256", sha256(Path(__file__).resolve())),
         ("F150W science-freeze Git commit", SCIENCE_FREEZE_GIT_HEAD),
