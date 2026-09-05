@@ -682,7 +682,7 @@ region'' label denotes the broad environment class defined in Section 2.1.
 HQ IV reproduces the
 high-quality flag in Table 2 of Paper IV. The quoted
 $\sigma_{\overline M}$ contains individual errors but excludes common zero
-points. The annular half-difference is a radial diagnostic and is not included
+points. The full absolute inner--outer difference is a radial diagnostic and is not included
 as random noise.}
 \label{tab:measurements}
 \resizebox{\textwidth}{!}{%
@@ -775,13 +775,27 @@ sample.
 \centering
 \paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_f150w_article_calibration.pdf}{0.70\textwidth}
 \caption{Extinction-corrected JWST F150W SBF calibration. The black horizontal
-line is the adopted color-independent zero point. The dark grey region is the
-central 68 per cent confidence interval for the mean calibration; the lighter
-region is the 68 per cent predictive interval after inclusion of the fitted
-intrinsic scatter. Filled blue circles form the structurally clean subsample;
-open orange squares mark the predeclared structural-warning objects. All 14
-objects enter the adopted calibration.}
+line is the adopted color-independent zero point. The single grey strip is
+$\pm\sigma_{\rm int}=\pm0.081$ mag around the line; it displays fitted intrinsic
+scatter, not a confidence interval on the mean or a complete distance error.
+Red squares denote Fornax, blue circles the broad Virgo-region class, and grey
+triangles other environments. Numbers identify NGC galaxies. This environment
+convention is used throughout the galaxy-comparison figures. All 14 objects
+enter the calibration, irrespective of environment or structural quality.}
 \label{fig:calibration}
+\end{figure*}
+
+\begin{figure*}
+\centering
+\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_f150w_article_calibration_linear.pdf}{0.70\textwidth}
+\caption{Linear F150W color test for the same 14 galaxies, with the same
+environment symbols and NGC labels as Figure~\ref{fig:calibration}. The line
+is Eq.~\ref{eq:f150-linear-test}; the grey strip is
+$\pm\sigma_{\rm int}=\pm0.080$ mag. The bootstrap slope interval includes zero,
+and the linear model worsens LOO RMS from 0.0925 to 0.0981 mag. Thus the color
+term is not required by these data; this is a model-comparison result, not a
+claim that the linear function is mathematically invalid.}
+\label{fig:f150-linear-calibration}
 \end{figure*}
 
 \begin{figure*}
@@ -791,9 +805,12 @@ objects enter the adopted calibration.}
 Paper III. Rows show F090W, F150W, and Paper III F110W; columns use
 $F090W-F150W$ and $g-z$. Thus neither the galaxy list nor the color tracer is
 changed in isolation. F090W and F110W retain clear slopes, whereas F150W does
-not. In every panel the dark grey region is the central 68 per cent confidence
-interval for the mean linear relation and the lighter region is the 68 per
-cent predictive interval including residual scatter.}
+not. Each single grey strip shows $\pm s_{\rm res}$ around its ordinary
+least-squares line, where $s_{\rm res}^2=\sum_i(y_i-\widehat y_i)^2/(8-2)$.
+This is observed residual scatter, including measurement noise, rather than
+the fitted intrinsic scatter or a confidence interval for the coefficients.
+Red squares denote Fornax and blue circles the broad Virgo-region class;
+every point is labelled by its NGC number.}
 \label{fig:same8-crossed-color}
 \end{figure*}
 
@@ -850,7 +867,7 @@ below the present 4--5 per cent floor.
 \begin{figure*}
 \centering
 \paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_f150w_article_measurement_error_budget.pdf}{0.82\textwidth}
-\caption{F150W apparent-SBF measurement budget in the coursework-style
+\caption{F150W apparent-SBF measurement budget in a stacked
 variance representation. Each horizontal segment is one contribution
 $\sigma_i^2$; the total measurement uncertainty is the square root of the
 complete bar length. Galaxies are ordered by total measurement variance.}
@@ -897,8 +914,9 @@ also includes the individual target TRGB error and is not an uncertainty for
 a new SBF-only distance. Linear-model terms remain available only in the
 machine-readable sensitivity table.}
 \label{tab:predictive-errors}
-\resizebox{0.94\textwidth}{!}{%
-\input{../../runs/sbf2_go3055/analysis/tables/go3055_predictive_error_summary.tex}}
+\small
+\setlength{\tabcolsep}{5pt}
+\input{../../runs/sbf2_go3055/analysis/tables/go3055_predictive_error_summary.tex}
 \end{table*}
 
 \begin{table}
@@ -1092,17 +1110,18 @@ populations, nor that the outer ring is intrinsically preferable. A future
 optimization may choose physical or elliptical apertures, but that would be a
 new calibration experiment rather than a literal replication.
 
-\begin{figure*}
-\centering
-\paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_f150w_article_annulus_comparison.pdf}{0.70\textwidth}
-\caption{Local color and absolute F150W SBF magnitude in matched annuli.
-Blue circles and the solid blue line denote inner-annulus measurements and
-their fit; orange squares and the dashed orange line denote the outer annulus.
-Grey segments connect the two measurements of each galaxy. No uncertainty
-corridors are added: the figure is a direct radial comparison, and neither
-annular fit defines the adopted calibration.}
-\label{fig:annuli}
-\end{figure*}
+% Temporarily hidden at the author's request; uncomment to restore.
+% \begin{figure*}
+% \centering
+% \paperfigure{../../runs/sbf2_go3055/analysis/figures/go3055_f150w_article_annulus_comparison.pdf}{0.70\textwidth}
+% \caption{Local color and absolute F150W SBF magnitude in matched annuli.
+% Blue circles and the solid blue line denote inner-annulus measurements and
+% their fit; orange squares and the dashed orange line denote the outer annulus.
+% Grey segments connect the two measurements of each galaxy. No uncertainty
+% corridors are added: the figure is a direct radial comparison, and neither
+% annular fit defines the adopted calibration.}
+% \label{fig:annuli}
+% \end{figure*}
 
 For the strict Virgo/Fornax subset, the seven Virgo members are NGC 4374,
 NGC 4406, NGC 4472, NGC 4486, NGC 4552, NGC 4621, and NGC 4649; the three
@@ -1143,8 +1162,10 @@ the output of a fitted color relation.
 $\sigma_{\mbar}$ is the internal image-measurement uncertainty from
 Eq.~\ref{eq:mbar-error}; $\sigma_{\Mbar}$ additionally contains the individual
 TRGB uncertainty according to Eq.~\ref{eq:f090-calibration-point-error} but
-excludes common zero points. The annular half-difference is shown only as a
-radial diagnostic.}
+excludes common zero points. The column $|\Delta\mbar|_{\rm ann}$ is the full
+absolute difference $|\mbar_{\rm out}-\mbar_{\rm in}|$, shown only as a radial
+diagnostic; it is not added to either error. HQ IV is the high-quality flag
+in Table 2 of Paper IV.}
 \label{tab:f090-measurements}
 \resizebox{\textwidth}{!}{%
 \input{../../runs/sbf2_go3055/analysis/tables/go3055_article_measurements_f090w.tex}}
@@ -1186,28 +1207,28 @@ a 31 per cent reduction. The logarithmic form has AICc lower by only 0.33 and
 LOO RMS 0.0673 mag. It is statistically tied with the linear relation and
 does not justify replacing the simpler, directly interpretable slope.
 
-\begin{table}
+\begin{table*}
 \centering
 \caption{Primary F090W comparison. Errors on $a$ and $b$ are galaxy-level
 bootstrap standard deviations. The median distance uncertainty in the last
 column is a full absolute $1\sigma$ value including the common 0.047-mag TRGB
 scale.}
 \label{tab:f090-model-comparison}
-\resizebox{\columnwidth}{!}{%
-\input{../../runs/sbf2_go3055/analysis/tables/go3055_f090w_constant_vs_linear_model_comparison.tex}}
-\end{table}
+\small
+\setlength{\tabcolsep}{4pt}
+\input{../../runs/sbf2_go3055/analysis/tables/go3055_f090w_constant_vs_linear_model_comparison.tex}
+\end{table*}
 
 \begin{figure*}
 \centering
 \paperfigure{../../runs/sbf_f090w_go3055/analysis/figures/go3055_f090w_article_calibration.pdf}{0.70\textwidth}
 \caption{Adopted F090W color calibration. Points are the 14 individual
 $\Mbar_{090}$ calibration measurements and the black line is
-Eq.~\ref{eq:f090-linear-calibration}. The dark grey region is the central
-68 per cent confidence interval for the mean relation; the lighter region is
-the 68 per cent predictive interval after inclusion of the fitted intrinsic
-scatter. Filled blue circles and open orange squares have the same structural
-quality meaning as in Figure~\ref{fig:calibration}; all 14 objects enter the
-fit.}
+Eq.~\ref{eq:f090-linear-calibration}. The single grey strip is
+$\pm\sigma_{\rm int}=\pm0.049$ mag around the line. It visualizes intrinsic
+scatter, not coefficient uncertainty or the full predictive distance error.
+Environment colors, symbols, and NGC labels follow Figure~\ref{fig:calibration};
+all 14 objects enter the fit.}
 \label{fig:f090-calibration}
 \end{figure*}
 
@@ -1288,16 +1309,17 @@ combined relation is significant. For NGC 4636 the compact-source premask was
 relaxed only inside 8.2 arcsec while solving the isophotes; the final science
 mask and both measured annuli were not relaxed.
 
-\begin{figure*}
-\centering
-\paperfigure{../../runs/sbf_f090w_go3055/analysis/figures/go3055_f090w_article_annulus_comparison.pdf}{0.70\textwidth}
-\caption{Annulus-matched local color and F090W SBF in the same plotting
-grammar as Figure~\ref{fig:annuli}. Blue circles and the solid blue line are
-the inner annuli; orange squares and the dashed orange line are the outer
-annuli. The rings are correlated measurements of the same galaxies and are
-not treated as 28 independent calibrators.}
-\label{fig:f090-annuli}
-\end{figure*}
+% Temporarily hidden at the author's request; uncomment to restore.
+% \begin{figure*}
+% \centering
+% \paperfigure{../../runs/sbf_f090w_go3055/analysis/figures/go3055_f090w_article_annulus_comparison.pdf}{0.70\textwidth}
+% \caption{Annulus-matched local color and F090W SBF in the same plotting
+% grammar as Figure~\ref{fig:annuli}. Blue circles and the solid blue line are
+% the inner annuli; orange squares and the dashed orange line are the outer
+% annuli. The rings are correlated measurements of the same galaxies and are
+% not treated as 28 independent calibrators.}
+% \label{fig:f090-annuli}
+% \end{figure*}
 
 \section{Adopted distances}
 \label{sec:adopted-distances}
@@ -1479,12 +1501,15 @@ The panels use the same final annular weighting and fitted frequency range.}
 
 \begin{figure}[!ht]
 \centering
-\paperfigure{../../runs/sbf_f090w_go3055/analysis/figures/go3055_f150w_f090w_winsorization_diagnostics.pdf}{0.96\textwidth}
+\paperfigure{../../runs/sbf_f090w_go3055/analysis/figures/go3055_f150w_f090w_article_winsorization.pdf}{0.96\textwidth}
 \caption{Matched all-galaxy test of the adopted normalized-space
 $3.5\sigma$ winsorization. The upper row is F150W and the lower row is F090W.
-Left panels show the change relative to no winsorization against the affected
-pixel fraction; right panels show those fractions separately for the inner
-and outer annuli. All values come from the final full-support products.}
+Left panels show the inner annulus and right panels the outer annulus. The
+ordinate is the SBF-magnitude change relative to no winsorization; the
+abscissa is the percentage of affected pixels. Environment symbols follow
+Figure~\ref{fig:calibration}, with every galaxy identified by its NGC number.
+These percentages describe changed pixels, not a confidence level. All values
+come from the final full-support products.}
 \label{fig:winsor-adopted}
 \end{figure}
 
@@ -1599,8 +1624,9 @@ calibration.}
 \caption{F150W SBF versus the smooth-model magnitude inside the fixed
 $32.8$-arcsec aperture. This is an aperture luminosity, not a total galaxy
 magnitude, and the same angular radius covers different physical radii. The
-black line is a weighted exploratory regression; dark and light grey regions
-show its 68 per cent mean-confidence and predictive intervals. The relation
+black line is a weighted exploratory regression; the single grey strip is
+$\pm s_{\rm res}$, with $s_{\rm res}^2=\sum_i(y_i-\widehat y_i)^2/(14-2)$.
+This observed residual scatter is not a confidence interval for the line. The relation
 does not enter the adopted distance estimator.}
 \label{fig:aperture-magnitude}
 \end{figure*}
@@ -1642,7 +1668,7 @@ galaxy from the primary 14-object calibration.}
 
 \begin{figure*}
 \centering
-\paperfigure{../../runs/sbf_f090w_go3055/analysis/figures/go3055_f090w_vs_f150w_sbf.pdf}{0.86\textwidth}
+\paperfigure{../../runs/sbf_f090w_go3055/analysis/figures/go3055_f090w_article_vs_f150w_sbf.pdf}{0.94\textwidth}
 \caption{Direct comparison of the independently measured F090W and F150W
 fluctuation quantities for the same 14 galaxies. The panels are cross-band
 diagnostics and do not constitute an independent distance validation because

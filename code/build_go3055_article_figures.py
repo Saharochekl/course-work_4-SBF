@@ -5,12 +5,15 @@ The script reads only completed analysis tables.  It does not execute either
 measurement pipeline and does not rewrite any scientific table.
 """
 
+import json
 from pathlib import Path
 
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+from matplotlib.transforms import Bbox
 import numpy as np
 import pandas as pd
 
@@ -25,6 +28,14 @@ PAPER3_F110 = ROOT / "code/sbf2_batch_outputs/jensen2025_paper3_f110w_calibratio
 BLUE = "#2c7fb8"
 ORANGE = "#d95f0e"
 BLACK = "#111111"
+GROUP_STYLES = {
+    "Fornax": ("#d62728", "s"),
+    "Virgo region": ("#2463c5", "o"),
+    "Other": ("#62626b", "^"),
+}
+# Match the broad environment classes in the measurement tables; this is
+# deliberately not the seven-member strict Virgo subset used in the step test.
+ENVIRONMENT = pd.read_csv(F150_TABLES / "go3055_master_measurements.csv").set_index("galaxy")["environment"].replace({"Virgo": "Virgo region"})
 COMPONENT_COLORS = {
     "Power spectrum": "#4c92c3",
     "Background": "#9e9e9e",
@@ -67,50 +78,81 @@ plt.rcParams.update(
 
 def save_figure(fig, directory, stem):
     directory.mkdir(parents=True, exist_ok=True)
+    place_galaxy_labels(fig)
     for suffix in ("pdf", "png"):
         fig.savefig(directory / f"{stem}.{suffix}", dpi=300, bbox_inches="tight")
     plt.close(fig)
 
 
-def plot_points(ax, frame, x, y, yerr, warning_column="include_residual_clean"):
-    warnings = ~frame[warning_column].astype(bool)
-    adopted = ~warnings
-    ax.errorbar(
-        frame.loc[adopted, x],
-        frame.loc[adopted, y],
-        yerr=frame.loc[adopted, yerr],
-        fmt="o",
-        ms=7,
-        color=BLUE,
-        ecolor=BLUE,
-        capsize=3,
-        lw=1.4,
-        label="structurally clean",
-        zorder=4,
-    )
-    ax.errorbar(
-        frame.loc[warnings, x],
-        frame.loc[warnings, y],
-        yerr=frame.loc[warnings, yerr],
-        fmt="s",
-        ms=7,
-        mfc="white",
-        mec=ORANGE,
-        mew=1.5,
-        color=ORANGE,
-        ecolor=ORANGE,
-        capsize=3,
-        lw=1.4,
-        label="structural warning",
-        zorder=5,
-    )
+def group_legend(ax, **kwargs):
+    handles = [Line2D([], [], color=color, marker=marker, ls="", label=group)
+               for group, (color, marker) in GROUP_STYLES.items()]
+    return ax.legend(handles=handles, frameon=False, **kwargs)
+
+
+def plot_points(ax, frame, x, y, yerr, xerr=None, annotate=True):
+    groups = frame["galaxy"].map(ENVIRONMENT)
+    for group, (color, marker) in GROUP_STYLES.items():
+        part = frame.loc[groups.eq(group)]
+        if part.empty:
+            continue
+        ax.errorbar(part[x], part[y], yerr=part[yerr],
+                    xerr=part[xerr] if xerr else None, fmt=marker, ms=6.5,
+                    color=color, ecolor=color, mec=BLACK, mew=0.5,
+                    capsize=3, lw=1.2, label=group, zorder=4)
+    if annotate:
+        pending = getattr(ax, "_galaxy_labels", [])
+        pending.extend((row.galaxy, getattr(row, x), getattr(row, y))
+                       for row in frame.itertuples(index=False))
+        ax._galaxy_labels = pending
+
+
+def place_galaxy_labels(fig):
+    """Place NGC numbers after layout, avoiding points, text and panel edges."""
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    for ax in fig.axes:
+        points = getattr(ax, "_galaxy_labels", [])
+        if not points:
+            continue
+        occupied = [text.get_window_extent(renderer).expanded(1.08, 1.12)
+                    for text in ax.texts if text.get_visible()]
+        if ax.get_legend() is not None:
+            occupied.append(ax.get_legend().get_window_extent(renderer))
+        positions = ax.transData.transform([(x, y) for _, x, y in points])
+        occupied.extend(Bbox.from_bounds(x-5, y-5, 10, 10) for x, y in positions)
+        for galaxy, x, y in points:
+            label = ax.annotate(galaxy.replace("NGC ", ""), (x, y),
+                xytext=(6, 6), textcoords="offset points", fontsize=9,
+                zorder=6, bbox=dict(fc="white", ec="none", alpha=0.78, pad=0.3),
+                arrowprops=dict(arrowstyle="-", color="0.55", lw=0.5))
+            candidates = [(sx*dx, sy*dy) for dx, dy in
+                          ((6, 6), (6, 15), (20, 6), (20, 18), (6, 30), (36, 6), (36, 25))
+                          for sx, sy in ((1, 1), (-1, 1), (1, -1), (-1, -1))]
+            best, best_cost = None, float("inf")
+            for dx, dy in candidates:
+                label.set_position((dx, dy))
+                label.set_ha("left" if dx > 0 else "right")
+                label.set_va("bottom" if dy > 0 else "top")
+                label.update_positions(renderer)
+                # Text extent only; the annotation extent also contains its arrow.
+                box = matplotlib.text.Text.get_window_extent(label, renderer).expanded(1.08, 1.12)
+                overflow = not (ax.bbox.contains(box.x0, box.y0) and ax.bbox.contains(box.x1, box.y1))
+                cost = 10000*overflow + 1000*sum(box.overlaps(b) for b in occupied) + np.hypot(dx, dy)
+                if cost < best_cost:
+                    best, best_cost = (dx, dy, box), cost
+            dx, dy, box = best
+            label.set_position((dx, dy))
+            label.set_ha("left" if dx > 0 else "right")
+            label.set_va("bottom" if dy > 0 else "top")
+            occupied.append(box)
+        ax._galaxy_labels = []
 
 
 def make_calibration_plots(f150, f090):
     f150_model = pd.read_csv(F150_TABLES / "go3055_color_model_comparison.csv")
     f150_fit = f150_model.loc[f150_model["model"] == "constant"].iloc[0]
-    f150_boot = pd.read_csv(F150_TABLES / "go3055_constant_calibration_bootstrap_summary.csv")
-    sigma_intercept_150 = f150_boot.set_index("quantity").loc["intercept", "standard_deviation"]
+    f150_linear = f150_model.loc[f150_model["model"] == "linear"].iloc[0]
 
     f090_models = pd.read_csv(F090_TABLES / "go3055_f090w_color_model_comparison.csv")
     f090_fit = f090_models.loc[f090_models["model"] == "linear"].iloc[0]
@@ -126,9 +168,21 @@ def make_calibration_plots(f150, f090):
             "intercept": f150_fit["intercept"],
             "slope": 0.0,
             "center": float(f150["color_F090W_F150W"].median()),
-            "sigma_intercept": sigma_intercept_150,
-            "sigma_slope": 0.0,
             "sigma_int": f150_fit["sigma_int"],
+            "label": "adopted constant calibration",
+        },
+        {
+            "frame": f150,
+            "directory": F150_FIGURES,
+            "stem": "go3055_f150w_article_calibration_linear",
+            "band": "F150W",
+            "y": "Mbar_F150W",
+            "yerr": "sigma_Mbar_internal",
+            "intercept": f150_linear["intercept"],
+            "slope": f150_linear["slope"],
+            "center": float(f150["color_F090W_F150W"].median()),
+            "sigma_int": f150_linear["sigma_int"],
+            "label": "linear color test",
         },
         {
             "frame": f090,
@@ -140,9 +194,8 @@ def make_calibration_plots(f150, f090):
             "intercept": f090_fit["intercept_mag"],
             "slope": f090_fit["slope_at_center"],
             "center": float(f090["color_F090W_F150W"].median()),
-            "sigma_intercept": f090_fit["intercept_sigma_bootstrap_mag"],
-            "sigma_slope": f090_fit["slope_sigma_bootstrap"],
             "sigma_int": f090_fit["sigma_int_mag"],
+            "label": "adopted linear calibration",
         },
     ]
 
@@ -153,96 +206,46 @@ def make_calibration_plots(f150, f090):
         dx = grid - cfg["center"]
         line = cfg["intercept"] + cfg["slope"] * dx
 
-        # Preserve the published bootstrap marginal errors.  For F090W the
-        # intercept-slope correlation is taken from the weighted design matrix.
-        covariance = 0.0
-        if cfg["sigma_slope"] > 0:
-            design = np.column_stack((np.ones(len(frame)), x - cfg["center"]))
-            variance = frame[cfg["yerr"]].to_numpy(float) ** 2 + cfg["sigma_int"] ** 2
-            raw_cov = np.linalg.inv(design.T @ ((1.0 / variance)[:, None] * design))
-            correlation = raw_cov[0, 1] / np.sqrt(raw_cov[0, 0] * raw_cov[1, 1])
-            covariance = correlation * cfg["sigma_intercept"] * cfg["sigma_slope"]
-        mean_sigma = np.sqrt(
-            np.clip(
-                cfg["sigma_intercept"] ** 2
-                + 2.0 * dx * covariance
-                + dx**2 * cfg["sigma_slope"] ** 2,
-                0.0,
-                None,
-            )
-        )
-        predictive_sigma = np.sqrt(mean_sigma**2 + cfg["sigma_int"] ** 2)
-
-        fig, ax = plt.subplots(figsize=(7.2, 5.6))
+        # A uniform intrinsic-scatter strip, not a confidence interval for the
+        # fitted line and not the full uncertainty of a future distance.
+        fig, ax = plt.subplots(figsize=(8.2, 6.4))
         ax.fill_between(
             grid,
-            line - predictive_sigma,
-            line + predictive_sigma,
+            line - cfg["sigma_int"],
+            line + cfg["sigma_int"],
             color="0.86",
-            alpha=0.55,
+            alpha=0.65,
             linewidth=0,
-            label=r"68% predictive band",
+            label=rf"$\pm\sigma_{{\rm int}}={cfg['sigma_int']:.3f}$ mag",
             zorder=1,
         )
-        ax.fill_between(
-            grid,
-            line - mean_sigma,
-            line + mean_sigma,
-            color="0.62",
-            alpha=0.55,
-            linewidth=0,
-            label=r"68% mean-confidence band",
-            zorder=2,
-        )
-        ax.plot(grid, line, color=BLACK, lw=2.2, label="adopted calibration", zorder=3)
+        ax.plot(grid, line, color=BLACK, lw=2.2, label=cfg["label"], zorder=3)
         plot_points(ax, frame, "color_F090W_F150W", cfg["y"], cfg["yerr"])
         ax.set_title(f"JWST {cfg['band']} SBF calibration")
         ax.set_xlabel(r"$(F090W-F150W)_0$ [mag]")
         ax.set_ylabel(rf"$\overline{{M}}_{{{cfg['band'][1:4]}}}$ [mag]")
         ax.invert_yaxis()
         ax.minorticks_on()
-        if cfg["band"] == "F150W":
+        if cfg["slope"] == 0:
             equation = rf"$\overline{{M}}_{{150}}={cfg['intercept']:.3f}$ mag"
         else:
             equation = (
-                rf"$\overline{{M}}_{{090}}={cfg['intercept']:.3f}"
+                rf"$\overline{{M}}_{{{cfg['band'][1:4]}}}={cfg['intercept']:.3f}"
                 rf"+{cfg['slope']:.3f}(C-{cfg['center']:.3f})$"
             )
         ax.text(0.025, 0.035, equation, transform=ax.transAxes, fontsize=12)
-        handles, labels = ax.get_legend_handles_labels()
-        order = [2, 1, 0, 3, 4]
-        ax.legend([handles[i] for i in order], [labels[i] for i in order], loc="best", frameon=False)
+        ax.margins(y=0.18)
+        ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.15), ncol=3, frameon=False)
         fig.tight_layout()
         save_figure(fig, cfg["directory"], cfg["stem"])
 
 
 def make_recovery_plot(frame, band, directory, stem, y_sigma):
-    fig, ax = plt.subplots(figsize=(6.4, 6.2))
-    warning = ~frame["include_residual_clean"].astype(bool)
-    for selected, fmt, color, label in (
-        (~warning, "o", BLUE, "structurally clean"),
-        (warning, "s", ORANGE, "structural warning"),
-    ):
-        ax.errorbar(
-            frame.loc[selected, "mu_trgb"],
-            frame.loc[selected, "mu_sbf"],
-            xerr=frame.loc[selected, "sigma_mu_trgb"],
-            yerr=frame.loc[selected, y_sigma],
-            fmt=fmt,
-            ms=7,
-            mfc=color if fmt == "o" else "white",
-            mec=color,
-            mew=1.4,
-            color=color,
-            ecolor=color,
-            capsize=3,
-            lw=1.3,
-            label=label,
-            zorder=3,
-        )
+    fig, ax = plt.subplots(figsize=(7.8, 7.4))
+    plot_points(ax, frame, "mu_trgb", "mu_sbf", y_sigma, "sigma_mu_trgb")
     low = min(frame["mu_trgb"].min(), frame["mu_sbf"].min()) - 0.08
     high = max(frame["mu_trgb"].max(), frame["mu_sbf"].max()) + 0.08
-    ax.plot([low, high], [low, high], color=BLACK, lw=2.0, label="1:1")
+    ax.plot([low, high], [low, high], color=BLACK, ls="--", lw=1.7, label="1:1")
     ax.set_xlim(low, high)
     ax.set_ylim(low, high)
     ax.set_aspect("equal", adjustable="box")
@@ -259,24 +262,20 @@ def make_residual_plot(frame, band, directory, stem, error_column, loo_rms):
     ordered = frame.sort_values("delta_mu_sbf_minus_trgb", ascending=False).reset_index(drop=True)
     y = np.arange(len(ordered))
     fig, ax = plt.subplots(figsize=(7.2, 6.1))
-    ax.errorbar(
-        ordered["delta_mu_sbf_minus_trgb"],
-        y,
-        xerr=ordered[error_column],
-        fmt="o",
-        ms=7,
-        color=BLUE,
-        ecolor=BLUE,
-        capsize=3,
-        lw=1.3,
-    )
-    ax.axvline(0, color=BLACK, lw=2.0)
+    groups = ordered["galaxy"].map(ENVIRONMENT)
+    for group, (color, marker) in GROUP_STYLES.items():
+        selected = groups.eq(group)
+        ax.errorbar(ordered.loc[selected, "delta_mu_sbf_minus_trgb"], y[selected],
+                    xerr=ordered.loc[selected, error_column], fmt=marker, ms=7,
+                    color=color, capsize=3, lw=1.3, label=group)
+    ax.axvline(0, color=BLACK, ls="--", lw=1.7)
     ax.set_yticks(y, ordered["galaxy"])
     ax.invert_yaxis()
     ax.set_title(f"{band} leave-one-out distance residuals")
     ax.set_xlabel(r"$\mu_{\rm SBF}^{\rm LOO}-\mu_{\rm TRGB}$ [mag]")
     ax.text(0.025, 0.965, f"LOO RMS = {loo_rms:.3f} mag", transform=ax.transAxes, va="top")
     ax.minorticks_on()
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.13), ncol=3, frameon=False)
     fig.tight_layout()
     save_figure(fig, directory, stem)
 
@@ -300,7 +299,12 @@ def make_stacked_variance(frame, components, title, directory, stem):
     ax.set_xlabel(r"variance contribution [mag$^2$]")
     ax.minorticks_on()
     ax.legend(frameon=False, loc="lower right", fontsize=9)
-    fig.tight_layout()
+    for tick, galaxy in zip(ax.get_yticklabels(), labels):
+        tick.set_color(GROUP_STYLES[ENVIRONMENT[galaxy]][0])
+    group_handles = [Line2D([], [], color=c, marker=m, ls="", label=g)
+                     for g, (c, m) in GROUP_STYLES.items()]
+    fig.legend(handles=group_handles, loc="lower center", ncol=3, frameon=False, fontsize=10)
+    fig.tight_layout(rect=(0, 0.055, 1, 1))
     save_figure(fig, directory, stem)
 
 
@@ -355,32 +359,12 @@ def make_annulus_plot(frame, fit_rows, band, directory, stem):
 def make_f160_comparison(frame, band, directory, stem):
     fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.25))
 
-    axes[0].errorbar(
-        frame["g475_z850"],
-        frame["mbar_difference"],
-        xerr=frame["sigma_g475_z850"],
-        yerr=frame["sigma_mbar_difference"],
-        fmt="o",
-        ms=6,
-        color=BLUE,
-        ecolor=BLUE,
-        capsize=3,
-    )
+    plot_points(axes[0], frame, "g475_z850", "mbar_difference", "sigma_mbar_difference", "sigma_g475_z850")
     axes[0].set_title("Distance-free fluctuation color", fontsize=15)
     axes[0].set_xlabel(r"$(g_{475}-z_{850})_0$ [mag]", fontsize=13)
     axes[0].set_ylabel(rf"$\overline{{m}}_{{{band[1:4]}}}-\overline{{m}}_{{160}}$ [mag]", fontsize=13)
 
-    axes[1].errorbar(
-        frame["Mbar_F160W_individual"],
-        frame["Mbar_target"],
-        xerr=frame["sigma_Mbar_F160W_individual"],
-        yerr=frame["sigma_Mbar_target"],
-        fmt="o",
-        ms=6,
-        color=BLUE,
-        ecolor=BLUE,
-        capsize=3,
-    )
+    plot_points(axes[1], frame, "Mbar_F160W_individual", "Mbar_target", "sigma_Mbar_target", "sigma_Mbar_F160W_individual")
     axes[1].set_title("Absolute SBF with the same TRGB anchor", fontsize=15)
     axes[1].set_xlabel(r"$\overline{M}_{160}$ [mag]", fontsize=13)
     axes[1].set_ylabel(rf"$\overline{{M}}_{{{band[1:4]}}}$ [mag]", fontsize=13)
@@ -389,17 +373,7 @@ def make_f160_comparison(frame, band, directory, stem):
 
     low = min(frame["mu_F160W_jensen2015"].min(), frame["mu_target"].min()) - 0.08
     high = max(frame["mu_F160W_jensen2015"].max(), frame["mu_target"].max()) + 0.08
-    axes[2].errorbar(
-        frame["mu_F160W_jensen2015"],
-        frame["mu_target"],
-        xerr=frame["sigma_mu_F160W_jensen2015"],
-        yerr=frame["sigma_mu_target"],
-        fmt="o",
-        ms=6,
-        color=BLUE,
-        ecolor=BLUE,
-        capsize=3,
-    )
+    plot_points(axes[2], frame, "mu_F160W_jensen2015", "mu_target", "sigma_mu_target", "sigma_mu_F160W_jensen2015")
     axes[2].plot([low, high], [low, high], color=BLACK, lw=1.7)
     axes[2].set_xlim(low, high)
     axes[2].set_ylim(low, high)
@@ -410,43 +384,11 @@ def make_f160_comparison(frame, band, directory, stem):
 
     for ax in axes:
         ax.minorticks_on()
-        rows = list(frame.itertuples(index=False))
-        for row in rows:
-            if ax is axes[0]:
-                xy = (row.g475_z850, row.mbar_difference)
-                offsets = {
-                    "NGC 1399": (-5, -12),
-                    "NGC 4472": (5, -12),
-                }
-            elif ax is axes[1]:
-                xy = (row.Mbar_F160W_individual, row.Mbar_target)
-                offsets = {}
-            else:
-                xy = (row.mu_F160W_jensen2015, row.mu_target)
-                offsets = {
-                    "NGC 1404": (-5, 7),
-                    "NGC 1399": (-5, -3),
-                    "NGC 1380": (-5, -12),
-                    "NGC 4472": (5, -12),
-                }
-            x_values = [
-                getattr(item, "g475_z850") if ax is axes[0]
-                else getattr(item, "Mbar_F160W_individual") if ax is axes[1]
-                else getattr(item, "mu_F160W_jensen2015")
-                for item in rows
-            ]
-            right_side = xy[0] >= np.quantile(x_values, 0.72)
-            x_offset, y_offset = offsets.get(row.galaxy, (-5 if right_side else 5, 5))
-            ax.annotate(
-                row.galaxy.replace("NGC ", ""),
-                xy,
-                xytext=(x_offset, y_offset),
-                textcoords="offset points",
-                ha="right" if x_offset < 0 else "left",
-                fontsize=8,
-            )
+        ax.margins(0.18)
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=3, frameon=False)
     fig.suptitle(f"JWST {band} versus HST/WFC3 F160W", fontsize=18)
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0.07, 1, 1))
     save_figure(fig, directory, stem)
 
 
@@ -456,19 +398,15 @@ def make_aperture_luminosity_plot(frame, band, y, yerr, directory, stem):
     sigma = frame[yerr].to_numpy(float)
     design = np.column_stack((np.ones(len(frame)), x - np.median(x)))
     weights = 1.0 / sigma**2
-    covariance = np.linalg.inv(design.T @ (weights[:, None] * design))
-    coefficients = covariance @ (design.T @ (weights * values))
+    coefficients = np.linalg.solve(design.T @ (weights[:, None] * design), design.T @ (weights * values))
     residual = values - design @ coefficients
-    intrinsic = np.sqrt(max(0.0, np.mean(residual**2) - np.mean(sigma**2)))
+    scatter = np.sqrt(np.sum(residual**2) / (len(frame) - 2))
     grid = np.linspace(x.min() - 0.3, x.max() + 0.3, 400)
     grid_design = np.column_stack((np.ones(len(grid)), grid - np.median(x)))
     line = grid_design @ coefficients
-    mean_sigma = np.sqrt(np.einsum("ij,jk,ik->i", grid_design, covariance, grid_design))
-    predictive_sigma = np.sqrt(mean_sigma**2 + intrinsic**2)
-
-    fig, ax = plt.subplots(figsize=(7.2, 5.6))
-    ax.fill_between(grid, line - predictive_sigma, line + predictive_sigma, color="0.86", alpha=0.55, linewidth=0)
-    ax.fill_between(grid, line - mean_sigma, line + mean_sigma, color="0.62", alpha=0.55, linewidth=0)
+    fig, ax = plt.subplots(figsize=(8.2, 6.4))
+    ax.fill_between(grid, line - scatter, line + scatter, color="0.86", alpha=0.65, linewidth=0,
+                    label=rf"$\pm s_{{\rm res}}={scatter:.3f}$ mag")
     ax.plot(grid, line, color=BLACK, lw=2.0, label="weighted linear diagnostic")
     plot_points(ax, frame, "M150_model_aperture", y, yerr)
     ax.set_title(f"{band} SBF versus host aperture magnitude")
@@ -477,7 +415,8 @@ def make_aperture_luminosity_plot(frame, band, y, yerr, directory, stem):
     ax.invert_xaxis()
     ax.invert_yaxis()
     ax.minorticks_on()
-    ax.legend(frameon=False, loc="best")
+    ax.margins(y=0.14)
+    ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.15), ncol=3)
     fig.tight_layout()
     save_figure(fig, directory, stem)
 
@@ -521,7 +460,7 @@ def make_same8_three_band_color_comparison(f150, f090):
         (r"$(g_{475}-z_{850})_0$", "g_z_ps_0", "sigma_g_z_ps_0"),
     ]
 
-    fig, axes = plt.subplots(3, 2, figsize=(11.0, 12.8), sharex="col")
+    fig, axes = plt.subplots(3, 2, figsize=(12.0, 14.4), sharex="col")
     for row_index, (band, y_name, yerr_name) in enumerate(rows):
         for column_index, (color_label, x_name, xerr_name) in enumerate(columns):
             ax = axes[row_index, column_index]
@@ -533,47 +472,22 @@ def make_same8_three_band_color_comparison(f150, f090):
             coefficients, _, _, _ = np.linalg.lstsq(design, y, rcond=None)
             residual = y - design @ coefficients
             residual_variance = np.sum(residual**2) / (len(x) - 2)
-            covariance = residual_variance * np.linalg.inv(design.T @ design)
-
             grid = np.linspace(x.min() - 0.04 * np.ptp(x), x.max() + 0.04 * np.ptp(x), 500)
             grid_design = np.column_stack((np.ones(len(grid)), grid - center))
             line = grid_design @ coefficients
-            mean_sigma = np.sqrt(
-                np.einsum("ij,jk,ik->i", grid_design, covariance, grid_design)
-            )
-            predictive_sigma = np.sqrt(mean_sigma**2 + residual_variance)
+            scatter = np.sqrt(residual_variance)
 
             ax.fill_between(
                 grid,
-                line - predictive_sigma,
-                line + predictive_sigma,
+                line - scatter,
+                line + scatter,
                 color="0.88",
                 linewidth=0,
-                label="68% predictive band",
-            )
-            ax.fill_between(
-                grid,
-                line - mean_sigma,
-                line + mean_sigma,
-                color="0.67",
-                linewidth=0,
-                label="68% mean-confidence band",
+                label=r"$\pm s_{\rm res}$",
             )
             ax.plot(grid, line, color=BLACK, lw=2.0, label="linear fit")
-            ax.errorbar(
-                x,
-                y,
-                xerr=common[xerr_name],
-                yerr=yerr,
-                fmt="o",
-                ms=6,
-                color=BLUE,
-                ecolor=BLUE,
-                capsize=2.5,
-                lw=1.1,
-                label="same eight galaxies",
-                zorder=4,
-            )
+            plot_points(ax, common, x_name, y_name, yerr_name, xerr_name)
+            ax.text(0.03, 0.04, rf"$s_{{\rm res}}={scatter:.3f}$ mag", transform=ax.transAxes, fontsize=10)
             if row_index == 0:
                 ax.set_title(color_label)
             if column_index == 0:
@@ -583,6 +497,7 @@ def make_same8_three_band_color_comparison(f150, f090):
                 ax.set_xlabel(f"color {color_label} [mag]")
             ax.invert_yaxis()
             ax.minorticks_on()
+            ax.margins(x=0.12, y=0.18)
 
     handles, labels = axes[0, 0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="lower center", ncol=4, frameon=False)
@@ -593,6 +508,63 @@ def make_same8_three_band_color_comparison(f150, f090):
         F150_FIGURES,
         "go3055_article_same8_three_band_color_comparison",
     )
+
+
+def make_cross_band_plot(f150, f090):
+    common = f090[["galaxy", "Mbar_F090W", "sigma_Mbar_F090W", "mbar_F090W_0", "sigma_mbar_internal"]].merge(
+        f150[["galaxy", "Mbar_F150W", "sigma_Mbar_internal", "mbar_F150W", "sigma_mbar_internal", "color_F090W_F150W", "sigma_color_total"]],
+        on="galaxy", suffixes=("_090", "_150"))
+    common["fluctuation_color"] = common["mbar_F090W_0"] - common["mbar_F150W"]
+    common["sigma_fluctuation_color"] = np.hypot(common["sigma_mbar_internal_090"], common["sigma_mbar_internal_150"])
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5.7))
+    specifications = [
+        ("Mbar_F150W", "Mbar_F090W", "sigma_Mbar_F090W", "sigma_Mbar_internal",
+         r"$\overline{M}_{150,0}$ [mag]", r"$\overline{M}_{090,0}$ [mag]", "Shared Paper IV distance anchors"),
+        ("color_F090W_F150W", "fluctuation_color", "sigma_fluctuation_color", "sigma_color_total",
+         r"$(F090W-F150W)_0$ [mag]", r"$\overline{m}_{090,0}-\overline{m}_{150,0}$ [mag]", "Distance-free fluctuation color"),
+    ]
+    for ax, (x, y, sy, sx, xlabel, ylabel, title) in zip(axes, specifications):
+        plot_points(ax, common, x, y, sy, sx)
+        ax.set(xlabel=xlabel, ylabel=ylabel, title=title)
+        ax.invert_yaxis()
+        ax.margins(0.18)
+        ax.minorticks_on()
+    axes[0].invert_xaxis()
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=3, frameon=False)
+    fig.tight_layout(rect=(0, 0.07, 1, 1))
+    save_figure(fig, F090_FIGURES, "go3055_f090w_article_vs_f150w_sbf")
+
+
+def make_winsorization_plot(f090):
+    base = ROOT / "runs/sbf2_normalized_winsor/batch/aggregates"
+    clipping = {"F150W": pd.read_csv(base / "all_galaxies_clipping.csv")}
+    annuli = {"F150W": pd.read_csv(base / "all_galaxies_combined_annuli.csv")}
+    paths = [json.loads(Path(p).read_text())["table_paths"] for p in f090["final_result_path"]]
+    clipping["F090W"] = pd.concat([pd.read_csv(p["clipping"]) for p in paths])
+    annuli["F090W"] = pd.concat([pd.read_csv(p["combined_annuli"]) for p in paths])
+    fig, axes = plt.subplots(2, 2, figsize=(13.2, 10.0))
+    for row, band in enumerate(("F150W", "F090W")):
+        clip = clipping[band].loc[clipping[band]["branch"].eq("normalized_full_3p5")]
+        measured = annuli[band].loc[np.isclose(annuli[band]["requested_kmin"], 0.04)]
+        adopted = measured.loc[measured["branch"].eq("normalized_full_3p5")].set_index("galaxy")
+        plain = measured.loc[measured["branch"].eq("no_winsor")].set_index("galaxy")
+        for col, ring in enumerate(("inner", "outer")):
+            ax = axes[row, col]
+            part = clip.loc[clip["ring"].eq(ring), ["galaxy", "changed_fraction"]].copy()
+            part["percent"] = 100*part["changed_fraction"]
+            part["delta"] = part["galaxy"].map(adopted[f"mbar_{ring}"] - plain[f"mbar_{ring}"])
+            part["zero_error"] = 0.0
+            plot_points(ax, part, "percent", "delta", "zero_error")
+            ax.axhline(0, color=BLACK, lw=1, ls="--")
+            ax.set(title=f"{band}: {ring} annulus", xlabel="Winsorized pixels (%)",
+                   ylabel=r"$\overline{m}_{3.5\sigma}-\overline{m}_{\rm none}$ [mag]")
+            ax.margins(x=0.2, y=0.3)
+            ax.minorticks_on()
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=3, frameon=False)
+    fig.tight_layout(rect=(0, 0.055, 1, 1))
+    save_figure(fig, F090_FIGURES, "go3055_f150w_f090w_article_winsorization")
 
 
 def make_psf_size_plot(frame, band, delta_column, directory, stem):
@@ -747,6 +719,8 @@ def main():
         "go3055_f090w_article_aperture_luminosity",
     )
     make_same8_three_band_color_comparison(f150, f090)
+    make_cross_band_plot(f150, f090)
+    make_winsorization_plot(f090)
 
     f150_psf_size = pd.read_csv(F150_TABLES / "go3055_psf_129_vs_257_sensitivity.csv")
     f090_psf_size = pd.read_csv(F090_TABLES / "go3055_f090w_psf_129_vs_257.csv")
