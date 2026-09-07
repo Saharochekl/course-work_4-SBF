@@ -165,6 +165,7 @@ def make_calibration_plots(f150, f090):
             "band": "F150W",
             "y": "Mbar_F150W",
             "yerr": "sigma_Mbar_internal",
+            "xerr": "sigma_color_total",
             "intercept": f150_fit["intercept"],
             "slope": 0.0,
             "center": float(f150["color_F090W_F150W"].median()),
@@ -178,6 +179,7 @@ def make_calibration_plots(f150, f090):
             "band": "F150W",
             "y": "Mbar_F150W",
             "yerr": "sigma_Mbar_internal",
+            "xerr": "sigma_color_total",
             "intercept": f150_linear["intercept"],
             "slope": f150_linear["slope"],
             "center": float(f150["color_F090W_F150W"].median()),
@@ -191,6 +193,7 @@ def make_calibration_plots(f150, f090):
             "band": "F090W",
             "y": "Mbar_F090W",
             "yerr": "sigma_Mbar_F090W",
+            "xerr": "sigma_color_adopted_mag",
             "intercept": f090_fit["intercept_mag"],
             "slope": f090_fit["slope_at_center"],
             "center": float(f090["color_F090W_F150W"].median()),
@@ -220,7 +223,7 @@ def make_calibration_plots(f150, f090):
             zorder=1,
         )
         ax.plot(grid, line, color=BLACK, lw=2.2, label=cfg["label"], zorder=3)
-        plot_points(ax, frame, "color_F090W_F150W", cfg["y"], cfg["yerr"])
+        plot_points(ax, frame, "color_F090W_F150W", cfg["y"], cfg["yerr"], cfg["xerr"])
         ax.set_title(f"JWST {cfg['band']} SBF calibration")
         ax.set_xlabel(r"$(F090W-F150W)_0$ [mag]")
         ax.set_ylabel(rf"$\overline{{M}}_{{{cfg['band'][1:4]}}}$ [mag]")

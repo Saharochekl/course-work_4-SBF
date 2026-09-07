@@ -879,6 +879,9 @@ software.to_csv(TABLE_DIR / "go3055_software_provenance.csv", index=False)
 
 software_tex = [r"\begin{tabular}{lp{5.2cm}}", r"\toprule", r"Item & Version or identifier \\", r"\midrule"]
 for row in software.itertuples(index=False):
+    # File checksums stay in the machine-readable manifest, not the article.
+    if "SHA256" in row.item:
+        continue
     value = row.version_or_identifier.replace("_", r"\_")
     if len(value) > 24 and all(char in "0123456789abcdef" for char in value.lower()):
         value = r"\texttt{" + value[:12] + r"\ldots}"

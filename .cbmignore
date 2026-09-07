@@ -32,3 +32,4 @@ code/runs/
 
 # Артефакт самого codebase-memory не должен индексировать сам себя.
 .codebase-memory/
+trash/

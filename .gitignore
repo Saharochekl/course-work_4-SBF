@@ -22,3 +22,12 @@ runs/**/cache/
 runs/sbf_f090w_go3055/
 runs/.runtime_cache/
 .codebase-memory/
+
+# Local environment, inspection artifacts and manual cleanup quarantine.
+/astro_env/
+/trash/
+/tmp/
+.DS_Store
+.ipynb_checkpoints/
+.matplotlib/
+*.fits.interrupted
