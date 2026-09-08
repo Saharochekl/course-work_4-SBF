@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Собрать отдельный, воспроизводимый notebook анализа F090W."""
+"""Собрать notebook анализа F090W / Build (do not execute) its analysis notebook.
+
+Run explicitly to create a fresh notebook; imports never overwrite user outputs.
+The scientific analysis remains in sequential notebook cells, not hidden here.
+"""
 
 from pathlib import Path
 from textwrap import dedent
@@ -7,8 +11,8 @@ from textwrap import dedent
 import nbformat as nbf
 
 
-HERE = Path(__file__).resolve().parent
-OUTPUT = HERE / "sbf-f090w-graph.ipynb"
+# Keep the generated notebook beside the two processing entry points.
+OUTPUT = Path(__file__).resolve().parent / "sbf-f090w-graph.ipynb"
 
 
 def markdown(text: str):
@@ -55,7 +59,6 @@ cells = [
     """),
     code(r"""
     from pathlib import Path
-    import json
     import os
     import re
     from itertools import combinations
@@ -74,15 +77,17 @@ cells = [
         ipython.run_line_magic("matplotlib", "inline")
     import matplotlib.pyplot as plt
 
-    RNG_SEED = 3090
-    N_BAND_BOOTSTRAP = 400
-    N_DISTANCE_BOOTSTRAP = 350
-    PR_FRACTIONAL_ERROR = 0.25
+    RNG_SEED = 3090  # Fixed stream for the published F090W resampling experiment.
+    N_BAND_BOOTSTRAP = 400  # Curve/parameter Monte Carlo budget; not physical.
+    N_DISTANCE_BOOTSTRAP = 350  # Separate budget for each 13-object LOO fit.
+    PR_FRACTIONAL_ERROR = 0.25  # Adopted P_r uncertainty assumption, sensitivity-tested.
+    MAG_PER_LN = 1.085736  # Stored rounded 2.5/ln(10); preserves existing magnitude errors.
 
+    # Bandpass extinction coefficients already used in the Paper IV metadata.
     A_F090W_PER_EBV = 1.4156
     A_F150W_PER_EBV = 0.6021
     DELTA_R = A_F090W_PER_EBV - A_F150W_PER_EBV
-    TRGB_COMMON_ZEROPOINT_MAG = 0.047
+    TRGB_COMMON_ZEROPOINT_MAG = 0.047  # Shared Paper IV scale; not reduced by N.
 
     PROJECT_ROOT = next(
         (path.resolve() for path in [Path.cwd(), *Path.cwd().parents]
@@ -96,7 +101,7 @@ cells = [
     import sys
     if str(CODE_DIR) not in sys.path:
         sys.path.insert(0, str(CODE_DIR))
-    from sbf_paths import load_project_json, project_path, default_stpsf_data_dir
+    from sbf_paths import load_project_json, default_stpsf_data_dir
     from publish_article_assets import publish_figure
 
     DATA_DIR = PROJECT_ROOT / "data"
@@ -265,16 +270,16 @@ cells = [
     code(r"""
     fit_components = spectral_fits.copy()
     fit_components["sigma_fit_mag"] = (
-        1.085736 * fit_components["P0_sigma_formal"] / fit_components["P_fluctuation"]
+        MAG_PER_LN * fit_components["P0_sigma_formal"] / fit_components["P_fluctuation"]
     )
     fit_components["sigma_psf_mag"] = (
-        1.085736 * fit_components["P0_psf_mad"] / fit_components["P_fluctuation"]
+        MAG_PER_LN * fit_components["P0_psf_mad"] / fit_components["P_fluctuation"]
     )
     fit_components["sigma_spectrum_no_psf_mag"] = np.maximum(
         fit_components["sigma_fit_mag"], fit_components["k_window_scatter"]
     )
     ratio = fit_components["Pr"] / fit_components["P0"]
-    fit_components["sigma_Pr_mag"] = 1.085736 * PR_FRACTIONAL_ERROR * ratio / (1 - ratio)
+    fit_components["sigma_Pr_mag"] = MAG_PER_LN * PR_FRACTIONAL_ERROR * ratio / (1 - ratio)
 
     details = measurements.copy()
     for ring in ["inner", "outer"]:
@@ -301,10 +306,10 @@ cells = [
         wi * details["inner_sigma_Pr_mag"] + wo * details["outer_sigma_Pr_mag"]
     )
     details["inner_sigma_sky_mag"] = (
-        1.085736 * details["background_systematic_MJy_sr"] / details["inner_Imean_MJy_sr"]
+        MAG_PER_LN * details["background_systematic_MJy_sr"] / details["inner_Imean_MJy_sr"]
     )
     details["outer_sigma_sky_mag"] = (
-        1.085736 * details["background_systematic_MJy_sr"] / details["outer_Imean_MJy_sr"]
+        MAG_PER_LN * details["background_systematic_MJy_sr"] / details["outer_Imean_MJy_sr"]
     )
     details["sigma_sky_mag"] = (
         wi * details["inner_sigma_sky_mag"] + wo * details["outer_sigma_sky_mag"]
@@ -474,7 +479,7 @@ cells = [
     }
     MODEL_ORDER = list(MODEL_LABELS)
     COLOR_CENTER = float(master["color_F090W_F150W"].median())
-    EXP_SCALE = 0.05
+    EXP_SCALE = 0.05  # Fixed exploratory curvature scale avoids a fourth free parameter.
 
     def model_basis(model, color, center=COLOR_CENTER):
         color = np.asarray(color, float)
@@ -487,10 +492,10 @@ cells = [
             return np.column_stack([np.ones_like(color), dx, dx**2])
         if model == "cubic":
             return np.column_stack([np.ones_like(color), dx, dx**2, dx**3])
-        log_color = np.log(color / center)
         if model == "logarithmic":
-            return np.column_stack([np.ones_like(color), log_color])
+            return np.column_stack([np.ones_like(color), np.log(color / center)])
         if model == "log_quadratic":
+            log_color = np.log(color / center)
             return np.column_stack([np.ones_like(color), log_color, log_color**2])
         if model == "exponential":
             curvature = np.exp(dx / EXP_SCALE) - 1 - dx / EXP_SCALE
@@ -508,10 +513,10 @@ cells = [
             return coefficients[1] + 2 * coefficients[2] * dx
         if model == "cubic":
             return coefficients[1] + 2 * coefficients[2] * dx + 3 * coefficients[3] * dx**2
-        log_color = np.log(color / center)
         if model == "logarithmic":
             return coefficients[1] / color
         if model == "log_quadratic":
+            log_color = np.log(color / center)
             return (coefficients[1] + 2 * coefficients[2] * log_color) / color
         if model == "exponential":
             return coefficients[1] + coefficients[2] * (np.exp(dx / EXP_SCALE) - 1) / EXP_SCALE
@@ -526,16 +531,19 @@ cells = [
 
     def fit_model(frame, model="linear", *, use_color_errors=True,
                   color_error_column="sigma_color_adopted_mag", cluster_step=False):
-        data = frame.dropna(subset=["color_F090W_F150W", "Mbar_F090W", "sigma_Mbar_F090W"]).copy()
+        data = frame.copy()
         x = data["color_F090W_F150W"].to_numpy(float)
         y = data["Mbar_F090W"].to_numpy(float)
         sy = data["sigma_Mbar_F090W"].to_numpy(float)
-        sx = data[color_error_column].fillna(0).to_numpy(float) if use_color_errors else np.zeros(len(data))
-        covariance = data["cov_color_Mbar"].fillna(0).to_numpy(float) if use_color_errors else np.zeros(len(data))
+        sx = data[color_error_column].to_numpy(float) if use_color_errors else np.zeros(len(data))
+        covariance = data["cov_color_Mbar"].to_numpy(float) if use_color_errors else np.zeros(len(data))
+        if not np.isfinite([x, y, sy, sx, covariance]).all() or np.any(sy <= 0) or np.any(sx < 0):
+            raise ValueError("Для фита нужны конечные значения и корректные sigma; пропуски не заменяются нулями")
         basis = model_basis(model, x, COLOR_CENTER)
         is_fornax = data["environment"].eq("Fornax").to_numpy(float)
         design = np.column_stack([basis, is_fornax]) if cluster_step else basis
         start_coefficients = np.linalg.lstsq(design, y, rcond=None)[0]
+        # 0.05 mag initializes scatter, not a prior or an adopted final value.
         start = np.r_[start_coefficients, np.log(0.05)]
 
         def objective(parameters):
@@ -548,6 +556,7 @@ cells = [
             variance = np.clip(variance, 1e-12, None)
             return 0.5 * np.sum(np.log(2 * np.pi * variance) + (y - prediction)**2 / variance)
 
+        # Positive scatter with broad numerical bounds; 1e-5 approximates zero.
         bounds = [(None, None)] * (len(start) - 1) + [(np.log(1e-5), np.log(1.0))]
         solution = minimize(objective, start, method="L-BFGS-B", bounds=bounds)
         if not solution.success:
@@ -1049,6 +1058,10 @@ cells = [
                     predictions.append(predict_model(draw_fit, color))
                 except (ValueError, RuntimeError, np.linalg.LinAlgError):
                     pass
+            if len(predictions) < N_DISTANCE_BOOTSTRAP // 2:
+                raise RuntimeError(
+                    f"{target['galaxy']}: успешно только {len(predictions)} LOO bootstrap-фитов"
+                )
             sigma_calibration = float(np.std(predictions, ddof=1))
 
             sigma_color_measurement = abs(derivative) * target["sigma_color_measurement_mag"]
@@ -1182,7 +1195,8 @@ cells = [
     Длина горизонтального столбца — полная дисперсия, цветные участки — суммы
     $\sigma_i^2$, а не самих $\sigma_i$. На верхнем рисунке показаны ошибки
     точек $\overline M_{090}$. На нижнем постоянная и цветовая калибровки
-    показаны рядом; чёрный ромб — итоговая $\sigma$ в обычных mag.
+    показаны рядом, также в дисперсиях. Следующая гистограмма показывает
+    распределение полной $\sigma_\mu$ уже в обычных mag.
     """),
     code(r"""
     calibration_components = [
@@ -1436,10 +1450,16 @@ cells = [
 ]
 
 
-notebook = nbf.v4.new_notebook(cells=cells)
-notebook.metadata.update({
-    "kernelspec": {"display_name": "astro_env", "language": "python", "name": "python3"},
-    "language_info": {"name": "python", "version": "3.13"},
-})
-nbf.write(notebook, OUTPUT)
-print(OUTPUT)
+def build_notebook():
+    """Сформировать документ без записи / Construct without writing or executing."""
+    notebook = nbf.v4.new_notebook(cells=cells)
+    notebook.metadata.update({
+        "kernelspec": {"display_name": "astro_env", "language": "python", "name": "python3"},
+        "language_info": {"name": "python", "version": "3.13"},
+    })
+    return notebook
+
+
+if __name__ == "__main__":
+    nbf.write(build_notebook(), OUTPUT)
+    print(OUTPUT)

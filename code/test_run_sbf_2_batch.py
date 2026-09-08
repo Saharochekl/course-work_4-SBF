@@ -3,6 +3,8 @@ import csv
 import json
 import tempfile
 import unittest
+from unittest.mock import patch
+import io
 from pathlib import Path
 
 import run_sbf_2_batch as batch
@@ -41,7 +43,7 @@ class DedicatedGo3055RunnerTests(unittest.TestCase):
         self.assertEqual(args.programs, ["3055"])
         self.assertTrue(args.no_download)
         self.assertTrue(args.no_cleanup_inputs)
-        self.assertEqual(args.prefetch_targets, 0)
+        self.assertFalse(hasattr(args, "prefetch_targets"))
         self.assertEqual(args.min_available_ram_gb, 0.0)
         self.assertEqual(args.emergency_available_ram_gb, 0.0)
         self.assertEqual(args.max_worker_rss_gb, 0.0)
@@ -50,6 +52,24 @@ class DedicatedGo3055RunnerTests(unittest.TestCase):
         self.assertEqual(Path(args.batch_root), batch.DEFAULT_BATCH_ROOT)
         self.assertEqual(Path(args.products_root), batch.DEFAULT_PRODUCTS_ROOT)
         self.assertEqual(Path(args.campaign_root), batch.DEFAULT_CAMPAIGN_ROOT)
+
+    def test_retired_download_and_cleanup_switches_are_rejected(self):
+        for flag in ("--allow-download", "--allow-input-cleanup", "--download-worker"):
+            with self.subTest(flag=flag), patch("sys.stderr", new=io.StringIO()):
+                with self.assertRaises(SystemExit):
+                    batch.parse_args([flag])
+
+    def test_legacy_notebook_cannot_enter_active_executor(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            template = root / "old.ipynb"
+            template.write_text(json.dumps({
+                "metadata": {"sbf_pipeline_family": "sbf3"}, "cells": [],
+            }))
+            with self.assertRaisesRegex(ValueError, "Only an sbf-2"):
+                batch.execute_template_for_target(
+                    template, "NGC 1380", root / "signal", root / "color", root,
+                )
 
     def test_force_reprocess_always_starts_a_new_sqlite_run(self):
         args = batch.parse_args(["--force-reprocess"])

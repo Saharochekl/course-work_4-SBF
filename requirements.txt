@@ -1,0 +1,15 @@
+# Direct runtime packages from the working Python 3.13 environment.
+# RU: фиксируем версии API, от которых зависят фиты/FFT/ноутбуки.
+# EN: tested direct versions, not a full transitive or reference-data lock.
+numpy==2.3.5
+scipy==1.16.3
+pandas==2.3.3
+astropy==7.2.0
+photutils==2.3.0
+scikit-image==0.26.0
+matplotlib==3.10.8
+stpsf==2.1.0
+nbformat==5.10.4
+ipython==9.11.0
+ipykernel==7.2.0
+psutil==7.2.2

@@ -3,26 +3,17 @@ from __future__ import annotations
 
 import csv
 import json
-import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
 import numpy as np
 from astropy.io import fits
 
-LEGACY_SBF3_DIR = Path(__file__).resolve().parent / "legacy" / "review-2026-09-08" / "sbf3"
-if str(LEGACY_SBF3_DIR) not in sys.path:
-    sys.path.append(str(LEGACY_SBF3_DIR))
-
-import run_sbf_batch as batch
 from sbf_target_status import (
-    LEGACY_SBF2_FITS_KEYS,
+    REQUIRED_SBF2_FITS_KEYS,
     PRIMARY_QUANTITY,
-    annulus_qc,
     ensure_target_rows,
-    find_legacy_reusable_result,
     measurement_method,
     read_target_status,
     reusable_result_from_status,
@@ -36,11 +27,11 @@ from sbf_target_status import (
 
 class TargetStatusCsvTests(unittest.TestCase):
     target = {
-        "program": "GO-7763",
+        "program": "GO-3055",
         "obsid": "o053_t053",
-        "name": "IC 3501",
+        "name": "NGC 1380",
         "signal_filter": "f150w",
-        "color_filter": "f115w",
+        "color_filter": "f090w",
     }
 
     def test_status_roundtrip_is_textual_and_sha_independent(self):
@@ -51,7 +42,7 @@ class TargetStatusCsvTests(unittest.TestCase):
                 rows,
                 self.target,
                 "done",
-                method="sbf3",
+                method="sbf2",
                 quantity=PRIMARY_QUANTITY,
                 result_value=28.3,
                 result_unit="AB mag",
@@ -63,9 +54,9 @@ class TargetStatusCsvTests(unittest.TestCase):
             write_target_status(path, rows)
             restored = read_target_status(path)
             row = restored[target_status_key(self.target)]
-            self.assertEqual(row["program"], "7763")
+            self.assertEqual(row["program"], "3055")
             self.assertEqual(row["status"], "done")
-            self.assertEqual(row["method"], "sbf3")
+            self.assertEqual(row["method"], "sbf2")
             self.assertEqual(row["result_value"], "28.3")
             self.assertEqual(row["result_unit"], "AB mag")
             self.assertTrue(row["result_json"].endswith("result.json"))
@@ -76,7 +67,7 @@ class TargetStatusCsvTests(unittest.TestCase):
             root = Path(directory)
             products = root / "products"
             products.mkdir()
-            result = self._synthetic_sbf3_result(products)
+            result = self._synthetic_sbf2_result(products)
             result["template_sha256"] = "old-template"
             result_path = root / "result.json"
             result_path.write_text(json.dumps(result), encoding="utf-8")
@@ -104,31 +95,43 @@ class TargetStatusCsvTests(unittest.TestCase):
             root = Path(directory)
             products = root / "products"
             products.mkdir()
-            result = self._synthetic_sbf3_result(products)
+            result = self._synthetic_sbf2_result(products)
             result_path = root / "result.json"
             result_path.write_text(json.dumps(result), encoding="utf-8")
-            Path(result["working_residual_fits"]).unlink()
+            Path(result["science_residual_fits"]).unlink()
             self.assertIsNone(validate_reusable_result(result_path, self.target))
 
-    def _synthetic_sbf3_result(self, products: Path) -> dict:
+    def test_wrong_pipeline_or_filter_invalidates_result(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result = self._synthetic_sbf2_result(root)
+            result_path = root / "result.json"
+            for change in ({"template_family": "sbf3"}, {"signal_filter": "F090W"}):
+                with self.subTest(change=change):
+                    result_path.write_text(json.dumps({**result, **change}), encoding="utf-8")
+                    self.assertIsNone(validate_reusable_result(result_path, self.target))
+
+    def test_empty_table_invalidates_result(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result = self._synthetic_sbf2_result(root)
+            result_path = root / "result.json"
+            result_path.write_text(json.dumps(result), encoding="utf-8")
+            Path(result["annulus_summary_csv"]).write_text("", encoding="utf-8")
+            self.assertIsNone(validate_reusable_result(result_path, self.target))
+
+    def _synthetic_sbf2_result(self, products: Path) -> dict:
         result = {
-            "galaxy": "IC 3501",
+            "galaxy": "NGC 1380",
             "status": "ok",
-            "template_family": "sbf3",
+            "template_family": "sbf2",
             "signal_filter": "F150W",
-            "color_filter": "F115W",
+            "color_filter": "F090W",
             "recommended_mbar_weighted": 28.3,
             "recommended_kmin": 0.04,
             "recommended_kmax": 0.25,
         }
-        keys = (
-            "clean_model_fits",
-            "clean_isophotes_fits",
-            "full_residual_fits",
-            "working_residual_fits",
-            "working_annuli_residual_fits",
-        )
-        for key in keys:
+        for key in REQUIRED_SBF2_FITS_KEYS:
             path = products / f"{key}.fits"
             fits.PrimaryHDU(np.zeros((3, 3), dtype=np.float32)).writeto(path)
             result[key] = str(path)
@@ -179,109 +182,6 @@ class TargetStatusCsvTests(unittest.TestCase):
                         "corr": 0.99,
                     }
                 )
-
-
-class LegacyGo3055AdoptionTests(unittest.TestCase):
-    def test_all_fourteen_existing_go3055_results_are_reusable(self):
-        targets = batch.read_targets_from_csv(
-            batch.SCRIPT_DIR / "targets_go3055_manifest.csv",
-            batch.PROJECT_ROOT / "data",
-        )
-        adopted = [
-            find_legacy_reusable_result(
-                target, batch.SCRIPT_DIR / "sbf2_batch_outputs"
-            )
-            for target in targets
-        ]
-        self.assertEqual(len(targets), 14)
-        self.assertEqual(sum(result is not None for result in adopted), 14)
-        for target, result in zip(targets, adopted):
-            self.assertEqual(result["galaxy"], target["name"])
-            self.assertTrue(all(result.get(key) for key in LEGACY_SBF2_FITS_KEYS))
-            self.assertRegex(annulus_qc(result), r"^(pass|warn:)")
-
-    def test_parent_adopts_all_fourteen_without_starting_a_worker(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            args = batch.parse_args(
-                [
-                    "--template",
-                    str(batch.ARCHIVE_DIR / "sbf-3.ipynb"),
-                    "--target-csv",
-                    str(batch.SCRIPT_DIR / "targets_go3055_manifest.csv"),
-                    "--programs",
-                    "3055",
-                    "--data-root",
-                    str(batch.PROJECT_ROOT / "data"),
-                    "--batch-root",
-                    str(root / "batch"),
-                    "--products-root",
-                    str(root / "products"),
-                    "--campaign-root",
-                    str(root / "campaign"),
-                    "--no-download",
-                    "--prefetch-targets",
-                    "0",
-                    "--no-cleanup-inputs",
-                    "--allow-bulk-targets",
-                    "--wall-time-hours",
-                    "0",
-                    "--soft-stop-minutes",
-                    "0",
-                ]
-            )
-            with patch.object(
-                batch,
-                "launch_process_group",
-                side_effect=AssertionError("legacy results must suppress workers"),
-            ), patch.object(
-                batch,
-                "start_download_manager",
-                side_effect=AssertionError("legacy results must suppress downloads"),
-            ):
-                self.assertEqual(batch.run_parent(args), 0)
-
-            rows = read_target_status(root / "campaign" / "target_status.csv")
-            self.assertEqual(len(rows), 14)
-            self.assertEqual(
-                {row["status"] for row in rows.values()},
-                {"done"},
-            )
-            self.assertEqual(
-                {row["method"] for row in rows.values()},
-                {"sbf2_legacy"},
-            )
-            self.assertEqual(
-                {row["quantity"] for row in rows.values()},
-                {"apparent_sbf_magnitude"},
-            )
-            self.assertEqual(
-                {row["result_unit"] for row in rows.values()},
-                {"AB mag"},
-            )
-            self.assertTrue(
-                all(row["result_value"] for row in rows.values())
-            )
-            self.assertEqual(
-                {row["selected_region"] for row in rows.values()},
-                {"circular_inner_lit+circular_outer_lit"},
-            )
-            events = [
-                json.loads(line)
-                for line in (root / "campaign" / "campaign_events.jsonl")
-                .read_text(encoding="utf-8")
-                .splitlines()
-            ]
-            reused = [
-                event
-                for event in events
-                if event.get("event_type") == "RESULT_REUSED"
-            ]
-            self.assertEqual(len(reused), 14)
-            self.assertEqual(
-                {event["payload"]["reuse_kind"] for event in reused},
-                {"legacy-go3055"},
-            )
 
 
 if __name__ == "__main__":

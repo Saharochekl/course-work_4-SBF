@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 import numpy as np
@@ -11,6 +12,13 @@ import download_wss_opds as wss
 
 
 class DownloadWssOpdTests(unittest.TestCase):
+    def test_invalid_limits_fail_before_inventory_or_download(self):
+        for args in (["--max-delta-days", "-1"], ["--header-timeout", "0"]):
+            with self.subTest(args=args), patch.object(wss, "science_dates") as inventory:
+                with self.assertRaises(SystemExit):
+                    wss.main(args)
+                inventory.assert_not_called()
+
     def test_parse_fits_header_prefix(self):
         header = fits.Header()
         header["TELESCOP"] = "JWST"

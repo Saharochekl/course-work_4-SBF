@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Copy the article's selected figures beside its TeX, without recomputing them.
+"""Копии рисунков рядом с TeX / Copy selected figures without recomputation.
 
 Run from code/: ``py publish_article_assets.py``; add ``--check`` for a
 read-only check. Scientific producer outputs stay in runs/ for the notebooks.
@@ -11,11 +11,12 @@ import json
 from pathlib import Path
 import shutil
 
-ROOT = Path(__file__).resolve().parents[1]
-MANIFEST = Path("texts/paper_work/materials/figure_sources.json")
+ROOT = Path(__file__).resolve().parents[1]  # Portable anchor, independent of cwd.
+MANIFEST = Path("texts/paper_work/materials/figure_sources.json")  # Explicit publication selection.
 
 
 def figure_sources(root=ROOT):
+    """Прочитать перечень источников / Read selected source/destination pairs."""
     return json.loads((Path(root) / MANIFEST).read_text(encoding="utf-8"))
 
 

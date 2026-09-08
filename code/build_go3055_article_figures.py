@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build matched publication figures for the GO-3055 F150W/F090W analysis.
+"""Рисунки из готовых таблиц / Publication figures from completed tables.
 
 The script reads only completed analysis tables.  It does not execute either
 measurement pipeline and does not rewrite any scientific table.
@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 
 
+# Locations of the two accepted campaigns, independent of the current directory.
 ROOT = Path(__file__).resolve().parents[1]
 F150_TABLES = ROOT / "runs/sbf2_go3055/analysis/tables"
 F090_TABLES = ROOT / "runs/sbf_f090w_go3055/analysis/tables"
@@ -27,6 +28,7 @@ F150_FIGURES = ROOT / "runs/sbf2_go3055/analysis/figures"
 F090_FIGURES = ROOT / "runs/sbf_f090w_go3055/analysis/figures"
 PAPER3_F110 = ROOT / "code/sbf2_batch_outputs/jensen2025_paper3_f110w_calibration.csv"
 
+# Display-only palette: annuli use blue/orange; galaxy symbols encode environment.
 BLUE = "#2c7fb8"
 ORANGE = "#d95f0e"
 BLACK = "#111111"
@@ -37,7 +39,7 @@ GROUP_STYLES = {
 }
 # Match the broad environment classes in the measurement tables; this is
 # deliberately not the seven-member strict Virgo subset used in the step test.
-ENVIRONMENT = pd.read_csv(F150_TABLES / "go3055_master_measurements.csv").set_index("galaxy")["environment"].replace({"Virgo": "Virgo region"})
+ENVIRONMENT = None  # Loaded by main(); importing plotting helpers must not read runs/.
 COMPONENT_COLORS = {
     "Power spectrum": "#4c92c3",
     "Background": "#9e9e9e",
@@ -50,6 +52,7 @@ COMPONENT_COLORS = {
     "Shared TRGB scale": "#8c564b",
 }
 
+# Typography and point offsets below affect rendering only, never fit weights.
 plt.rcParams.update(
     {
         "font.family": "DejaVu Sans",
@@ -86,12 +89,6 @@ def save_figure(fig, directory, stem):
         fig.savefig(path, dpi=300, bbox_inches="tight")
         publish_figure(path)
     plt.close(fig)
-
-
-def group_legend(ax, **kwargs):
-    handles = [Line2D([], [], color=color, marker=marker, ls="", label=group)
-               for group, (color, marker) in GROUP_STYLES.items()]
-    return ax.legend(handles=handles, frameon=False, **kwargs)
 
 
 def plot_points(ax, frame, x, y, yerr, xerr=None, annotate=True):
@@ -473,7 +470,6 @@ def make_same8_three_band_color_comparison(f150, f090):
             ax = axes[row_index, column_index]
             x = common[x_name].to_numpy(float)
             y = common[y_name].to_numpy(float)
-            yerr = common[yerr_name].to_numpy(float)
             center = float(np.median(x))
             design = np.column_stack((np.ones(len(x)), x - center))
             coefficients, _, _, _ = np.linalg.lstsq(design, y, rcond=None)
@@ -591,7 +587,10 @@ def make_psf_size_plot(frame, band, delta_column, directory, stem):
 
 
 def main():
+    """Перерисовать обе полосы без измерения SBF / Render both saved analyses."""
+    global ENVIRONMENT
     f150 = pd.read_csv(F150_TABLES / "go3055_master_measurements.csv")
+    ENVIRONMENT = f150.set_index("galaxy")["environment"].replace({"Virgo": "Virgo region"})
     f090 = pd.read_csv(F090_TABLES / "go3055_f090w_master.csv")
     f150_budget = pd.read_csv(F150_TABLES / "go3055_error_budget.csv")
     f150_loo = pd.read_csv(F150_TABLES / "go3055_leave_one_out_distances.csv")
@@ -604,7 +603,6 @@ def main():
     f150_annuli = pd.read_csv(F150_TABLES / "go3055_annulus_local_measurements.csv").rename(
         columns={"color_F090W_F150W": "color", "Mbar_F150W": "Mbar"}
     )
-    f150_annuli["sigma_Mbar"] = f150_annuli["sigma_Mbar"]
     f150_annulus_fits = pd.read_csv(F150_TABLES / "go3055_annulus_local_fit_summary.csv")
     make_annulus_plot(
         f150_annuli,
@@ -746,11 +744,8 @@ def main():
         "go3055_f090w_article_psf_size",
     )
 
-    flags = f150[["galaxy", "include_residual_clean"]]
-    f150_recovery = f150_loo.merge(flags, on="galaxy", how="left").rename(
-        columns={"mu_sbf_loo": "mu_sbf"}
-    )
-    f090_recovery = f090_loo.merge(flags, on="galaxy", how="left")
+    f150_recovery = f150_loo.rename(columns={"mu_sbf_loo": "mu_sbf"})
+    f090_recovery = f090_loo
     make_recovery_plot(
         f150_recovery,
         "F150W",
@@ -828,6 +823,7 @@ def main():
         how="inner",
     )
     f150_predictive["sigma_color_measurement_mag"] = 0.0
+    # Paper IV absolute TRGB scale is shared, not reduced by the sample size.
     f150_predictive["sigma_common_trgb_mag"] = 0.047
     f090_predictive = f090_loo.copy()
     predictive_components = [

@@ -37,3 +37,36 @@ runs/.runtime_cache/
 
 # Archived campaigns stay local; do not re-add old databases/products at new paths.
 /runs/legacy/
+
+# Personal notes stay on disk, not in the source release.
+*.[mM][dD]
+!/Readme.md
+
+# Local archives and compatibility links are not active source code.
+/code/legacy/
+/code/analysis/
+/code/runs
+/runs/diagnostics
+/runs/sbf3_go3055_go7763
+
+# Rebuildable document/inspection outputs; publication figures are kept above.
+**/build/
+/output/
+/texts/paper_work/go3055_jwst_sbf_article_draft.pdf
+/texts/paper_work/go3055_jwst_sbf_article_draft_ru.pdf
+
+# Downloaded images, per-target intermediate products and machine state.
+# Small curated metadata and analysis tables remain tracked.
+/data/NGC*/
+/data/wss_opd/
+/data/stpsf-data/
+/data/.download_go3055_go7763.lock
+/data/download_*.json
+/data/download_*.txt
+/runs/**/products/
+/runs/**/batch/
+/runs/**/campaign/
+/runs/**/figures/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm

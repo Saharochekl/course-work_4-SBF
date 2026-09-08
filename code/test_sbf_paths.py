@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 from sbf_paths import (
     PROJECT_ROOT, default_stpsf_data_dir, load_project_json,
-    portable_path, project_path, resolve_product_paths,
+    project_path, resolve_product_paths,
 )
 
 
@@ -40,7 +40,6 @@ class PortablePathTests(unittest.TestCase):
     def test_unrelated_absolute_remains_external(self):
         external = self.root.parent / "stpsf-data"
         self.assertEqual(project_path(external, self.root), external)
-        self.assertEqual(portable_path(external, self.root), str(external))
 
     def test_missing_and_empty_paths_fail_clearly(self):
         for value in (None, "", "  "):
@@ -52,10 +51,6 @@ class PortablePathTests(unittest.TestCase):
     def test_ambiguous_legacy_path_is_not_guessed(self):
         with self.assertRaisesRegex(ValueError, "Ambiguous"):
             project_path("/old/course_work-SBF/runs/course_work-SBF/data/file", self.root)
-
-    def test_portable_serialization_keeps_repository_location(self):
-        path = self.root / "runs/NGC 3379/result.json"
-        self.assertEqual(portable_path(path, self.root), "runs/NGC 3379/result.json")
 
     def test_product_json_resolution_is_in_memory_only(self):
         payload = {

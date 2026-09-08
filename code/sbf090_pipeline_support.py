@@ -4,6 +4,9 @@ The frozen F150W notebook remains untouched.  At run time we make a private
 F090W template which keeps its galaxy modelling and masking cells, changes the
 foreground-extinction correction to F090W, omits the deferred colour block and
 adds a validated, interrupt-safe PSF cache.
+
+RU: адаптер замороженного F150W notebook; маска NGC 4636 меняется только
+для изофот, не для SBF. EN: see docs/measurement.rst for settings and contracts.
 """
 
 from __future__ import annotations
@@ -25,14 +28,17 @@ from sbf_campaign_runtime import atomic_write_text
 
 
 F090W_FILTER = "F090W"
-F090W_PSF_SIZE = 129
-F090W_PSF_COUNT = 5
-F090W_SOURCE_SCHEMA = 3
+F090W_PSF_SIZE = 129  # RU/EN: adopted tested stamp; odd size centres the PSF.
+F090W_PSF_COUNT = 5  # RU/EN: one central PSF + four detector-position offsets.
+F090W_SOURCE_SCHEMA = 3  # RU/EN: source products require the current mask/QC contract.
 F090W_ISOPHOTE_METHOD = "f090_sersic_seed_multistart_universal_qc_v2"
 F090W_MASK_METHOD = "external_large_bright_guarded_v1"
 F090W_INNER_MASK_GUARD_METHOD = "ignore_compact_premask_inside_inner_sbf_radius_v1"
 F090W_INNER_MASK_GUARD_TARGETS = frozenset({"NGC 4636"})
-F090W_MIN_WORKING_ISOPHOTES = 10
+F090W_MIN_WORKING_ISOPHOTES = 10  # RU/EN: heuristic minimum for a usable profile.
+# RU: фиксированные эвристики против застывшей/скачущей геометрии, не ошибки.
+# EN: fixed engineering QC gates, not confidence levels or population cuts.
+# Their exact values are documented in docs/measurement.rst and kept unchanged.
 F090W_ISOPHOTE_QC_LIMITS = {
     "max_median_center_shift_px": 50.0,
     "max_center_shift_px": 15.0,
@@ -1457,8 +1463,13 @@ def load_f090w_psf_cache(
     *,
     expected_filter: str = F090W_FILTER,
     expected_size: int = F090W_PSF_SIZE,
+    write_table: bool = True,
 ) -> dict[str, Any] | None:
-    """Return notebook variables only for a complete compatible PSF cache."""
+    """Load a compatible PSF cache; validators use ``write_table=False``.
+
+    RU: проверка готовности не переписывает CSV. EN: the default retains the
+    notebook's CSV-publication contract when the cache is actually consumed.
+    """
 
     cache_path = Path(cache_path)
     science_path = Path(science_path)
@@ -1555,7 +1566,8 @@ def load_f090w_psf_cache(
     csv_path = Path(out_dir) / f"{stem}_psf_library.csv"
     buffer = io.StringIO()
     table.to_csv(buffer, index=False)
-    atomic_write_text(csv_path, buffer.getvalue())
+    if write_table:
+        atomic_write_text(csv_path, buffer.getvalue())
 
     return {
         "science_psf_file": science_path,

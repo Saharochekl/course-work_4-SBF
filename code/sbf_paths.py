@@ -13,8 +13,12 @@ import os
 from pathlib import Path
 
 
+# RU: корень от файла, а не cwd; EN: relocation must not depend on the shell's cwd.
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+# RU: единственный старый формат путей в сохранённых продуктах.
+# EN: recognize the original checkout name, not arbitrary external directories.
 _LEGACY_ROOT = "course_work-SBF"
+# RU: только известные каталоги; EN: avoid interpreting ordinary text as a path.
 _PROJECT_DIRS = {"code", "data", "runs", "texts", "materials", "output", "tmp"}
 
 
@@ -43,13 +47,6 @@ def project_path(value, root=None, *, must_exist=False) -> Path:
     if must_exist and not path.exists():
         raise FileNotFoundError(f"Required input is absent: {path} (saved path: {value})")
     return path
-
-
-def portable_path(value, root=None) -> str:
-    """Serialize project files relative to the root; retain explicit external paths."""
-    root = PROJECT_ROOT if root is None else Path(root).expanduser().resolve()
-    path = project_path(value, root)
-    return str(path.relative_to(root)) if path.is_relative_to(root) else str(path)
 
 
 def resolve_product_paths(payload, root=None):

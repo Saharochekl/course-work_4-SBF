@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Durable SQLite state for long-running SBF processing campaigns.
 
-The module deliberately depends only on the Python standard library.  A
+RU: транзакционный журнал запусков; сохраняет очередь при прерывании.
+EN: transactional run ledger; interrupted jobs remain resumable.
+A
 ``CampaignState`` instance stores its database below the supplied run root and
 opens a short-lived SQLite connection for every operation.  This makes the API
 safe to use from the parent runner, a resource-monitor thread, and separately
@@ -18,8 +20,6 @@ import json
 import os
 import socket
 import sqlite3
-import sys
-import tempfile
 import time
 import uuid
 from collections.abc import Iterable, Mapping, Sequence
@@ -27,11 +27,16 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
+from sbf_campaign_runtime import atomic_write_text
 
+
+# Stored SQLite layout; increment only for a real schema migration.
 SCHEMA_VERSION = 1
+# One state database and readable snapshot per campaign root.
 DEFAULT_DB_NAME = "campaign_state.sqlite"
 DEFAULT_SNAPSHOT_NAME = "queue_snapshot.json"
 
+# Explicit states/edges prevent accidental reuse of incomplete results.
 JOB_STATES = frozenset(
     {
         "PENDING",
@@ -97,6 +102,7 @@ JOB_TRANSITIONS = {
     "CANCELLED": set(),
 }
 
+# Run states distinguish resumable interruptions from completed campaigns.
 RUN_STATES = frozenset(
     {
         "RUNNING",
@@ -274,15 +280,6 @@ def canonical_sha256(value: Any) -> str:
     return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
 
 
-def sha256_file(path: str | os.PathLike[str], chunk_size: int = 1024 * 1024) -> str:
-    """Return the SHA-256 digest of a file without loading it into memory."""
-    digest = hashlib.sha256()
-    with Path(path).open("rb") as handle:
-        while chunk := handle.read(chunk_size):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
 def _normalise_scalar(value: Any, *, upper: bool = False) -> str | None:
     if value is None:
         return None
@@ -337,43 +334,10 @@ def stable_job_id(
 
 
 def atomic_write_json(path: str | os.PathLike[str], value: Any) -> Path:
-    """Atomically replace ``path`` with durable, human-readable JSON."""
-    destination = Path(path)
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    descriptor, temporary_name = tempfile.mkstemp(
-        prefix=f".{destination.name}.", suffix=".tmp", dir=destination.parent
-    )
-    temporary = Path(temporary_name)
-    try:
-        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
-            json.dump(
-                value,
-                handle,
-                ensure_ascii=False,
-                sort_keys=True,
-                indent=2,
-                default=_json_default,
-            )
-            handle.write("\n")
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.replace(temporary, destination)
-        try:
-            directory_fd = os.open(destination.parent, os.O_RDONLY)
-            try:
-                os.fsync(directory_fd)
-            finally:
-                os.close(directory_fd)
-        except OSError:
-            # Directory fsync is unavailable on some platforms/filesystems.
-            pass
-    except BaseException:
-        try:
-            temporary.unlink()
-        except FileNotFoundError:
-            pass
-        raise
-    return destination
+    """Write readable state JSON through the common atomic/fsync writer."""
+    payload = json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2,
+                         default=_json_default)
+    return atomic_write_text(path, payload + "\n")
 
 
 class CampaignState:
@@ -389,6 +353,9 @@ class CampaignState:
         self.run_root = Path(run_root).resolve()
         self.run_root.mkdir(parents=True, exist_ok=True)
         self.db_path = self.run_root / db_name
+        # 30 s tolerates a short concurrent writer; no indefinite SQLite wait.
+        if busy_timeout_seconds <= 0:
+            raise ValueError("busy_timeout_seconds must be positive")
         self.busy_timeout_ms = max(1, int(busy_timeout_seconds * 1000))
         self._initialise()
 
@@ -628,15 +595,6 @@ class CampaignState:
             ).fetchone()
             return self._decode_row(row)  # type: ignore[return-value]
 
-    def get_run(self, run_id: str) -> dict[str, Any] | None:
-        """Return one run, or ``None`` when it does not exist."""
-        with self._reader() as connection:
-            return self._decode_row(
-                connection.execute(
-                    "SELECT * FROM runs WHERE run_id = ?", (run_id,)
-                ).fetchone()
-            )
-
     def set_run_state(
         self,
         run_id: str,
@@ -689,25 +647,6 @@ class CampaignState:
                     "SELECT * FROM runs WHERE run_id = ?", (run_id,)
                 ).fetchone()
             )  # type: ignore[return-value]
-
-    def deadline_status(
-        self, run_id: str, *, now: float | None = None
-    ) -> dict[str, Any]:
-        """Return hard/soft deadline flags without mutating campaign state."""
-        run = self.get_run(run_id)
-        if run is None:
-            raise KeyError(f"unknown run: {run_id}")
-        current = time.time() if now is None else float(now)
-        deadline = run["deadline_at"]
-        soft_stop = run["soft_stop_at"]
-        return {
-            "now": current,
-            "deadline_at": deadline,
-            "soft_stop_at": soft_stop,
-            "soft_stop_reached": soft_stop is not None and current >= soft_stop,
-            "deadline_reached": deadline is not None and current >= deadline,
-            "seconds_remaining": None if deadline is None else deadline - current,
-        }
 
     @staticmethod
     def _upsert_job_tx(
@@ -783,57 +722,12 @@ class CampaignState:
             ).fetchone()
         )  # type: ignore[return-value]
 
-    def upsert_job(
-        self,
-        run_id: str,
-        *,
-        target: Any,
-        product_uris: Mapping[str, Any] | Sequence[Any] | str,
-        filters: Mapping[str, Any] | Sequence[Any] | str,
-        program: Any = None,
-        obsid: Any = None,
-        payload: Mapping[str, Any] | None = None,
-        priority: int = 0,
-        queue_position: int | None = None,
-        initial_state: str = "PENDING",
-        job_id: str | None = None,
-    ) -> dict[str, Any]:
-        """Insert a stable job or refresh its metadata without resetting state."""
-        with self._transaction() as connection:
-            run = connection.execute(
-                "SELECT * FROM runs WHERE run_id = ?", (run_id,)
-            ).fetchone()
-            if run is None:
-                raise KeyError(f"unknown run: {run_id}")
-            job = self._upsert_job_tx(
-                connection,
-                run,
-                target=target,
-                product_uris=product_uris,
-                filters=filters,
-                program=program,
-                obsid=obsid,
-                payload=payload,
-                priority=priority,
-                queue_position=queue_position,
-                initial_state=initial_state,
-                job_id=job_id,
-            )
-            self._event_tx(
-                connection,
-                run_id,
-                job_id=job["job_id"],
-                event_type="JOB_UPSERTED",
-                payload={"state": job["state"]},
-            )
-            return job
-
     def upsert_jobs(
         self, run_id: str, jobs: Iterable[Mapping[str, Any]]
     ) -> list[dict[str, Any]]:
         """Upsert an entire queue in one transaction.
 
-        Each mapping accepts the keyword arguments of :meth:`upsert_job`.
+        Each mapping declares target, product_uris, filters and optional queue metadata.
         Missing ``queue_position`` values receive their iterable index.
         """
         result = []
@@ -970,60 +864,6 @@ class CampaignState:
                 ).fetchone()
             )  # type: ignore[return-value]
 
-    def claim_next_job(
-        self,
-        run_id: str,
-        *,
-        from_states: Iterable[str] = ("READY",),
-        to_state: str = "RUNNING",
-    ) -> dict[str, Any] | None:
-        """Atomically claim the next queue item, or return ``None``."""
-        source_states = sorted({str(value).upper() for value in from_states})
-        if not source_states:
-            return None
-        desired = str(to_state).upper()
-        if desired not in JOB_STATES:
-            raise ValueError(f"unknown job state: {desired}")
-        now = time.time()
-        with self._transaction() as connection:
-            placeholders = ",".join("?" for _ in source_states)
-            row = connection.execute(
-                f"""
-                SELECT * FROM jobs
-                WHERE run_id = ? AND state IN ({placeholders})
-                ORDER BY priority DESC, queue_position, created_at, job_id
-                LIMIT 1
-                """,
-                (run_id, *source_states),
-            ).fetchone()
-            if row is None:
-                return None
-            current = row["state"]
-            if desired != current and desired not in JOB_TRANSITIONS[current]:
-                raise ValueError(f"illegal job transition: {current} -> {desired}")
-            started_at = now if desired == "RUNNING" and row["started_at"] is None else row["started_at"]
-            connection.execute(
-                """
-                UPDATE jobs SET state = ?, updated_at = ?, started_at = ?
-                WHERE run_id = ? AND job_id = ?
-                """,
-                (desired, now, started_at, run_id, row["job_id"]),
-            )
-            self._event_tx(
-                connection,
-                run_id,
-                job_id=row["job_id"],
-                event_type="JOB_CLAIMED",
-                payload={"from": current, "to": desired},
-                created_at=now,
-            )
-            return self._decode_row(
-                connection.execute(
-                    "SELECT * FROM jobs WHERE run_id = ? AND job_id = ?",
-                    (run_id, row["job_id"]),
-                ).fetchone()
-            )
-
     def record_attempt_start(
         self,
         run_id: str,
@@ -1037,7 +877,7 @@ class CampaignState:
         """Start a numbered attempt and increment the job attempt counter.
 
         This method records execution only; callers should use
-        :meth:`transition_job` or :meth:`claim_next_job` for job state changes.
+        :meth:`transition_job` for job state changes.
         """
         now = time.time()
         with self._transaction() as connection:
@@ -1267,22 +1107,6 @@ class CampaignState:
             )
             return artifact  # type: ignore[return-value]
 
-    def record_artifacts(
-        self,
-        run_id: str,
-        job_id: str,
-        artifacts: Iterable[Mapping[str, Any]],
-        *,
-        attempt_id: int | None = None,
-    ) -> list[dict[str, Any]]:
-        """Record multiple artifacts through the single-artifact API."""
-        result = []
-        for artifact in artifacts:
-            values = dict(artifact)
-            values.setdefault("attempt_id", attempt_id)
-            result.append(self.record_artifact(run_id, job_id, **values))
-        return result
-
     def append_event(
         self,
         run_id: str,
@@ -1416,85 +1240,3 @@ class CampaignState:
             snapshot,
         )
         return snapshot
-
-
-def _self_test() -> None:
-    with tempfile.TemporaryDirectory(prefix="sbf-campaign-state-") as directory:
-        root = Path(directory)
-        state = CampaignState(root)
-        template_digest = "a" * 64
-        config = {"wall_hours": 48, "prefetch": 1}
-        run = state.create_or_resume_run(
-            template_sha256=template_digest,
-            config=config,
-            wall_time_seconds=48 * 3600,
-            soft_stop_seconds=30 * 60,
-        )
-        identity = {
-            "program": "3055",
-            "obsid": "1",
-            "target": "NGC 1380",
-            "product_uris": {
-                "signal": "mast:JWST/product/signal.fits",
-                "color": "mast:JWST/product/color.fits",
-            },
-            "filters": {"signal": "F150W", "color": "F090W"},
-        }
-        job = state.upsert_job(run["run_id"], **identity)
-        assert job["job_id"] == stable_job_id(
-            **identity,
-            template_sha256=template_digest,
-            config_sha256=canonical_sha256(config),
-        )
-        state.transition_job(run["run_id"], job["job_id"], "READY")
-        state.transition_job(run["run_id"], job["job_id"], "RUNNING")
-        attempt = state.record_attempt_start(
-            run["run_id"], job["job_id"], command=["python", "worker.py"]
-        )
-        state.record_resource_sample(
-            run["run_id"],
-            job_id=job["job_id"],
-            attempt_id=attempt["attempt_id"],
-            ram_available_bytes=8 * 1024**3,
-            disk_free_bytes=100 * 1024**3,
-        )
-        artifact_path = root / "result.fits"
-        artifact_path.write_bytes(b"test")
-        state.transition_job(run["run_id"], job["job_id"], "VERIFYING")
-        state.record_artifact(
-            run["run_id"],
-            job["job_id"],
-            attempt_id=attempt["attempt_id"],
-            kind="fits",
-            path=artifact_path,
-            size_bytes=artifact_path.stat().st_size,
-            sha256=sha256_file(artifact_path),
-            verified=True,
-        )
-        state.record_attempt_end(
-            attempt["attempt_id"], state="SUCCEEDED", exit_code=0
-        )
-        state.transition_job(run["run_id"], job["job_id"], "SUCCEEDED")
-        snapshot = state.snapshot_queue(run["run_id"])
-        assert snapshot["counts"] == {"SUCCEEDED": 1}
-        assert (root / DEFAULT_DB_NAME).is_file()
-        assert (root / DEFAULT_SNAPSHOT_NAME).is_file()
-        with sqlite3.connect(root / DEFAULT_DB_NAME) as connection:
-            assert connection.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
-            table_count = connection.execute(
-                """
-                SELECT COUNT(*) FROM sqlite_master
-                WHERE type = 'table' AND name IN (
-                    'runs', 'jobs', 'attempts', 'artifacts',
-                    'resource_samples', 'events'
-                )
-                """
-            ).fetchone()[0]
-            assert table_count == 6
-    print("sbf_campaign_state self-test: OK")
-
-
-if __name__ == "__main__":
-    if sys.argv[1:] != ["--self-test"]:
-        raise SystemExit("usage: python sbf_campaign_state.py --self-test")
-    _self_test()

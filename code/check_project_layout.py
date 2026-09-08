@@ -6,6 +6,7 @@ The optional product check reads metadata only, not FITS pixel arrays.
 """
 import argparse
 import ast
+import csv
 import json
 from pathlib import Path
 
@@ -16,6 +17,7 @@ from sbf_paths import PROJECT_ROOT, load_project_json
 
 
 def check_sources():
+    """RU: компиляция без выполнения. EN: compile source without executing it."""
     code = PROJECT_ROOT / 'code'
     scripts = sorted(code.glob('*.py'))
     for path in scripts:
@@ -35,6 +37,7 @@ def check_sources():
 
 
 def local_paths(value):
+    """RU: пути текущего проекта в JSON. EN: yield in-checkout metadata paths."""
     if isinstance(value, dict):
         for item in value.values():
             yield from local_paths(item)
@@ -46,7 +49,12 @@ def local_paths(value):
 
 
 def check_products():
+    """RU: состав выборки и ссылки, не новый фит. EN: membership and links, not a fit."""
     root = PROJECT_ROOT / 'runs'
+    # RU: список целей задаёт манифест, не независимая магическая константа 14.
+    # EN: the manifest is the single source of target membership.
+    with (PROJECT_ROOT / 'code/targets_go3055_manifest.csv').open(newline='') as handle:
+        expected = {row['target'] for row in csv.DictReader(handle)}
     groups = {
         'F150 source': sorted((root / 'sbf2_go3055/batch').glob('NGC_*_result.json')),
         'F150 normalized': sorted((root / 'sbf2_normalized_winsor/batch/results').glob('NGC_*_result.json')),
@@ -54,15 +62,23 @@ def check_products():
     }
     issues, refs = [], set()
     for label, paths in groups.items():
-        if len(paths) != 14:
-            issues.append(f'{label}: expected 14 records, found {len(paths)}')
+        found = []
         for path in paths:
             payload = load_project_json(path)
+            found.append(payload['galaxy'])
+            if label != 'F090 published' and payload.get('status') != 'ok':
+                issues.append(f'{label}: unsuccessful result {path.name}')
             refs.update(local_paths(payload))
             if label == 'F090 published':
                 for key in ['source_result', 'final_result']:
-                    refs.update(local_paths(load_project_json(payload[key])))
-        print(f'{label}: {len(paths)}/14 metadata records')
+                    linked = load_project_json(payload[key])
+                    if linked.get('status') != 'ok' or linked['galaxy'] != payload['galaxy']:
+                        issues.append(f'{label}: inconsistent {key} for {payload["galaxy"]}')
+                    refs.update(local_paths(linked))
+        if set(found) != expected or len(found) != len(expected):
+            issues.append(f'{label}: wrong membership; missing={sorted(expected - set(found))}, '
+                          f'extra={sorted(set(found) - expected)}, records={len(found)}')
+        print(f'{label}: {len(paths)}/{len(expected)} metadata records')
     issues.extend(f'Missing product: {p.relative_to(PROJECT_ROOT)}' for p in sorted(refs) if not p.exists())
     if issues:
         raise FileNotFoundError('\n'.join(issues))

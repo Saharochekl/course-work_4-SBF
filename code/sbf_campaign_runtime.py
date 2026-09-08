@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Runtime primitives for long-running SBF processing campaigns.
 
-The module intentionally has no mandatory third-party dependencies.  ``psutil``
-and ``astropy`` are used when present, but campaign state and process cleanup
-remain usable without them.
+RU: безопасная остановка процессов, контроль ресурсов и атомарная запись.
+EN: process supervision, resource limits, and atomic artifact publication.
+Resource monitoring requires psutil; FITS validation requires Astropy.
+Missing dependencies never silently downgrade these safety checks.
 """
 
 from __future__ import annotations
@@ -14,7 +15,6 @@ import os
 import shutil
 import signal
 import subprocess
-import sys
 import tempfile
 import threading
 import time
@@ -22,6 +22,8 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Optional, Sequence, Union
+
+import psutil
 
 
 PathLike = Union[str, os.PathLike[str]]
@@ -84,20 +86,6 @@ class Deadline:
         else:
             self.started_monotonic = float(self.started_monotonic)
 
-    @classmethod
-    def from_hours(
-        cls,
-        wall_time_hours: Optional[float],
-        soft_stop_minutes: float = 0.0,
-        **kwargs: Any,
-    ) -> "Deadline":
-        wall_seconds = None if wall_time_hours is None else float(wall_time_hours) * 3600.0
-        return cls(
-            wall_time_seconds=wall_seconds,
-            soft_stop_seconds=float(soft_stop_minutes) * 60.0,
-            **kwargs,
-        )
-
     @property
     def hard_at(self) -> Optional[float]:
         if self.wall_time_seconds is None:
@@ -119,13 +107,6 @@ class Deadline:
             return None
         current = float(self.clock() if now is None else now)
         return max(0.0, self.hard_at - current)
-
-    def soft_remaining(self, now: Optional[float] = None) -> Optional[float]:
-        """Seconds left before new work should stop being started."""
-        if self.soft_at is None:
-            return None
-        current = float(self.clock() if now is None else now)
-        return max(0.0, self.soft_at - current)
 
     @property
     def hard_expired(self) -> bool:
@@ -155,19 +136,6 @@ class Deadline:
         current = float(self.clock() if now is None else now)
         return current + estimated + reserve < self.soft_at
 
-    def as_dict(self) -> dict[str, Any]:
-        now = float(self.clock())
-        return {
-            "wall_time_seconds": self.wall_time_seconds,
-            "soft_stop_seconds": self.soft_stop_seconds,
-            "started_monotonic": self.started_monotonic,
-            "hard_at_monotonic": self.hard_at,
-            "soft_at_monotonic": self.soft_at,
-            "remaining_seconds": self.remaining(now),
-            "soft_remaining_seconds": self.soft_remaining(now),
-            "hard_expired": self.is_hard_expired(now),
-            "soft_stop_reached": self.soft_at is not None and now >= self.soft_at,
-        }
 
 
 class SignalController:
@@ -187,16 +155,9 @@ class SignalController:
         self._lock = threading.Lock()
         self._installed = False
         self._signum: Optional[int] = None
-        self._received_at: Optional[str] = None
-        self._count = 0
 
     def _handler(self, signum: int, _frame: Any) -> None:
-        with self._lock:
-            if self._signum is None:
-                self._signum = int(signum)
-                self._received_at = _utc_now()
-            self._count += 1
-            self._event.set()
+        self.request_stop(signum)
 
     def install(self) -> "SignalController":
         if self._installed:
@@ -227,24 +188,11 @@ class SignalController:
         with self._lock:
             if self._signum is None and signum is not None:
                 self._signum = int(signum)
-                self._received_at = _utc_now()
-            self._count += 1
             self._event.set()
-
-    def clear(self) -> None:
-        with self._lock:
-            self._signum = None
-            self._received_at = None
-            self._count = 0
-            self._event.clear()
 
     @property
     def stop_requested(self) -> bool:
         return self._event.is_set()
-
-    @property
-    def signum(self) -> Optional[int]:
-        return self._signum
 
     @property
     def signal_name(self) -> Optional[str]:
@@ -254,14 +202,6 @@ class SignalController:
             return signal.Signals(self._signum).name
         except (ValueError, AttributeError):
             return str(self._signum)
-
-    @property
-    def received_at(self) -> Optional[str]:
-        return self._received_at
-
-    @property
-    def count(self) -> int:
-        return self._count
 
     def wait(self, timeout: Optional[float] = None) -> bool:
         return self._event.wait(timeout)
@@ -296,18 +236,15 @@ def launch_process_group(
 ) -> subprocess.Popen[Any]:
     """Launch a command in a new process group/session.
 
-    On POSIX this uses ``start_new_session``.  On Windows it uses
-    ``CREATE_NEW_PROCESS_GROUP`` so the entire worker tree can be stopped.
+    macOS/Linux use ``start_new_session`` so all descendants share a worker
+    group. Windows is not supported (the campaign also requires fcntl).
     """
     if not command:
         raise ValueError("command must not be empty")
     args = [os.fspath(part) for part in command]
-    if os.name == "nt":
-        flags = int(popen_kwargs.pop("creationflags", 0))
-        flags |= int(getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0))
-        popen_kwargs["creationflags"] = flags
-    else:
-        popen_kwargs.setdefault("start_new_session", True)
+    if os.name != "posix":
+        raise RuntimeError("Campaign workers require macOS/Linux (POSIX process groups)")
+    popen_kwargs.setdefault("start_new_session", True)
     return subprocess.Popen(args, cwd=cwd, env=env, **popen_kwargs)
 
 
@@ -334,48 +271,13 @@ def _posix_group_alive(pgid: Optional[int]) -> bool:
         return True
 
 
-def _terminate_windows_tree(
-    process: subprocess.Popen[Any],
-    grace_seconds: float,
-    errors: list[str],
-) -> tuple[bool, list[Any]]:
-    survivors: list[Any] = []
-    try:
-        import psutil  # type: ignore
-
-        root = psutil.Process(process.pid)
-        tree = root.children(recursive=True) + [root]
-        for member in reversed(tree):
-            try:
-                member.terminate()
-            except psutil.NoSuchProcess:
-                pass
-        _gone, survivors = psutil.wait_procs(tree, timeout=max(0.0, grace_seconds))
-        return True, survivors
-    except ImportError:
-        pass
-    except Exception as exc:
-        errors.append(f"psutil terminate: {exc}")
-    try:
-        process.send_signal(signal.CTRL_BREAK_EVENT)  # type: ignore[attr-defined]
-        return True, survivors
-    except Exception as exc:
-        errors.append(f"CTRL_BREAK_EVENT: {exc}")
-    try:
-        process.terminate()
-        return True, survivors
-    except Exception as exc:
-        errors.append(f"terminate: {exc}")
-        return False, survivors
-
-
 def terminate_process_group(
     process: subprocess.Popen[Any],
     *,
     term_grace_seconds: float = 30.0,
     kill_grace_seconds: float = 5.0,
 ) -> TerminationResult:
-    """Stop a worker tree with TERM, wait, then force KILL if necessary."""
+    """TERM gets 30 s for state flush; KILL gets 5 s to reap stubborn workers."""
     term_grace_seconds = _finite_nonnegative(
         term_grace_seconds, "term_grace_seconds"
     ) or 0.0
@@ -389,66 +291,45 @@ def terminate_process_group(
         result.returncode = process.returncode
         return result
 
-    if os.name == "nt":
-        sent, survivors = _terminate_windows_tree(
-            process, term_grace_seconds, result.errors
-        )
-        result.term_sent = sent
-        exited = _wait_until(lambda: process.poll() is not None, term_grace_seconds)
-        if not exited or survivors:
-            result.kill_sent = True
-            if survivors:
-                for member in survivors:
-                    try:
-                        member.kill()
-                    except Exception as exc:
-                        result.errors.append(f"psutil kill: {exc}")
-            try:
-                if process.poll() is None:
-                    process.kill()
-            except Exception as exc:
-                result.errors.append(f"kill: {exc}")
-            _wait_until(lambda: process.poll() is not None, kill_grace_seconds)
-    else:
-        pgid: Optional[int]
-        try:
-            pgid = os.getpgid(process.pid)
-            if pgid == os.getpgrp():
-                result.errors.append("worker shares supervisor process group; using PID only")
-                pgid = None
-        except ProcessLookupError:
+    pgid: Optional[int]
+    try:
+        pgid = os.getpgid(process.pid)
+        if pgid == os.getpgrp():
+            result.errors.append("worker shares supervisor process group; using PID only")
             pgid = None
-        except Exception as exc:
-            result.errors.append(f"getpgid: {exc}")
-            pgid = None
+    except ProcessLookupError:
+        pgid = None
+    except Exception as exc:
+        result.errors.append(f"getpgid: {exc}")
+        pgid = None
 
+    try:
+        if pgid is not None:
+            os.killpg(pgid, signal.SIGTERM)
+        else:
+            process.terminate()
+        result.term_sent = True
+    except ProcessLookupError:
+        pass
+    except Exception as exc:
+        result.errors.append(f"SIGTERM: {exc}")
+
+    def group_finished() -> bool:
+        root_done = process.poll() is not None
+        return root_done and not _posix_group_alive(pgid)
+
+    if not _wait_until(group_finished, term_grace_seconds):
+        result.kill_sent = True
         try:
             if pgid is not None:
-                os.killpg(pgid, signal.SIGTERM)
-            else:
-                process.terminate()
-            result.term_sent = True
+                os.killpg(pgid, signal.SIGKILL)
+            elif process.poll() is None:
+                process.kill()
         except ProcessLookupError:
             pass
         except Exception as exc:
-            result.errors.append(f"SIGTERM: {exc}")
-
-        def group_finished() -> bool:
-            root_done = process.poll() is not None
-            return root_done and not _posix_group_alive(pgid)
-
-        if not _wait_until(group_finished, term_grace_seconds):
-            result.kill_sent = True
-            try:
-                if pgid is not None:
-                    os.killpg(pgid, signal.SIGKILL)
-                elif process.poll() is None:
-                    process.kill()
-            except ProcessLookupError:
-                pass
-            except Exception as exc:
-                result.errors.append(f"SIGKILL: {exc}")
-            _wait_until(group_finished, kill_grace_seconds)
+            result.errors.append(f"SIGKILL: {exc}")
+        _wait_until(group_finished, kill_grace_seconds)
 
     try:
         result.returncode = process.poll()
@@ -462,133 +343,6 @@ def terminate_process_group(
 
 def _bytes_gib(value: Optional[int]) -> Optional[float]:
     return None if value is None else float(value) / 1024.0**3
-
-
-def _read_linux_meminfo() -> dict[str, int]:
-    values: dict[str, int] = {}
-    try:
-        for line in Path("/proc/meminfo").read_text(encoding="ascii").splitlines():
-            key, raw = line.split(":", 1)
-            parts = raw.strip().split()
-            if parts:
-                multiplier = 1024 if len(parts) > 1 and parts[1].lower() == "kb" else 1
-                values[key] = int(parts[0]) * multiplier
-    except (OSError, ValueError):
-        pass
-    return values
-
-
-def _fallback_system_memory() -> tuple[dict[str, Any], dict[str, Any]]:
-    ram: dict[str, Any] = {}
-    swap: dict[str, Any] = {}
-    if sys.platform.startswith("linux"):
-        mem = _read_linux_meminfo()
-        total = mem.get("MemTotal")
-        available = mem.get("MemAvailable", mem.get("MemFree"))
-        if total is not None:
-            ram["total_bytes"] = total
-        if available is not None:
-            ram["available_bytes"] = available
-        if total is not None and available is not None:
-            ram["used_bytes"] = max(0, total - available)
-            ram["percent"] = 100.0 * ram["used_bytes"] / total if total else 0.0
-        swap_total = mem.get("SwapTotal")
-        swap_free = mem.get("SwapFree")
-        if swap_total is not None:
-            swap["total_bytes"] = swap_total
-        if swap_free is not None:
-            swap["free_bytes"] = swap_free
-        if swap_total is not None and swap_free is not None:
-            swap["used_bytes"] = max(0, swap_total - swap_free)
-            swap["percent"] = 100.0 * swap["used_bytes"] / swap_total if swap_total else 0.0
-    elif sys.platform == "darwin":
-        try:
-            total = int(
-                subprocess.check_output(
-                    ["sysctl", "-n", "hw.memsize"],
-                    text=True,
-                    stderr=subprocess.DEVNULL,
-                )
-            )
-            ram["total_bytes"] = total
-            output = subprocess.check_output(["vm_stat"], text=True)
-            page_size = 4096
-            pages: dict[str, int] = {}
-            for line in output.splitlines():
-                if "page size of" in line:
-                    page_size = int(line.split("page size of", 1)[1].split("bytes", 1)[0])
-                elif ":" in line:
-                    key, raw = line.split(":", 1)
-                    pages[key.strip()] = int(raw.strip().rstrip("."))
-            available = page_size * (
-                pages.get("Pages free", 0)
-                + pages.get("Pages inactive", 0)
-                + pages.get("Pages speculative", 0)
-                + pages.get("Pages purgeable", 0)
-            )
-            ram.update(
-                available_bytes=available,
-                used_bytes=max(0, total - available),
-                percent=100.0 * max(0, total - available) / total if total else 0.0,
-            )
-        except (OSError, subprocess.SubprocessError, ValueError):
-            pass
-    for section in (ram, swap):
-        for key in ("total", "available", "used", "free"):
-            byte_key = f"{key}_bytes"
-            if byte_key in section:
-                section[f"{key}_gib"] = _bytes_gib(section[byte_key])
-    return ram, swap
-
-
-def _linux_process_tree_rss(pid: int) -> tuple[Optional[int], Optional[int], int]:
-    seen: set[int] = set()
-
-    def walk(current: int) -> tuple[int, int]:
-        if current in seen:
-            return 0, 0
-        seen.add(current)
-        rss = 0
-        try:
-            for line in Path(f"/proc/{current}/status").read_text(encoding="ascii").splitlines():
-                if line.startswith("VmRSS:"):
-                    rss = int(line.split()[1]) * 1024
-                    break
-        except (OSError, ValueError, IndexError):
-            pass
-        child_total = 0
-        descendants = 0
-        try:
-            raw_children = Path(
-                f"/proc/{current}/task/{current}/children"
-            ).read_text(encoding="ascii")
-            children = [int(value) for value in raw_children.split()]
-        except (OSError, ValueError):
-            children = []
-        for child in children:
-            child_rss, child_count = walk(child)
-            child_total += child_rss
-            descendants += 1 + child_count
-        return rss + child_total, descendants
-
-    total, count = walk(pid)
-    if not seen or total == 0:
-        return None, None, count
-    try:
-        root_total, _ = _linux_process_tree_rss_root(pid)
-    except Exception:
-        root_total = 0
-    return root_total or None, max(0, total - root_total), count
-
-
-def _linux_process_tree_rss_root(pid: int) -> tuple[int, bool]:
-    try:
-        for line in Path(f"/proc/{pid}/status").read_text(encoding="ascii").splitlines():
-            if line.startswith("VmRSS:"):
-                return int(line.split()[1]) * 1024, True
-    except (OSError, ValueError, IndexError):
-        pass
-    return 0, False
 
 
 def collect_resource_sample(
@@ -605,7 +359,7 @@ def collect_resource_sample(
         "timestamp_utc": _utc_now(),
         "monotonic": time.monotonic(),
         "pid": pid,
-        "collector": "fallback",
+        "collector": "psutil",
     }
     try:
         usage = shutil.disk_usage(disk_path)
@@ -625,9 +379,6 @@ def collect_resource_sample(
     swap: dict[str, Any]
     worker: dict[str, Any] = {"pid": pid}
     try:
-        import psutil  # type: ignore
-
-        sample["collector"] = "psutil"
         vm = psutil.virtual_memory()
         sm = psutil.swap_memory()
         ram = {
@@ -663,20 +414,8 @@ def collect_resource_sample(
             )
         except (psutil.NoSuchProcess, psutil.AccessDenied) as exc:
             worker["error"] = str(exc)
-    except ImportError:
-        ram, swap = _fallback_system_memory()
-        if sys.platform.startswith("linux"):
-            root_rss, children_rss, child_count = _linux_process_tree_rss(pid)
-            if root_rss is not None:
-                worker.update(
-                    rss_bytes=root_rss,
-                    children_rss_bytes=children_rss or 0,
-                    total_rss_bytes=root_rss + (children_rss or 0),
-                    child_count=child_count,
-                )
-    except Exception as exc:
-        ram, swap = _fallback_system_memory()
-        sample["collector_error"] = str(exc)
+    except (OSError, psutil.Error) as exc:
+        raise RuntimeError(f"Resource monitoring failed: {exc}") from exc
 
     for section in (ram, swap, worker):
         for key in ("total", "available", "used", "free", "rss", "children_rss", "total_rss"):
@@ -767,6 +506,8 @@ def supervise_process(
     Result reasons are ``completed``, ``deadline``, ``signal``, ``timeout`` or
     ``resource``.  Low RAM must persist for ``low_ram_samples_before_stop``
     samples; emergency RAM, disk and worker-RSS limits stop immediately.
+    Defaults: 30-s sampling limits overhead, three low-RAM samples reject a
+    transient spike; TERM gets 30 s to save state and KILL gets 5 s to reap.
     """
     timeout_seconds = _finite_nonnegative(timeout_seconds, "timeout_seconds")
     sample_interval_seconds = _finite_nonnegative(
@@ -844,8 +585,17 @@ def supervise_process(
             else:
                 low_ram_count = 0
 
+            required = {
+                "available_ram_bytes": min_ram is not None or emergency_ram is not None,
+                "disk_free_bytes": min_disk is not None,
+                "worker_total_rss_bytes": max_rss is not None,
+            }
+            missing = [key for key, needed in required.items()
+                       if needed and last_sample.get(key) is None]
             violation: Optional[str] = None
-            if emergency_ram is not None and available is not None and available < emergency_ram:
+            if missing and process.poll() is None:
+                violation = "resource monitor unavailable: " + ", ".join(missing)
+            elif emergency_ram is not None and available is not None and available < emergency_ram:
                 violation = f"available RAM {available} below emergency threshold {emergency_ram}"
             elif max_rss is not None and worker_rss is not None and worker_rss > max_rss:
                 violation = f"worker RSS {worker_rss} above maximum {max_rss}"
@@ -905,8 +655,6 @@ def supervise_process(
 
 
 def _fsync_directory(path: Path) -> None:
-    if os.name == "nt":
-        return
     flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
     try:
         descriptor = os.open(path, flags)
@@ -976,6 +724,7 @@ def atomic_write_json(
 
 
 def sha256_file(path: PathLike, chunk_size: int = 1024 * 1024) -> str:
+    """Hash in 1-MiB blocks: bounded RAM, independent of FITS size."""
     if chunk_size <= 0:
         raise ValueError("chunk_size must be greater than zero")
     digest = hashlib.sha256()
@@ -1018,24 +767,16 @@ def validate_fits_artifacts(
         Iterable[Union[PathLike, tuple[str, PathLike]]],
     ],
     *,
-    require_astropy: bool = False,
     minimum_size_bytes: int = 1,
 ) -> dict[str, Any]:
     """Validate FITS existence, non-empty size and readability.
 
-    If Astropy is unavailable, metadata checks are accepted unless
-    ``require_astropy=True``.  Importing Astropy is deliberately deferred.
+    Astropy is mandatory: metadata alone cannot establish FITS validity.
     """
     if minimum_size_bytes < 1:
         raise ValueError("minimum_size_bytes must be at least 1")
     named = _named_artifacts(artifacts)
-    try:
-        from astropy.io import fits  # type: ignore
-
-        astropy_available = True
-    except ImportError:
-        fits = None
-        astropy_available = False
+    from astropy.io import fits
 
     entries: list[dict[str, Any]] = []
     errors: list[str] = []
@@ -1058,29 +799,21 @@ def validate_fits_artifacts(
                     entry["error"] = (
                         f"file is too small ({size} < {minimum_size_bytes} bytes)"
                     )
-                elif astropy_available:
+                else:
                     entry["fits_checked"] = True
                     try:
-                        assert fits is not None
                         with fits.open(path, mode="readonly", memmap=True) as hdul:
                             if len(hdul) == 0:
                                 raise ValueError("FITS contains no HDUs")
                             hdul.verify("exception")
                             for hdu in hdul:
                                 _ = hdu.header
-                                _ = getattr(hdu, "shape", None)
+                                if hdu.data is not None and hdu.data.size:
+                                    _ = hdu.data.reshape(-1)[-1]
                         entry["readable"] = True
                         entry["ok"] = True
                     except Exception as exc:
                         entry["error"] = f"FITS is not readable: {exc}"
-                elif require_astropy:
-                    entry["error"] = "Astropy is required but not installed"
-                else:
-                    entry["readable"] = os.access(path, os.R_OK)
-                    entry["ok"] = bool(entry["readable"])
-                    entry["validation"] = "metadata_only"
-                    if not entry["readable"]:
-                        entry["error"] = "file is not readable"
             except OSError as exc:
                 entry["error"] = str(exc)
         if not entry["ok"]:
@@ -1090,7 +823,7 @@ def validate_fits_artifacts(
         "ok": not errors,
         "count": len(entries),
         "valid_count": sum(bool(entry["ok"]) for entry in entries),
-        "astropy_available": astropy_available,
+        "astropy_available": True,
         "artifacts": entries,
         "errors": errors,
     }
@@ -1106,16 +839,13 @@ def build_artifact_manifest(
     base_dir: Optional[PathLike] = None,
     include_sha256: bool = True,
     validate_fits: bool = False,
-    require_astropy: bool = False,
 ) -> dict[str, Any]:
     """Build a durable manifest containing size, timestamps and SHA-256."""
     named = _named_artifacts(artifacts)
     base = Path(base_dir).resolve() if base_dir is not None else None
     validation_by_name: dict[str, dict[str, Any]] = {}
     if validate_fits:
-        validation = validate_fits_artifacts(
-            named, require_astropy=require_astropy
-        )
+        validation = validate_fits_artifacts(named)
         validation_by_name = {
             str(item["name"]): item for item in validation["artifacts"]
         }

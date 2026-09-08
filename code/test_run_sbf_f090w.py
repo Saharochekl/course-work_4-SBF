@@ -23,6 +23,7 @@ from run_sbf_f090w import (
     campaign_paths,
     read_targets,
     select_targets,
+    science_config,
     serialized_config,
     set_log_context,
     source_result_path,
@@ -56,6 +57,11 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 
 
 class F090WPipelineTests(unittest.TestCase):
+    def test_shared_configuration_preserves_serialized_science_settings(self):
+        actual = science_config(SimpleNamespace(e_realizations=64, fft_workers=-1))
+        expected = ExperimentConfig(save_ring_fft_fits=True)
+        self.assertEqual(serialized_config(actual), serialized_config(expected))
+
     @staticmethod
     def _qc(details):
         return isophote_sequence_qc(
@@ -513,7 +519,7 @@ class F090WPipelineTests(unittest.TestCase):
             restored = pd.read_csv(destination)
             pd.testing.assert_frame_equal(restored, frame)
 
-    def test_source_schema_keeps_legacy_results_and_gates_new_diagnostics(self):
+    def test_source_schema_rejects_legacy_results_and_gates_new_diagnostics(self):
         self.assertGreaterEqual(F090W_SOURCE_SCHEMA, 3)
         with tempfile.TemporaryDirectory() as directory:
             paths = campaign_paths(Path(directory) / "campaign")
@@ -569,7 +575,8 @@ class F090WPipelineTests(unittest.TestCase):
             ):
                 marker.write_text(json.dumps(result), encoding="utf-8")
                 valid, _, message = source_result_valid(paths, "NGC 9999")
-                self.assertTrue(valid, message)
+                self.assertFalse(valid)
+                self.assertIn("legacy f090w source", message.lower())
 
                 for repair_target in (
                     "NGC 1380", "NGC 1399", "NGC 1404", "NGC 4374",
@@ -789,6 +796,20 @@ class F090WPipelineTests(unittest.TestCase):
             self.assertEqual(
                 loaded["psf_library"][0]["selected_extension"], "DET_DIST"
             )
+
+            csv_path = root / "science_psf_library.csv"
+            before = (csv_path.read_bytes(), csv_path.stat().st_mtime_ns)
+            checked = load_f090w_psf_cache(
+                cache_path, science_path, root, "science", write_table=False,
+            )
+            self.assertIsNotNone(checked)
+            self.assertEqual(before, (csv_path.read_bytes(), csv_path.stat().st_mtime_ns))
+            with patch("sbf090_pipeline_support.atomic_write_text") as writer:
+                checked = load_f090w_psf_cache(
+                    cache_path, science_path, root, "not_published", write_table=False,
+                )
+                self.assertIsNotNone(checked)
+                writer.assert_not_called()
 
             fits.setval(science_path, "MJD-AVG", value=60001.0, ext=0)
             stale = load_f090w_psf_cache(

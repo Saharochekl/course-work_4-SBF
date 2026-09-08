@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Download missing JWST/i2d files for GO-3055 and GO-7763.
+"""RU: проверка и докачка JWST/i2d без повторной загрузки готовых файлов.
+EN: validate and resume JWST/i2d downloads for GO-3055 and GO-7763.
 
 The default mode is a local dry run: manifests and existing FITS files are
 checked, but no network request is made.  Add ``--download`` to process every
@@ -16,7 +17,6 @@ from __future__ import annotations
 
 import argparse
 import csv
-import hashlib
 import json
 import math
 import os
@@ -38,18 +38,27 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 import builtins
 
+from sbf_campaign_runtime import atomic_write_json, sha256_file
 
+
+# Defaults stay beside the checkout, not tied to one user's home directory.
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA_DIR = PROJECT_ROOT / "data"
 MANIFESTS = {
     "3055": PROJECT_ROOT / "code" / "targets_go3055_manifest.csv",
     "7763": PROJECT_ROOT / "code" / "targets_additional_manifest.csv",
 }
+# Public MAST product endpoint and an identifiable, non-browser client.
 MAST_DOWNLOAD_ENDPOINT = "https://mast.stsci.edu/api/v0.1/Download/file"
 USER_AGENT = "course-work-SBF/2.0"
+# FITS stores headers/data in 2880-byte blocks (format, not a tuning parameter).
 FITS_BLOCK_SIZE = 2880
+# Permit small archive header revisions only after full structural validation.
+# HTTP Content-Length, when available, is exact and overrides this local 1% gate.
 LOCAL_MANIFEST_SIZE_TOLERANCE = 0.01
+# Transient transport/rate-limit/server errors; permanent 4xx must not loop.
 RETRYABLE_HTTP_CODES = {408, 425, 429, 500, 502, 503, 504}
+# Parse the two HTTP Range response forms before appending any bytes.
 CONTENT_RANGE_RE = re.compile(r"^bytes\s+(\d+)-(\d+)/(\d+|\*)$", re.I)
 UNSATISFIED_RANGE_RE = re.compile(r"^bytes\s+\*/(\d+)$", re.I)
 
@@ -304,7 +313,7 @@ def validate_fits(
     except ImportError as exc:  # pragma: no cover - depends on the invoking Python
         raise RuntimeError(
             "Astropy is required for FITS validation. Run this script with "
-            "astro_env/bin/python."
+            "the project Python environment."
         ) from exc
 
     structural_size: int | None = None
@@ -481,19 +490,6 @@ def classify_product(product: Product) -> ProductPlan:
     )
 
 
-def atomic_write_json(path: Path, payload: object) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(
-        f".{path.name}.{os.getpid()}.{time.time_ns()}.tmp"
-    )
-    with temporary.open("w", encoding="utf-8") as handle:
-        json.dump(payload, handle, ensure_ascii=False, indent=2)
-        handle.write("\n")
-        handle.flush()
-        os.fsync(handle.fileno())
-    os.replace(temporary, path)
-
-
 def load_partial_metadata(destination: Path) -> dict[str, object] | None:
     path = partial_metadata_path(destination)
     try:
@@ -576,14 +572,6 @@ def ensure_disk_space(
             f"required transfer={required_bytes / 1024**3:.1f} GiB, "
             f"reserve={reserve_gib:.1f} GiB"
         )
-
-
-def sha256_file(path: Path, chunk_size: int = 8 * 1024 * 1024) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for block in iter(lambda: handle.read(chunk_size), b""):
-            digest.update(block)
-    return digest.hexdigest()
 
 
 def format_eta(seconds: float | None) -> str:
@@ -670,14 +658,13 @@ def _response_total(response, requested_start: int) -> tuple[int | None, bool]:
     raise PermanentDownloadError(f"unexpected HTTP status {status}")
 
 
-def prepare_partial(product: Product, timeout: float) -> tuple[Path, int]:
+def prepare_partial(product: Product) -> tuple[Path, int]:
     """Return only a partial whose remote identity was recorded by this script."""
 
     destination = product.destination
     part = partial_path(destination)
     restart = restart_path(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    _ = timeout
 
     final_check = validate_fits(destination, product=product)
     if final_check.ready:
@@ -769,9 +756,9 @@ def transfer_once(
     queue_progress: QueueProgress | None = None,
     cancel_event: threading.Event | None = None,
 ) -> tuple[str, int | None, int]:
-    """Perform one HTTP attempt and return status, remote size, bytes received."""
+    """One attempt; report every 10 s without flooding the terminal."""
 
-    part, start = prepare_partial(product, timeout)
+    part, start = prepare_partial(product)
     ready_after_preparation = validate_fits(product.destination, product=product)
     if ready_after_preparation.ready:
         return "already-ready", ready_after_preparation.size, 0
@@ -1079,6 +1066,7 @@ def download_product(
                 )
             delay = exc.retry_after
             if delay is None:
+                # Back off 5..120 s; ±10% jitter avoids synchronized retries.
                 delay = min(120.0, 5.0 * (2 ** (attempt - 1)))
                 delay *= 0.9 + 0.2 * random_source()
             print(
@@ -1140,10 +1128,6 @@ def print_plan(
             print(f"       причина: {plan.reason}")
 
 
-def serialise_result(result: DownloadResult) -> dict[str, object]:
-    return asdict(result)
-
-
 def write_status(
     path: Path,
     started_at: str,
@@ -1169,7 +1153,7 @@ def write_status(
             "parallel_downloads": download_workers > 1,
             "interrupted": interrupted,
             "counts": counts,
-            "results": [serialise_result(result) for result in records],
+            "results": [asdict(result) for result in records],
         },
     )
 
@@ -1217,6 +1201,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="запустить реальную загрузку",
     )
+    # Four streams trade throughput against local I/O; CLI can reduce to one.
     parser.add_argument(
         "--workers",
         type=int,
@@ -1229,29 +1214,33 @@ def build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_DATA_DIR,
         help="корневой каталог с папками целей",
     )
+    # 40 GiB leaves room for FITS temporary files and concurrent local work.
     parser.add_argument(
         "--reserve-gib",
         type=float,
         default=40.0,
         help="минимальный свободный остаток; по умолчанию 40 GiB",
     )
+    # Bounded retries: recover transient outages without an endless download.
     parser.add_argument(
         "--attempts",
         type=int,
         default=8,
         help="максимум HTTP-попыток на файл; по умолчанию 8",
     )
+    # Two minutes tolerates archive latency but detects a stalled connection.
     parser.add_argument(
         "--timeout",
         type=float,
         default=120.0,
         help="тайм-аут сокета в секундах; по умолчанию 120",
     )
+    # 1 MiB per stream bounds RAM and makes cancellation responsive.
     parser.add_argument(
         "--chunk-mib",
         type=int,
         default=1,
-        help="размер блока чтения в MiB; по умолчанию 8",
+        help="размер блока чтения в MiB; по умолчанию 1",
     )
     parser.add_argument(
         "--status-file",
@@ -1263,6 +1252,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def validate_arguments(args: argparse.Namespace) -> None:
+    # Cap fan-out to prevent accidental mass parallel downloads on a laptop.
     if not 1 <= args.workers <= 16:
         raise SystemExit("--workers должен быть от 1 до 16")
     if args.reserve_gib < 0:

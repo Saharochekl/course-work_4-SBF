@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Offline GO-3055 batch runner for the Jensen-like ``sbf-2.ipynb`` pipeline.
 
-This file is deliberately separate from ``run_sbf_batch.py``.  It accepts only
-the 14 GO-3055 F150W/F090W targets, writes products into an isolated run tree,
-never downloads or removes science inputs by default, and keeps scientific QC
-separate from the mechanical ``done`` state.
+RU: обработка 14 GO-3055 целей без скачивания и удаления исходных данных.
+EN: process the 14 GO-3055 targets; downloads belong to
+``download_go3055_go7763.py``. Scientific QC is separate from completion.
+Entry points, numerical settings and retained safeguards: docs/measurement.rst.
 """
 
 import atexit
@@ -79,13 +79,6 @@ SBF2_NOTEBOOK_FAMILY = "sbf2"
 SBF3_NOTEBOOK_FAMILY = "sbf3"
 MAX_IMPLICIT_TARGETS = 14
 _ACTIVE_CAMPAIGN_LOCK = None
-SBF3_REQUIRED_FITS_KEYS = (
-    "clean_model_fits",
-    "clean_isophotes_fits",
-    "full_residual_fits",
-    "working_residual_fits",
-    "working_annuli_residual_fits",
-)
 SBF2_REQUIRED_FITS_KEYS = (
     "model_full_fits",
     "science_residual_fits",
@@ -112,24 +105,6 @@ CLI_PATH_ARGUMENTS = (
     "signal",
     "color",
 )
-
-
-TARGETS = [
-    {
-        "name": "NGC 1380",
-        "f150w": "jw03055-o001_t001_nircam_clear-f150w_i2d.fits",
-        "f090w": "jw03055-o001_t001_nircam_clear-f090w_i2d.fits",
-        "f150w_size": 1210685760,
-        "f090w_size": 1210423680,
-    },
-    {
-        "name": "NGC 1404",
-        "f150w": "jw03055-o003_t003_nircam_clear-f150w_i2d.fits",
-        "f090w": "jw03055-o003_t003_nircam_clear-f090w_i2d.fits",
-        "f150w_size": 1216696320,
-        "f090w_size": 1216696320,
-    },
-]
 
 
 def urlquote(value):
@@ -282,10 +257,8 @@ def as_builtin(value):
 
 
 def bytes_gb(value):
-    try:
-        return float(value) / 1024**3
-    except Exception:
-        return float("nan")
+    """RU: байты в ГиБ. EN: binary GiB, despite the historical CLI ``gb`` name."""
+    return float(value) / 1024**3
 
 
 def disk_stats(path):
@@ -301,42 +274,19 @@ def disk_stats(path):
 
 
 def memory_stats():
-    try:
-        import psutil
+    """RU: память через обязательный psutil. EN: one supported telemetry source."""
+    import psutil
 
-        vm = psutil.virtual_memory()
-        return {
-            "total": int(vm.total),
-            "available": int(vm.available),
-            "used": int(vm.used),
-            "percent": float(vm.percent),
-            "total_gb": bytes_gb(vm.total),
-            "available_gb": bytes_gb(vm.available),
-            "used_gb": bytes_gb(vm.used),
-        }
-    except Exception:
-        if sys.platform == "darwin":
-            try:
-                pages = {}
-                vm_stat = subprocess.check_output(["vm_stat"], text=True)
-                page_size = 4096
-                for line in vm_stat.splitlines():
-                    if "page size of" in line:
-                        parts = line.split("page size of", 1)[1].split("bytes", 1)[0]
-                        page_size = int(parts.strip())
-                    if ":" not in line:
-                        continue
-                    key, value = line.split(":", 1)
-                    pages[key.strip()] = int(value.strip().strip(".").replace(".", ""))
-                free_pages = pages.get("Pages free", 0) + pages.get("Pages inactive", 0)
-                available = free_pages * page_size
-                return {
-                    "available": available,
-                    "available_gb": bytes_gb(available),
-                }
-            except Exception:
-                pass
-        return {}
+    vm = psutil.virtual_memory()
+    return {
+        "total": int(vm.total),
+        "available": int(vm.available),
+        "used": int(vm.used),
+        "percent": float(vm.percent),
+        "total_gb": bytes_gb(vm.total),
+        "available_gb": bytes_gb(vm.available),
+        "used_gb": bytes_gb(vm.used),
+    }
 
 
 def log_resources(label, data_root):
@@ -371,63 +321,6 @@ def fits_is_readable(path):
         return True, ""
     except Exception as exc:
         return False, str(exc)
-
-
-def wait_for_input(path, expected_size=None, poll_seconds=60, timeout_seconds=0):
-    path = Path(path)
-    start = time.time()
-    last_size = None
-    stable_count = 0
-
-    while True:
-        elapsed = time.time() - start
-        if timeout_seconds and elapsed > timeout_seconds:
-            raise TimeoutError(f"timeout waiting for {path}")
-
-        if not path.exists():
-            print(f"[{timestamp()}] waiting for {path} (missing)")
-            time.sleep(poll_seconds)
-            continue
-
-        size = path.stat().st_size
-        if expected_size and size != expected_size:
-            readable, read_error = fits_is_readable(path)
-            nearly_complete = size >= int(0.995 * expected_size)
-            if readable and nearly_complete:
-                print(
-                    f"[{timestamp()}] input ready with size warning: {path} "
-                    f"({size}/{expected_size} bytes)"
-                )
-                return path
-            pct = 100.0 * size / expected_size if expected_size else 0.0
-            print(
-                f"[{timestamp()}] waiting for {path.name}: "
-                f"{size}/{expected_size} bytes ({pct:.1f}%)"
-            )
-            if read_error and pct > 95.0:
-                print(f"[{timestamp()}] FITS read check: {read_error}")
-            time.sleep(poll_seconds)
-            continue
-
-        if not expected_size:
-            if size == last_size:
-                stable_count += 1
-            else:
-                stable_count = 0
-            last_size = size
-            if stable_count < 2:
-                print(f"[{timestamp()}] waiting for stable size {path.name}: {size} bytes")
-                time.sleep(poll_seconds)
-                continue
-
-        readable, read_error = fits_is_readable(path)
-        if not readable:
-            print(f"[{timestamp()}] waiting for readable FITS {path.name}: {read_error}")
-            time.sleep(poll_seconds)
-            continue
-
-        print(f"[{timestamp()}] input ready: {path} ({size} bytes)")
-        return path
 
 
 def is_input_ready(path, expected_size=None):
@@ -572,21 +465,6 @@ def target_output_dir(
 
 
 def result_json_path(batch_root, galaxy, identity=None):
-    if identity and identity.get("template_family") == SBF3_NOTEBOOK_FAMILY:
-        run_key = (
-            str(identity["job_id"]).removeprefix("job-")[:12]
-            if identity.get("job_id")
-            else identity["input_pair_key"]
-        )
-        run_label = "__".join(
-            [
-                slug(galaxy),
-                slug(identity["signal_filter"]),
-                slug(identity["color_filter"]),
-                run_key,
-            ]
-        )
-        return Path(batch_root) / f"{run_label}_result.json"
     return Path(batch_root) / f"{slug(galaxy)}_result.json"
 
 
@@ -676,24 +554,6 @@ def result_matches_identity(result, identity):
     return True
 
 
-def final_result_for(target, batch_root, identity=None, allow_legacy=False):
-    path = result_json_path(batch_root, target["name"], identity=identity)
-    if not path.exists():
-        return None
-    try:
-        result = load_project_json(path)
-    except Exception:
-        return None
-    if result.get("status") != "ok":
-        return None
-    if identity is not None and not result_matches_identity(result, identity):
-        if not allow_legacy:
-            return None
-        if result.get("template_sha256") is not None:
-            return None
-    return result
-
-
 def f150_to_f090_filename(filename):
     lower = filename.lower()
     if "f150w" not in lower:
@@ -746,8 +606,7 @@ def manifest_row_enabled(row):
 def normalize_target(target):
     """Return the generic two-filter target contract.
 
-    Legacy F150W/F090W keys remain accepted so old manifests and the small
-    built-in fallback target list stay reproducible.
+    Legacy F150W/F090W keys remain accepted for the archived manifest format.
     """
     item = dict(target)
     item["name"] = str(item.get("name") or item.get("target") or "").strip()
@@ -783,22 +642,7 @@ def validate_notebook_filter_pair(template_path, signal_filter, color_filter):
         raise ValueError(
             f"{Path(template_path).name} is an sbf-2 notebook and is still "
             f"validated only for {expected}; got {actual}. "
-            "Use the filter-aware sbf-3.ipynb for other pairs."
-        )
-
-
-def validate_run_layout(template_path, batch_root, products_root):
-    if notebook_family(template_path) != SBF3_NOTEBOOK_FAMILY:
-        return
-    if products_root is None:
-        raise ValueError(
-            "sbf-3.ipynb requires --products-root so it cannot overwrite "
-            "the frozen sbf-2 products"
-        )
-    if Path(batch_root).resolve() == DEFAULT_BATCH_ROOT.resolve():
-        raise ValueError(
-            "sbf-3.ipynb requires a separate --batch-root; refusing to mix "
-            "sbf-2 and sbf-3 result JSON files"
+            "Use run_sbf_f090w.py for the F090W signal campaign."
         )
 
 
@@ -1004,31 +848,7 @@ def load_manifest_targets(target_csv, data_root, extra_target_csvs=None):
     targets = []
     for path in paths:
         targets.extend(read_targets_from_csv(path, data_root))
-    return deduplicate_manifest_targets(merge_known_targets(targets), data_root)
-
-
-def merge_known_targets(targets):
-    known = {target["name"]: normalize_target(target) for target in TARGETS}
-    merged = []
-    for target in targets:
-        item = normalize_target(target)
-        if item["name"] in known:
-            known_item = known[item["name"]]
-            for key, value in known_item.items():
-                if key in {"signal_size", "color_size"}:
-                    continue
-                if item.get(key) in (None, ""):
-                    item[key] = value
-            for role in ("signal", "color"):
-                size_key = f"{role}_size"
-                product_key = f"{role}_product"
-                if (
-                    item.get(size_key) in (None, "")
-                    and item.get(product_key) == known_item.get(product_key)
-                ):
-                    item[size_key] = known_item.get(size_key, item.get(size_key))
-        merged.append(item)
-    return merged
+    return deduplicate_manifest_targets(targets, data_root)
 
 
 def local_target_files(target, data_root):
@@ -1143,25 +963,8 @@ def result_paths(
     out_dir,
     stem,
     pipeline_label="sbf2",
-    notebook_family_label=None,
 ):
     out_dir = Path(out_dir)
-    family = str(notebook_family_label or pipeline_label).lower()
-    family = family.replace("-", "").replace("_", "")
-    if family == SBF3_NOTEBOOK_FAMILY:
-        return {
-            "clean_model_fits": out_dir / f"{stem}_01_модель_чистая.fits",
-            "clean_isophotes_fits": out_dir
-            / f"{stem}_02_изофоты_чистые.fits",
-            "full_residual_fits": out_dir / f"{stem}_03_остатки_общие.fits",
-            "working_residual_fits": out_dir
-            / f"{stem}_04_остатки_общие_рабочие.fits",
-            "working_annuli_residual_fits": out_dir
-            / f"{stem}_05_остатки_общие_рабочие_два_кольца.fits",
-            "df_sbf_csv": out_dir / f"{stem}_{pipeline_label}_df_sbf.csv",
-            "annulus_summary_csv": out_dir
-            / f"{stem}_{pipeline_label}_annulus_summary.csv",
-        }
     return {
         "model_full_fits": out_dir / f"{stem}_sbf_model_full.fits",
         # This is the actual FFT input after sigma capping and the final
@@ -1854,6 +1657,8 @@ def execute_template_for_target(
     template_path = Path(template_path).resolve()
     pipeline_label = template_path.stem.replace("-", "").replace("_", "")
     pipeline_family = notebook_family(template_path)
+    if pipeline_family != SBF2_NOTEBOOK_FAMILY:
+        raise ValueError("Only an sbf-2 execution template is supported")
     signal_fingerprint = input_fingerprint(signal_path)
     color_fingerprint = input_fingerprint(color_path)
     pair_key = input_pair_key(
@@ -1937,8 +1742,7 @@ def execute_template_for_target(
                 },
             )
 
-        # The frozen sbf-2 parameter cell overwrites injected values. Reapply
-        # them only for that legacy cell; sbf-3 preserves preseeded globals.
+        # The sbf-2 parameter cell overwrites injected paths; restore this target.
         if "f150w_path = Path" in source and "f090w_path = Path" in source:
             override_target_namespace(
                 namespace,
@@ -1964,24 +1768,7 @@ def execute_template_for_target(
         out_dir,
         stem,
         pipeline_label=pipeline_label,
-        notebook_family_label=pipeline_family,
     )
-
-    if pipeline_family == SBF3_NOTEBOOK_FAMILY:
-        product_errors = []
-        for key in SBF3_REQUIRED_FITS_KEYS:
-            product_path = paths[key]
-            if not product_path.exists():
-                product_errors.append(f"{key}: missing {product_path}")
-                continue
-            readable, read_error = fits_is_readable(product_path)
-            if not readable:
-                product_errors.append(f"{key}: unreadable {product_path}: {read_error}")
-        if product_errors:
-            raise RuntimeError(
-                "sbf-3 did not produce the required five FITS products: "
-                + " | ".join(product_errors)
-            )
 
     df_sbf = namespace.get("df_sbf")
     if df_sbf is not None:
@@ -1991,37 +1778,35 @@ def execute_template_for_target(
     if df_annulus_summary is not None:
         df_annulus_summary.to_csv(paths["annulus_summary_csv"], index=False)
 
-    sbf2_table_validation = None
-    if pipeline_family == SBF2_NOTEBOOK_FAMILY:
-        product_errors = []
-        for key in SBF2_REQUIRED_FITS_KEYS:
-            product_path = paths[key]
-            if not product_path.is_file():
-                product_errors.append(f"{key}: missing {product_path}")
-                continue
-            readable, read_error = fits_is_readable(product_path)
-            if not readable:
-                product_errors.append(
-                    f"{key}: unreadable {product_path}: {read_error}"
-                )
-        sbf2_table_validation = validate_sbf2_tables(paths)
-        product_errors.extend(sbf2_table_validation["errors"])
-        if not product_errors:
-            try:
-                annotate_sbf2_fits(
-                    paths,
-                    namespace,
-                    galaxy,
-                    signal_filter,
-                    color_filter,
-                )
-            except Exception as exc:
-                product_errors.append(f"FITS provenance update failed: {exc}")
-        if product_errors:
-            raise RuntimeError(
-                "sbf-2 did not produce the required five FITS and two tables: "
-                + " | ".join(product_errors)
+    product_errors = []
+    for key in SBF2_REQUIRED_FITS_KEYS:
+        product_path = paths[key]
+        if not product_path.is_file():
+            product_errors.append(f"{key}: missing {product_path}")
+            continue
+        readable, read_error = fits_is_readable(product_path)
+        if not readable:
+            product_errors.append(
+                f"{key}: unreadable {product_path}: {read_error}"
             )
+    sbf2_table_validation = validate_sbf2_tables(paths)
+    product_errors.extend(sbf2_table_validation["errors"])
+    if not product_errors:
+        try:
+            annotate_sbf2_fits(
+                paths,
+                namespace,
+                galaxy,
+                signal_filter,
+                color_filter,
+            )
+        except Exception as exc:
+            product_errors.append(f"FITS provenance update failed: {exc}")
+    if product_errors:
+        raise RuntimeError(
+            "sbf-2 did not produce the required five FITS and two tables: "
+            + " | ".join(product_errors)
+        )
 
     result = {
         "galaxy": galaxy,
@@ -2030,7 +1815,7 @@ def execute_template_for_target(
         "template_path": str(template_path),
         "template_sha256": sha256_file(template_path),
         "template_family": pipeline_family,
-        "program": "3055" if pipeline_family == SBF2_NOTEBOOK_FAMILY else None,
+        "program": "3055",
         "signal_filter": signal_filter,
         "color_filter": color_filter,
         "color_name": f"{color_filter}-{signal_filter}",
@@ -2163,94 +1948,79 @@ def execute_template_for_target(
 
     result_json = result_json_path(batch_root, galaxy, identity=result)
     result["result_json"] = str(result_json.resolve())
-    if pipeline_family in {SBF2_NOTEBOOK_FAMILY, SBF3_NOTEBOOK_FAMILY}:
-        required_keys = (
-            SBF3_REQUIRED_FITS_KEYS
-            if pipeline_family == SBF3_NOTEBOOK_FAMILY
-            else SBF2_REQUIRED_FITS_KEYS
+    required_keys = SBF2_REQUIRED_FITS_KEYS
+    required_artifacts = {key: Path(result[key]) for key in required_keys}
+    fits_manifest = build_artifact_manifest(
+        required_artifacts,
+        base_dir=out_dir,
+        include_sha256=False,
+        validate_fits=True,
+    )
+    expected_artifact_count = len(required_keys)
+    table_artifacts = {
+        key: Path(result[key]) for key in SBF2_REQUIRED_TABLE_KEYS
+    }
+    table_manifest = build_artifact_manifest(
+        table_artifacts,
+        base_dir=out_dir,
+        include_sha256=False,
+        validate_fits=False,
+    )
+    table_validation = sbf2_table_validation["tables"]
+    for item in table_manifest["artifacts"]:
+        validation = table_validation.get(item["name"], {})
+        item["csv_valid"] = bool(validation.get("ok"))
+        item["row_count"] = validation.get("row_count", 0)
+        item["columns"] = validation.get("columns", [])
+        if validation.get("error"):
+            item["csv_error"] = validation["error"]
+        item["ok"] = bool(item.get("ok") and item["csv_valid"])
+    artifact_manifest = dict(fits_manifest)
+    artifact_manifest["artifacts"] = (
+        fits_manifest["artifacts"] + table_manifest["artifacts"]
+    )
+    artifact_manifest["count"] = len(artifact_manifest["artifacts"])
+    artifact_manifest["fits_count"] = len(required_keys)
+    artifact_manifest["table_count"] = len(SBF2_REQUIRED_TABLE_KEYS)
+    artifact_manifest["ok"] = bool(
+        fits_manifest["ok"]
+        and table_manifest["ok"]
+        and sbf2_table_validation["ok"]
+        and all(
+            item.get("ok") for item in table_manifest["artifacts"]
         )
-        required_artifacts = {key: Path(result[key]) for key in required_keys}
-        fits_manifest = build_artifact_manifest(
-            required_artifacts,
-            base_dir=out_dir,
-            include_sha256=(pipeline_family == SBF3_NOTEBOOK_FAMILY),
-            validate_fits=True,
-            require_astropy=True,
+    )
+    expected_artifact_count += len(SBF2_REQUIRED_TABLE_KEYS)
+    if (
+        not artifact_manifest["ok"]
+        or artifact_manifest["count"] != expected_artifact_count
+    ):
+        raise RuntimeError(
+            "required products failed the final artifact gate: "
+            + " | ".join(
+                f"{item['name']}: "
+                f"{item.get('fits_error') or item.get('csv_error') or item.get('error')}"
+                for item in artifact_manifest["artifacts"]
+                if not item.get("ok")
+            )
         )
-        artifact_manifest = fits_manifest
-        expected_artifact_count = len(required_keys)
-        if pipeline_family == SBF2_NOTEBOOK_FAMILY:
-            if sbf2_table_validation is None:
-                sbf2_table_validation = validate_sbf2_tables(paths)
-            table_artifacts = {
-                key: Path(result[key]) for key in SBF2_REQUIRED_TABLE_KEYS
-            }
-            table_manifest = build_artifact_manifest(
-                table_artifacts,
-                base_dir=out_dir,
-                include_sha256=False,
-                validate_fits=False,
-            )
-            table_validation = sbf2_table_validation["tables"]
-            for item in table_manifest["artifacts"]:
-                validation = table_validation.get(item["name"], {})
-                item["csv_valid"] = bool(validation.get("ok"))
-                item["row_count"] = validation.get("row_count", 0)
-                item["columns"] = validation.get("columns", [])
-                if validation.get("error"):
-                    item["csv_error"] = validation["error"]
-                item["ok"] = bool(item.get("ok") and item["csv_valid"])
-            artifact_manifest = dict(fits_manifest)
-            artifact_manifest["artifacts"] = (
-                fits_manifest["artifacts"] + table_manifest["artifacts"]
-            )
-            artifact_manifest["count"] = len(artifact_manifest["artifacts"])
-            artifact_manifest["fits_count"] = len(required_keys)
-            artifact_manifest["table_count"] = len(SBF2_REQUIRED_TABLE_KEYS)
-            artifact_manifest["ok"] = bool(
-                fits_manifest["ok"]
-                and table_manifest["ok"]
-                and sbf2_table_validation["ok"]
-                and all(
-                    item.get("ok") for item in table_manifest["artifacts"]
-                )
-            )
-            expected_artifact_count += len(SBF2_REQUIRED_TABLE_KEYS)
-        if (
-            not artifact_manifest["ok"]
-            or artifact_manifest["count"] != expected_artifact_count
-        ):
-            raise RuntimeError(
-                "required products failed the final artifact gate: "
-                + " | ".join(
-                    f"{item['name']}: "
-                    f"{item.get('fits_error') or item.get('csv_error') or item.get('error')}"
-                    for item in artifact_manifest["artifacts"]
-                    if not item.get("ok")
-                )
-            )
-        manifest_path = (
-            Path(batch_root)
-            / "artifact_manifests"
-            / f"{result_json.stem}_artifacts.json"
-        )
-        atomic_write_json(manifest_path, artifact_manifest)
-        result["artifacts_verified"] = True
-        result["artifacts_verified_at"] = artifact_manifest["created_at_utc"]
-        result["artifact_manifest_path"] = str(manifest_path.resolve())
-        result["artifact_count"] = artifact_manifest["count"]
-        result["fits_artifact_count"] = len(required_keys)
-        result["table_artifact_count"] = (
-            len(SBF2_REQUIRED_TABLE_KEYS)
-            if pipeline_family == SBF2_NOTEBOOK_FAMILY
-            else 0
-        )
-        result["artifact_manifest"] = artifact_manifest["artifacts"]
+    manifest_path = (
+        Path(batch_root)
+        / "artifact_manifests"
+        / f"{result_json.stem}_artifacts.json"
+    )
+    atomic_write_json(manifest_path, artifact_manifest)
+    result["artifacts_verified"] = True
+    result["artifacts_verified_at"] = artifact_manifest["created_at_utc"]
+    result["artifact_manifest_path"] = str(manifest_path.resolve())
+    result["artifact_count"] = artifact_manifest["count"]
+    result["fits_artifact_count"] = len(required_keys)
+    result["table_artifact_count"] = len(SBF2_REQUIRED_TABLE_KEYS)
+    result["artifact_manifest"] = artifact_manifest["artifacts"]
 
-    if pipeline_family == SBF2_NOTEBOOK_FAMILY:
-        result["go3055_qc"] = evaluate_go3055_qc(result)
-        result["qc_status"] = result["go3055_qc"]["status"]
-        result["qc_flags"] = result["go3055_qc"]["flags"]
+    result["go3055_qc"] = evaluate_go3055_qc(result)
+    result["qc_status"] = result["go3055_qc"]["status"]
+    result["qc_flags"] = result["go3055_qc"]["flags"]
 
     batch_root.mkdir(parents=True, exist_ok=True)
     atomic_write_json(result_json, as_builtin(result), sort_keys=False)
@@ -2337,9 +2107,6 @@ def run_worker(args):
             print(f"[{timestamp()}] output directory: {output_dir}")
             print(f"[{timestamp()}] cell timings: {cell_timings_path}")
             try:
-                validate_run_layout(
-                    template_path, batch_root, args.products_root
-                )
                 validate_notebook_filter_pair(
                     template_path, signal_filter, color_filter
                 )
@@ -2469,17 +2236,11 @@ def link_residuals(results, batch_root):
                     run_key,
                 ]
             )
-        if result.get("template_family") == SBF3_NOTEBOOK_FAMILY:
-            residual_keys = [
-                "working_residual_fits",
-                "working_annuli_residual_fits",
-            ]
-        else:
-            residual_keys = [
-                "science_residual_fits",
-                "inner_usable_residual_fits",
-                "outer_usable_residual_fits",
-            ]
+        residual_keys = [
+            "science_residual_fits",
+            "inner_usable_residual_fits",
+            "outer_usable_residual_fits",
+        ]
         for key in residual_keys:
             if name_counts.get(base_galaxy_slug, 0) > 1:
                 legacy = residual_dir / f"{base_galaxy_slug}_{key}.fits"
@@ -2498,376 +2259,6 @@ def link_residuals(results, batch_root):
                 dst.symlink_to(src)
             except Exception:
                 pass
-
-
-def download_one(url, dest, expected_size=None, chunk_size=1024 * 1024, timeout=120):
-    import urllib.error
-    import urllib.request
-
-    dest = Path(dest)
-    dest.parent.mkdir(parents=True, exist_ok=True)
-
-    if is_input_ready(dest, expected_size):
-        return True, "already-ready"
-
-    # A partially transferred file must never masquerade as a finished input.
-    # Keep it under a .part name and publish it atomically only after the FITS
-    # readability/size gate has passed.  Adopt partial files left by older
-    # versions of this downloader so interrupted campaigns can still resume.
-    partial = dest.with_name(f"{dest.name}.part")
-    if dest.exists() and not partial.exists():
-        os.replace(dest, partial)
-
-    headers = {"Accept-Encoding": "identity"}
-    start = partial.stat().st_size if partial.exists() else 0
-    if start:
-        headers["Range"] = f"bytes={start}-"
-
-    req = urllib.request.Request(url, headers=headers)
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as response:
-            if start and response.status == 200:
-                start = 0
-                partial.unlink(missing_ok=True)
-            mode = "ab" if start else "wb"
-            with partial.open(mode) as handle:
-                while True:
-                    chunk = response.read(chunk_size)
-                    if not chunk:
-                        break
-                    handle.write(chunk)
-    except urllib.error.HTTPError as exc:
-        if exc.code == 416 and is_input_ready(partial, expected_size):
-            os.replace(partial, dest)
-            return True, "range-complete"
-        return False, f"HTTP {exc.code}: {exc.reason}"
-    except Exception as exc:
-        return False, repr(exc)
-
-    if is_input_ready(partial, expected_size):
-        os.replace(partial, dest)
-        return True, "downloaded"
-    size = partial.stat().st_size if partial.exists() else 0
-    return False, f"incomplete after transfer: {size}/{expected_size}"
-
-
-def ensure_disk_space_for_downloads(
-    data_root,
-    completed_results,
-    min_free_gb,
-    cleanup_enabled=True,
-    required_bytes=0,
-    protected_input_paths=None,
-):
-    disk, _ = log_resources("disk-check", data_root)
-    required_free_gb = min_free_gb + bytes_gb(required_bytes or 0)
-    if disk["free_gb"] >= required_free_gb:
-        return True
-    if not cleanup_enabled:
-        print(
-            f"[{timestamp()}] [DISK] download blocked: free space "
-            f"{disk['free_gb']:.1f} GB is below the required "
-            f"{required_free_gb:.1f} GB (reserve + next transfer); "
-            "cleanup disabled"
-        )
-        return False
-
-    print(
-        f"[{timestamp()}] [DISK] free space below requirement "
-        f"({disk['free_gb']:.1f} < {required_free_gb:.1f} GB), removing source inputs "
-        "for completed galaxies"
-    )
-    confined_root = Path(data_root).resolve()
-    protected = {
-        Path(path).resolve() for path in (protected_input_paths or [])
-    }
-    for result in completed_results:
-        artifacts_valid = result_artifacts_still_valid(result)
-        if result.get("status") != "ok" or not artifacts_valid:
-            if result.get("status") == "ok":
-                print(
-                    f"[{timestamp()}] [DISK] preserving inputs for "
-                    f"{result.get('galaxy', '<unknown>')}: artifacts are not "
-                    "currently verified"
-                )
-            continue
-        input_paths = [
-            result.get("signal_path") or result.get("f150w_path"),
-            result.get("color_path") or result.get("f090w_path"),
-        ]
-        for value in input_paths:
-            path = Path(value or "")
-            if not path.exists():
-                continue
-            try:
-                resolved_path = path.resolve()
-                resolved_path.relative_to(confined_root)
-            except ValueError:
-                print(
-                    f"[{timestamp()}] [DISK] refusing to remove input outside "
-                    f"data root: {path}"
-                )
-                continue
-            if resolved_path in protected:
-                print(
-                    f"[{timestamp()}] [DISK] preserving shared input still "
-                    f"needed by a pending job: {path}"
-                )
-                continue
-            try:
-                size_gb = bytes_gb(path.stat().st_size)
-                path.unlink()
-                print(f"[{timestamp()}] [DISK] removed {path} ({size_gb:.2f} GB)")
-            except Exception as exc:
-                print(f"[{timestamp()}] [DISK] failed to remove {path}: {exc}")
-        disk, _ = log_resources("disk-check-after-cleanup", data_root)
-        if disk["free_gb"] >= required_free_gb:
-            return True
-
-    print(
-        f"[{timestamp()}] [DISK] download blocked: free space "
-        f"{disk['free_gb']:.1f} GB is below the required "
-        f"{required_free_gb:.1f} GB after cleanup"
-    )
-    return False
-
-
-def result_artifacts_still_valid(result):
-    """Recheck the deletion authority; a stale boolean is never sufficient."""
-    if not result.get("artifacts_verified"):
-        return False
-    if result.get("template_family") != SBF3_NOTEBOOK_FAMILY:
-        return False
-    artifacts = {
-        key: result.get(key)
-        for key in SBF3_REQUIRED_FITS_KEYS
-        if result.get(key)
-    }
-    if len(artifacts) != len(SBF3_REQUIRED_FITS_KEYS):
-        return False
-    try:
-        out_dir = Path(result["out_dir"]).resolve()
-        for value in artifacts.values():
-            Path(value).resolve().relative_to(out_dir)
-    except (KeyError, TypeError, ValueError):
-        return False
-    try:
-        current = build_artifact_manifest(
-            artifacts,
-            include_sha256=True,
-            validate_fits=True,
-            require_astropy=True,
-        )
-    except Exception:
-        return False
-    if not current.get("ok"):
-        return False
-    recorded = {
-        item.get("name"): item.get("sha256")
-        for item in result.get("artifact_manifest", [])
-    }
-    return all(
-        recorded.get(item["name"]) == item.get("sha256")
-        for item in current["artifacts"]
-    )
-
-
-def load_completed_results(batch_root, allowed_job_ids=None):
-    completed = []
-    for result_file in sorted(Path(batch_root).glob("*_result.json")):
-        try:
-            result = load_project_json(result_file)
-        except Exception:
-            continue
-        if allowed_job_ids is not None and result.get("job_id") not in allowed_job_ids:
-            continue
-        if result.get("status") == "ok" and result.get("artifacts_verified"):
-            completed.append(result)
-    return completed
-
-
-def download_targets_until_stopped(
-    targets,
-    data_root,
-    batch_root,
-    completed_results,
-    min_free_gb,
-    cleanup_enabled,
-    retry_sleep,
-    stop_when_all_ready=False,
-    eligible_cleanup_job_ids=None,
-    protected_input_paths=None,
-):
-    status_path = Path(batch_root) / "download_status.json"
-    while True:
-        all_ready = True
-        for target in targets:
-            files = local_target_files(target, data_root)
-            jobs = [
-                (
-                    target["signal_filter"],
-                    target.get("signal_url"),
-                    files["signal"],
-                    target.get("signal_size"),
-                ),
-                (
-                    target["color_filter"],
-                    target.get("color_url"),
-                    files["color"],
-                    target.get("color_size"),
-                ),
-            ]
-            for band, url, dest, expected_size in jobs:
-                if is_input_ready(dest, expected_size):
-                    continue
-                all_ready = False
-                partial = dest.with_name(f"{dest.name}.part")
-                current_size = (
-                    dest.stat().st_size
-                    if dest.exists()
-                    else partial.stat().st_size
-                    if partial.exists()
-                    else 0
-                )
-                remaining_bytes = (
-                    max(int(expected_size) - current_size, 0)
-                    if expected_size
-                    else 0
-                )
-                while True:
-                    completed_results = load_completed_results(
-                        batch_root,
-                        allowed_job_ids=eligible_cleanup_job_ids,
-                    )
-                    if ensure_disk_space_for_downloads(
-                        data_root,
-                        completed_results,
-                        min_free_gb=min_free_gb,
-                        cleanup_enabled=cleanup_enabled,
-                        required_bytes=remaining_bytes,
-                        protected_input_paths=protected_input_paths,
-                    ):
-                        break
-                    status = {
-                        "time": timestamp(),
-                        "target": target["name"],
-                        "band": band,
-                        "path": str(dest),
-                        "ok": False,
-                        "message": "blocked: insufficient disk space",
-                        "size": current_size,
-                        "expected_size": expected_size,
-                    }
-                    atomic_write_json(status_path, status, sort_keys=False)
-                    time.sleep(retry_sleep)
-                print(f"[{timestamp()}] [DOWNLOAD] {target['name']} {band} -> {dest}")
-                ok, msg = download_one(url, dest, expected_size=expected_size)
-                size = dest.stat().st_size if dest.exists() else 0
-                status = {
-                    "time": timestamp(),
-                    "target": target["name"],
-                    "band": band,
-                    "path": str(dest),
-                    "ok": ok,
-                    "message": msg,
-                    "size": size,
-                    "expected_size": expected_size,
-                }
-                atomic_write_json(status_path, status, sort_keys=False)
-                if ok:
-                    print(f"[{timestamp()}] [DOWNLOAD] ready: {target['name']} {band} ({msg})")
-                else:
-                    print(
-                        f"[{timestamp()}] [DOWNLOAD] not ready: {target['name']} {band}: "
-                        f"{msg}; retry later"
-                    )
-                    time.sleep(retry_sleep)
-
-        if all_ready or stop_when_all_ready:
-            if all_ready:
-                print(f"[{timestamp()}] [DOWNLOAD] all selected target inputs are ready")
-            return all_ready
-
-
-def start_download_manager(
-    args, targets, completed_results, protected_targets=None
-):
-    if args.no_download:
-        return None
-    cmd = [
-        sys.executable,
-        str(Path(__file__).resolve()),
-        "--download-worker",
-        "--data-root",
-        resolve_cli_path(args.data_root),
-        "--batch-root",
-        resolve_cli_path(args.batch_root),
-        "--download-retry-seconds",
-        str(args.download_retry_seconds),
-        "--min-free-gb",
-        str(args.min_free_gb),
-    ]
-    manifests = target_csv_paths(
-        getattr(args, "target_csv", None),
-        getattr(args, "extra_target_csv", None),
-    )
-    cmd.extend(["--target-csv", str(manifests[0])])
-    for manifest in manifests[1:]:
-        cmd.extend(["--extra-target-csv", str(manifest)])
-    programs = getattr(args, "programs", None)
-    if programs:
-        cmd.append("--programs")
-        cmd.extend(programs)
-    if args.no_cleanup_inputs:
-        cmd.append("--no-cleanup-inputs")
-    cleanup_job_ids = sorted(
-        {
-            result["job_id"]
-            for result in completed_results
-            if result.get("job_id") and result.get("artifacts_verified")
-        }
-    )
-    if cleanup_job_ids:
-        cmd.append("--cleanup-job-ids")
-        cmd.extend(cleanup_job_ids)
-    protected_paths = []
-    for protected_target in (protected_targets or targets):
-        try:
-            files = local_target_files(
-                protected_target, Path(resolve_cli_path(args.data_root))
-            )
-        except ValueError:
-            # Keeps the helper usable by dry CLI/unit callers that only carry
-            # names; real manifest targets always have both product names.
-            continue
-        protected_paths.extend(str(path.resolve()) for path in files.values())
-    if protected_paths:
-        cmd.append("--protected-inputs")
-        cmd.extend(sorted(set(protected_paths)))
-    if targets:
-        # The download worker re-reads the manifest in a separate process.
-        # Pass the already selected parent target set explicitly; otherwise a
-        # narrow ``--galaxies`` run could download every enabled manifest row.
-        cmd.append("--target-keys")
-        cmd.extend(target_manifest_key(target) for target in targets)
-        cmd.append("--galaxies")
-        cmd.extend(target["name"] for target in targets)
-    print(f"[{timestamp()}] starting download manager: {' '.join(cmd)}")
-    process = subprocess.Popen(cmd, start_new_session=(os.name != "nt"))
-    atexit.register(stop_download_manager, process)
-    return process
-
-
-def stop_download_manager(process, grace_seconds=10):
-    if process is None or process.poll() is not None:
-        return
-    print(f"[{timestamp()}] stopping download manager")
-    process.terminate()
-    try:
-        process.wait(timeout=grace_seconds)
-    except subprocess.TimeoutExpired:
-        process.kill()
-        process.wait()
 
 
 def target_manifest_key(target):
@@ -3043,7 +2434,7 @@ def validate_offline_dependencies(args, targets, data_root, batch_root):
                 f"{target['name']}: incompatible instruments "
                 f"{signal_instrument}/{color_instrument}"
             )
-    if args.no_download and missing_inputs:
+    if missing_inputs:
         raise RuntimeError(
             "offline GO-3055 run has missing or unreadable inputs: "
             + ", ".join(missing_inputs)
@@ -3231,43 +2622,6 @@ def input_wait_snapshot(target, data_root):
     return snapshot
 
 
-def external_download_snapshot(status_path, target):
-    if status_path is None:
-        return None
-    path = Path(status_path)
-    status, error = read_json_snapshot(path)
-    base = {
-        "path": str(path.resolve()),
-        "exists": path.exists(),
-        "mtime": path.stat().st_mtime if path.exists() else None,
-        "read_error": None if error == "missing" else error,
-    }
-    if not isinstance(status, dict):
-        return base
-    wanted_program = canonical_program(target.get("program"))
-    wanted_target = " ".join(target["name"].casefold().split())
-    wanted_obsid = str(target.get("obsid") or "").strip().casefold()
-    matching_results = []
-    for result in status.get("results") or []:
-        if canonical_program(result.get("program")) != wanted_program:
-            continue
-        if " ".join(str(result.get("target") or "").casefold().split()) != wanted_target:
-            continue
-        result_obsid = str(result.get("obsid") or "").strip().casefold()
-        if wanted_obsid and result_obsid and result_obsid != wanted_obsid:
-            continue
-        matching_results.append(result)
-    return {
-        **base,
-        "started_at": status.get("started_at"),
-        "updated_at": status.get("updated_at"),
-        "programs": status.get("programs"),
-        "interrupted": status.get("interrupted"),
-        "counts": status.get("counts"),
-        "matching_results": matching_results,
-    }
-
-
 def format_input_progress(target, inputs):
     parts = []
     for role in ("signal", "color"):
@@ -3333,9 +2687,6 @@ def verified_campaign_result(target, batch_root, identity):
         match_identity = identity if path == direct_path else legacy_identity
         if not result_matches_identity(result, match_identity):
             continue
-        if result.get("template_family") == SBF3_NOTEBOOK_FAMILY:
-            if not result_artifacts_still_valid(result):
-                continue
 
         if path != direct_path and identity.get("job_id"):
             adopted = dict(result)
@@ -3350,148 +2701,6 @@ def verified_campaign_result(target, batch_root, identity):
             return adopted
         return result
     return None
-
-
-def wait_for_campaign_inputs(
-    target,
-    data_root,
-    process,
-    deadline,
-    signal_controller,
-    poll_seconds,
-    timeout_seconds=0,
-    state=None,
-    run_id=None,
-    job_id=None,
-    emergency_ram_gb=0,
-    critical_free_gb=0,
-    external_status_path=None,
-    event_log_path=None,
-):
-    started = time.monotonic()
-    report_interval = max(0.1, float(poll_seconds))
-    next_report = started
-    initial_inputs = input_wait_snapshot(target, data_root)
-    emit_campaign_event(
-        event_log_path,
-        "INPUT_WAIT_STARTED",
-        state=state,
-        run_id=run_id,
-        job_id=job_id,
-        payload={
-            "target": target["name"],
-            "program": canonical_program(target.get("program")),
-            "obsid": target.get("obsid"),
-            "filters": {
-                "signal": target["signal_filter"],
-                "color": target["color_filter"],
-            },
-            "inputs": initial_inputs,
-            "external_downloader": external_download_snapshot(
-                external_status_path, target
-            ),
-        },
-    )
-
-    def abort(reason):
-        inputs = input_wait_snapshot(target, data_root)
-        emit_campaign_event(
-            event_log_path,
-            "INPUT_WAIT_ABORTED",
-            state=state,
-            run_id=run_id,
-            job_id=job_id,
-            payload={
-                "target": target["name"],
-                "reason": reason,
-                "elapsed_seconds": time.monotonic() - started,
-                "inputs": inputs,
-                "external_downloader": external_download_snapshot(
-                    external_status_path, target
-                ),
-            },
-        )
-        print(f"[{timestamp()}] [INPUT_WAIT_ABORTED] {target['name']}: {reason}")
-        return False, reason
-
-    while True:
-        if target_inputs_ready(target, data_root):
-            inputs = input_wait_snapshot(target, data_root)
-            emit_campaign_event(
-                event_log_path,
-                "INPUT_READY",
-                state=state,
-                run_id=run_id,
-                job_id=job_id,
-                payload={
-                    "target": target["name"],
-                    "elapsed_seconds": time.monotonic() - started,
-                    "inputs": inputs,
-                    "external_downloader": external_download_snapshot(
-                        external_status_path, target
-                    ),
-                },
-            )
-            print(f"[{timestamp()}] [INPUT_READY] {format_input_progress(target, inputs)}")
-            return True, "ready"
-        if signal_controller.stop_requested:
-            return abort("signal")
-        if deadline.hard_expired:
-            return abort("deadline")
-        if timeout_seconds and time.monotonic() - started >= timeout_seconds:
-            return abort("input-timeout")
-        if process is not None and process.poll() is not None:
-            return abort(f"downloader-exited-{process.returncode}")
-        now = time.monotonic()
-        if now >= next_report:
-            disk, mem = log_resources(f"waiting-input {target['name']}", data_root)
-            inputs = input_wait_snapshot(target, data_root)
-            downloader = external_download_snapshot(external_status_path, target)
-            elapsed = now - started
-            print(
-                f"[{timestamp()}] [INPUT_WAIT] elapsed={elapsed:.0f}s; "
-                f"{format_input_progress(target, inputs)}"
-            )
-            payload = {
-                "target": target["name"],
-                "elapsed_seconds": elapsed,
-                "inputs": inputs,
-                "disk": disk,
-                "memory": mem,
-                "external_downloader": downloader,
-            }
-            emit_campaign_event(
-                event_log_path,
-                "INPUT_WAIT_HEARTBEAT",
-                state=state,
-                run_id=run_id,
-                job_id=job_id,
-                payload=payload,
-            )
-            if state is not None and run_id is not None:
-                state.record_resource_sample(
-                    run_id,
-                    job_id=job_id,
-                    ram_total_bytes=mem.get("total") if mem else None,
-                    ram_available_bytes=mem.get("available") if mem else None,
-                    disk_total_bytes=disk.get("total"),
-                    disk_free_bytes=disk.get("free"),
-                    metrics={"phase": "download-wait", **payload},
-                )
-            if (
-                emergency_ram_gb > 0
-                and mem.get("available_gb") is not None
-                and mem["available_gb"] < emergency_ram_gb
-            ):
-                return abort("resource-emergency-ram")
-            if critical_free_gb > 0 and disk["free_gb"] < critical_free_gb:
-                return abort("resource-critical-disk")
-            next_report = now + report_interval
-        remaining = deadline.remaining()
-        sleep_seconds = min(5.0, max(0.1, float(poll_seconds)))
-        if remaining is not None:
-            sleep_seconds = min(sleep_seconds, max(0.1, remaining))
-        signal_controller.wait(sleep_seconds)
 
 
 def wait_for_worker_capacity(
@@ -3585,7 +2794,6 @@ def wait_for_worker_capacity(
 def record_resource_sample(state, run_id, job_id, attempt_id, sample):
     ram = sample.get("system_ram") or {}
     worker = sample.get("worker") or {}
-    swap = sample.get("swap") or {}
     disk = sample.get("disk") or {}
     state.record_resource_sample(
         run_id,
@@ -3635,13 +2843,12 @@ def validate_parent_args(args):
         "--max-opd-delta-days": getattr(args, "max_opd_delta_days", 0.0),
         "--worker-term-grace-seconds": args.worker_term_grace_seconds,
         "--worker-kill-grace-seconds": args.worker_kill_grace_seconds,
-        "--timeout-seconds": args.timeout_seconds,
     }
     invalid = [name for name, value in nonnegative.items() if value < 0]
     if invalid:
         raise ValueError(f"must not be negative: {', '.join(invalid)}")
-    if args.poll_seconds <= 0 or args.download_retry_seconds <= 0:
-        raise ValueError("--poll-seconds and --download-retry-seconds must be positive")
+    if args.poll_seconds <= 0:
+        raise ValueError("--poll-seconds must be positive")
 
 
 def campaign_root_from_args(args):
@@ -3783,7 +2990,7 @@ def write_run_provenance(
         ),
         "selected_target_count": len(targets),
         "selected_targets": targets,
-        "required_sbf3_fits": list(SBF3_REQUIRED_FITS_KEYS),
+        "required_fits": list(SBF2_REQUIRED_FITS_KEYS),
     }
     path = campaign_root / "run_provenance.json"
     atomic_write_json(path, as_builtin(provenance), sort_keys=False)
@@ -3835,25 +3042,13 @@ def _run_parent_impl(args):
     products_root = (
         Path(args.products_root).resolve() if args.products_root else None
     )
-    validate_run_layout(template, batch_root, products_root)
     template_family = notebook_family(template)
     batch_root.mkdir(parents=True, exist_ok=True)
 
     raw_target_csv = getattr(args, "target_csv", None)
     raw_extra_target_csv = getattr(args, "extra_target_csv", None)
-    manifests = (
-        target_csv_paths(raw_target_csv, raw_extra_target_csv)
-        if raw_target_csv or raw_extra_target_csv
-        else []
-    )
-    if manifests:
-        targets = load_manifest_targets(
-            raw_target_csv,
-            data_root,
-            raw_extra_target_csv,
-        )
-    else:
-        targets = [normalize_target(t) for t in TARGETS]
+    manifests = target_csv_paths(raw_target_csv, raw_extra_target_csv)
+    targets = load_manifest_targets(raw_target_csv, data_root, raw_extra_target_csv)
 
     targets = select_targets(
         targets,
@@ -3877,7 +3072,7 @@ def _run_parent_impl(args):
     external_status_path = None
     if getattr(args, "external_download_status", None):
         external_status_path = Path(args.external_download_status).resolve()
-    elif args.no_download:
+    else:
         external_status_path = (
             data_root / "download_go3055_go7763_status.json"
         ).resolve()
@@ -3891,9 +3086,7 @@ def _run_parent_impl(args):
         "schema_version": 2,
         "job_identity_version": 2,
         "notebook_family": template_family,
-        "required_fits": list(SBF3_REQUIRED_FITS_KEYS)
-        if template_family == SBF3_NOTEBOOK_FAMILY
-        else list(SBF2_REQUIRED_FITS_KEYS),
+        "required_fits": list(SBF2_REQUIRED_FITS_KEYS),
     }
     state = CampaignState(campaign_root)
     run = state.create_or_resume_run(
@@ -3917,7 +3110,7 @@ def _run_parent_impl(args):
             "external_download_status": (
                 str(external_status_path) if external_status_path else None
             ),
-            "download_mode": "external-consumer" if args.no_download else "integrated",
+            "download_mode": "external-consumer",
         },
         resume=not args.new_run,
     )
@@ -4085,7 +3278,6 @@ def _run_parent_impl(args):
     )
     completed_results = []
     results_by_job = {}
-    identities = {}
 
     for target, job in target_jobs:
         signal_path, color_path = target_paths(target, data_root)
@@ -4097,7 +3289,6 @@ def _run_parent_impl(args):
             products_root=products_root,
             job_id=job["job_id"],
         )
-        identities[job["job_id"]] = identity
         status_row = target_status_rows[target_status_key(target)]
         existing = None
         if not args.force_reprocess:
@@ -4223,453 +3414,361 @@ def _run_parent_impl(args):
                 details={"reason": "selected again"},
             )
 
-    prefetch_proc = None
-    prefetch_job_id = None
     stop_reason = None
     with SignalController() as signal_controller:
-        try:
-            for index, (target, job) in enumerate(target_jobs):
-                job_id = job["job_id"]
-                if job_id in results_by_job:
-                    continue
-                if prefetch_proc is not None and prefetch_job_id != job_id:
-                    stop_download_manager(prefetch_proc)
-                    prefetch_proc = None
-                    prefetch_job_id = None
-                if signal_controller.stop_requested:
-                    stop_reason = signal_controller.signal_name or "signal"
-                    break
-                if not deadline.may_start():
-                    stop_reason = "soft-deadline"
-                    state.set_run_state(run_id, "SOFT_STOPPED")
-                    break
-
-                signal_path, color_path = target_paths(target, data_root)
-                identity = expected_run_identity(
-                    template, target, signal_path, color_path,
-                    products_root=products_root, job_id=job_id,
+        for index, (target, job) in enumerate(target_jobs):
+            job_id = job["job_id"]
+            if job_id in results_by_job:
+                continue
+            if signal_controller.stop_requested:
+                stop_reason = signal_controller.signal_name or "signal"
+                break
+            if not deadline.may_start():
+                stop_reason = "soft-deadline"
+                state.set_run_state(run_id, "SOFT_STOPPED")
+                break
+            signal_path, color_path = target_paths(target, data_root)
+            identity = expected_run_identity(
+                template, target, signal_path, color_path,
+                products_root=products_root, job_id=job_id,
+            )
+            current_job = state.get_job(run_id, job_id)
+            if current_job["attempt_count"] >= args.max_attempts:
+                state.transition_job(
+                    run_id, job_id, "FAILED", force=True,
+                    error="maximum attempt count reached",
                 )
-                identities[job_id] = identity
-
-                current_job = state.get_job(run_id, job_id)
-                if current_job["attempt_count"] >= args.max_attempts:
-                    state.transition_job(
-                        run_id, job_id, "FAILED", force=True,
-                        error="maximum attempt count reached",
-                    )
-                    results_by_job[job_id] = {
-                        "job_id": job_id,
-                        "galaxy": target["name"],
-                        "status": "failed",
-                        "error": "maximum attempt count reached",
-                    }
-                    persist_target_status(
-                        target,
-                        "failed",
-                        error="maximum attempt count reached",
-                    )
-                    continue
-
-                if target_inputs_ready(target, data_root):
-                    state.transition_job(run_id, job_id, "READY", force=True)
-                    ready_inputs = input_wait_snapshot(target, data_root)
-                    emit_campaign_event(
-                        event_log_path,
-                        "INPUT_READY_INITIAL",
-                        state=state,
-                        run_id=run_id,
-                        job_id=job_id,
-                        payload={
-                            "target": target["name"],
-                            "program": canonical_program(target.get("program")),
-                            "inputs": ready_inputs,
-                        },
-                    )
-                    print(
-                        f"[{timestamp()}] [INPUT_READY_INITIAL] "
-                        f"{format_input_progress(target, ready_inputs)}"
-                    )
-                    if prefetch_job_id == job_id:
-                        stop_download_manager(prefetch_proc)
-                        prefetch_proc = None
-                        prefetch_job_id = None
-                else:
-                    state.transition_job(run_id, job_id, "DOWNLOADING", force=True)
-                    if prefetch_job_id != job_id:
-                        stop_download_manager(prefetch_proc)
-                        protected_targets = [
-                            candidate_target
-                            for candidate_target, candidate_job in target_jobs
-                            if candidate_job["job_id"] not in results_by_job
-                        ]
-                        prefetch_proc = start_download_manager(
-                            args,
-                            [target],
-                            completed_results,
-                            protected_targets=protected_targets,
-                        )
-                        prefetch_job_id = job_id
-                    ready, reason = wait_for_campaign_inputs(
-                        target, data_root, prefetch_proc, deadline,
-                        signal_controller, args.poll_seconds, args.timeout_seconds,
-                        state=state, run_id=run_id, job_id=job_id,
-                        emergency_ram_gb=args.emergency_available_ram_gb,
-                        critical_free_gb=args.critical_free_gb,
-                        external_status_path=external_status_path,
-                        event_log_path=event_log_path,
-                    )
-                    if not ready:
-                        state.transition_job(
-                            run_id, job_id, "INTERRUPTED", force=True, error=reason
-                        )
-                        persist_target_status(target, "pending", error=reason)
-                        stop_reason = reason
-                        break
-                    stop_download_manager(prefetch_proc)
-                    prefetch_proc = None
-                    prefetch_job_id = None
-                    state.transition_job(run_id, job_id, "READY", force=True)
-
-                if not wait_for_worker_capacity(
-                    args, data_root, deadline, signal_controller,
-                    state=state, run_id=run_id, job_id=job_id,
-                    pending_targets=[
-                        candidate_target
-                        for candidate_target, candidate_job in target_jobs
-                        if candidate_job["job_id"] not in results_by_job
-                    ],
-                ):
-                    state.transition_job(
-                        run_id, job_id, "INTERRUPTED", force=True,
-                        error="stopped while waiting for resources",
-                    )
-                    persist_target_status(
-                        target,
-                        "pending",
-                        error="stopped while waiting for resources",
-                    )
-                    stop_reason = "resource-wait-stopped"
-                    break
-                if not deadline.may_start():
-                    state.transition_job(run_id, job_id, "READY", force=True)
-                    persist_target_status(
-                        target, "pending", error="soft deadline reached"
-                    )
-                    state.set_run_state(run_id, "SOFT_STOPPED")
-                    stop_reason = "soft-deadline"
-                    break
-
-                # At most one future target is downloaded while this worker runs.
-                if args.prefetch_targets == 1:
-                    for next_target, next_job in target_jobs[index + 1 :]:
-                        if next_job["job_id"] in results_by_job:
-                            continue
-                        if not target_inputs_ready(next_target, data_root):
-                            state.transition_job(
-                                run_id,
-                                next_job["job_id"],
-                                "DOWNLOADING",
-                                force=True,
-                                details={"reason": "single-target prefetch"},
-                            )
-                            protected_targets = [
-                                candidate_target
-                                for candidate_target, candidate_job in target_jobs
-                                if candidate_job["job_id"] not in results_by_job
-                            ]
-                            prefetch_proc = start_download_manager(
-                                args,
-                                [next_target],
-                                completed_results,
-                                protected_targets=protected_targets,
-                            )
-                            prefetch_job_id = next_job["job_id"]
-                        break
-
-                cmd = [
-                    sys.executable,
-                    str(Path(__file__).resolve()),
-                    "--worker",
-                    "--job-id", job_id,
-                    "--galaxy", target["name"],
-                    "--signal", str(signal_path),
-                    "--color", str(color_path),
-                    "--signal-filter", target["signal_filter"],
-                    "--color-filter", target["color_filter"],
-                    "--template", str(template),
-                    "--batch-root", str(batch_root),
-                    "--wss-opd-dir", str(Path(args.wss_opd_dir).resolve()),
-                    "--stpsf-data-dir", str(Path(args.stpsf_data_dir).resolve()),
-                    "--max-opd-delta-days", str(args.max_opd_delta_days),
-                ]
-                attempt_output_key = (
-                    f"{run_id}__attempt-{current_job['attempt_count'] + 1}"
-                    f"__{int(time.time())}"
-                )
-                cmd.extend(["--attempt-output-key", attempt_output_key])
-                if products_root is not None:
-                    cmd.extend(["--products-root", str(products_root)])
-                print(f"[{timestamp()}] starting worker: {' '.join(cmd)}")
-                emit_campaign_event(
-                    event_log_path,
-                    "WORKER_START_REQUESTED",
-                    state=state,
-                    run_id=run_id,
-                    job_id=job_id,
-                    payload={
-                        "target": target["name"],
-                        "program": canonical_program(target.get("program")),
-                        "filters": {
-                            "signal": target["signal_filter"],
-                            "color": target["color_filter"],
-                        },
-                        "command": cmd,
-                        "signal_path": str(signal_path),
-                        "color_path": str(color_path),
-                    },
-                )
-                state.transition_job(run_id, job_id, "RUNNING", force=True)
+                results_by_job[job_id] = {
+                    "job_id": job_id,
+                    "galaxy": target["name"],
+                    "status": "failed",
+                    "error": "maximum attempt count reached",
+                }
                 persist_target_status(
                     target,
-                    "running",
-                    method=template_family or "sbf2",
-                    quantity=PRIMARY_QUANTITY,
+                    "failed",
+                    error="maximum attempt count reached",
+                )
+                continue
+            if not target_inputs_ready(target, data_root):
+                raise RuntimeError(
+                    f"{target['name']}: local inputs disappeared; "
+                    "run download_go3055_go7763.py before processing"
+                )
+            state.transition_job(run_id, job_id, "READY", force=True)
+            ready_inputs = input_wait_snapshot(target, data_root)
+            emit_campaign_event(
+                event_log_path,
+                "INPUT_READY_INITIAL",
+                state=state,
+                run_id=run_id,
+                job_id=job_id,
+                payload={
+                    "target": target["name"],
+                    "program": canonical_program(target.get("program")),
+                    "inputs": ready_inputs,
+                },
+            )
+            print(
+                f"[{timestamp()}] [INPUT_READY_INITIAL] "
+                f"{format_input_progress(target, ready_inputs)}"
+            )
+            if not wait_for_worker_capacity(
+                args, data_root, deadline, signal_controller,
+                state=state, run_id=run_id, job_id=job_id,
+                pending_targets=[
+                    candidate_target
+                    for candidate_target, candidate_job in target_jobs
+                    if candidate_job["job_id"] not in results_by_job
+                ],
+            ):
+                state.transition_job(
+                    run_id, job_id, "INTERRUPTED", force=True,
+                    error="stopped while waiting for resources",
+                )
+                persist_target_status(
+                    target,
+                    "pending",
+                    error="stopped while waiting for resources",
+                )
+                stop_reason = "resource-wait-stopped"
+                break
+            if not deadline.may_start():
+                state.transition_job(run_id, job_id, "READY", force=True)
+                persist_target_status(
+                    target, "pending", error="soft deadline reached"
+                )
+                state.set_run_state(run_id, "SOFT_STOPPED")
+                stop_reason = "soft-deadline"
+                break
+            # At most one future target is downloaded while this worker runs.
+            cmd = [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                "--worker",
+                "--job-id", job_id,
+                "--galaxy", target["name"],
+                "--signal", str(signal_path),
+                "--color", str(color_path),
+                "--signal-filter", target["signal_filter"],
+                "--color-filter", target["color_filter"],
+                "--template", str(template),
+                "--batch-root", str(batch_root),
+                "--wss-opd-dir", str(Path(args.wss_opd_dir).resolve()),
+                "--stpsf-data-dir", str(Path(args.stpsf_data_dir).resolve()),
+                "--max-opd-delta-days", str(args.max_opd_delta_days),
+            ]
+            attempt_output_key = (
+                f"{run_id}__attempt-{current_job['attempt_count'] + 1}"
+                f"__{int(time.time())}"
+            )
+            cmd.extend(["--attempt-output-key", attempt_output_key])
+            if products_root is not None:
+                cmd.extend(["--products-root", str(products_root)])
+            print(f"[{timestamp()}] starting worker: {' '.join(cmd)}")
+            emit_campaign_event(
+                event_log_path,
+                "WORKER_START_REQUESTED",
+                state=state,
+                run_id=run_id,
+                job_id=job_id,
+                payload={
+                    "target": target["name"],
+                    "program": canonical_program(target.get("program")),
+                    "filters": {
+                        "signal": target["signal_filter"],
+                        "color": target["color_filter"],
+                    },
+                    "command": cmd,
+                    "signal_path": str(signal_path),
+                    "color_path": str(color_path),
+                },
+            )
+            state.transition_job(run_id, job_id, "RUNNING", force=True)
+            persist_target_status(
+                target,
+                "running",
+                method=template_family or "sbf2",
+                quantity=PRIMARY_QUANTITY,
+                error="",
+            )
+            worker_log = result_json_path(
+                batch_root, target["name"], identity=identity
+            ).with_suffix(".log")
+            try:
+                proc = launch_process_group(cmd)
+            except Exception as exc:
+                attempt = state.record_attempt_start(
+                    run_id, job_id, command=cmd, pid=None, log_path=worker_log
+                )
+                state.record_attempt_end(
+                    attempt["attempt_id"], state="FAILED", error=repr(exc)
+                )
+                state.transition_job(
+                    run_id, job_id, "FAILED", force=True, error=repr(exc)
+                )
+                results_by_job[job_id] = {
+                    "job_id": job_id,
+                    "galaxy": target["name"],
+                    "status": "failed",
+                    "error": f"worker could not start: {exc!r}",
+                }
+                persist_target_status(
+                    target,
+                    "failed",
+                    error=f"worker could not start: {exc!r}",
+                )
+                continue
+            try:
+                attempt = state.record_attempt_start(
+                    run_id, job_id, command=cmd, pid=proc.pid,
+                    log_path=worker_log,
+                )
+            except BaseException:
+                terminate_process_group(
+                    proc,
+                    term_grace_seconds=args.worker_term_grace_seconds,
+                    kill_grace_seconds=args.worker_kill_grace_seconds,
+                )
+                state.transition_job(
+                    run_id, job_id, "INTERRUPTED", force=True,
+                    error="failed to persist worker attempt",
+                )
+                persist_target_status(
+                    target,
+                    "pending",
+                    error="failed to persist worker attempt",
+                )
+                raise
+            timeout_seconds = (
+                None
+                if args.worker_timeout_hours <= 0
+                else args.worker_timeout_hours * 3600
+            )
+            try:
+                supervision = supervise_process(
+                    proc,
+                    deadline=deadline,
+                    signal_controller=signal_controller,
+                    timeout_seconds=timeout_seconds,
+                    sample_interval_seconds=args.resource_sample_seconds,
+                    disk_path=data_root,
+                    min_available_ram_gib=args.min_available_ram_gb,
+                    emergency_available_ram_gib=args.emergency_available_ram_gb,
+                    max_worker_rss_gib=(
+                        None
+                        if args.max_worker_rss_gb <= 0
+                        else args.max_worker_rss_gb
+                    ),
+                    min_free_disk_gib=args.critical_free_gb,
+                    callback=lambda sample, jid=job_id, aid=attempt["attempt_id"]: (
+                        record_resource_sample(state, run_id, jid, aid, sample)
+                    ),
+                    term_grace_seconds=args.worker_term_grace_seconds,
+                    kill_grace_seconds=args.worker_kill_grace_seconds,
+                )
+            except BaseException as exc:
+                terminate_process_group(
+                    proc,
+                    term_grace_seconds=args.worker_term_grace_seconds,
+                    kill_grace_seconds=args.worker_kill_grace_seconds,
+                )
+                state.record_attempt_end(
+                    attempt["attempt_id"],
+                    state="INTERRUPTED",
+                    exit_code=proc.poll(),
+                    error=f"supervisor failed: {exc!r}",
+                )
+                state.transition_job(
+                    run_id,
+                    job_id,
+                    "INTERRUPTED",
+                    force=True,
+                    error=f"supervisor failed: {exc!r}",
+                )
+                persist_target_status(
+                    target,
+                    "pending",
+                    error=f"supervisor failed: {exc!r}",
+                )
+                raise
+            emit_campaign_event(
+                event_log_path,
+                "WORKER_SUPERVISION_ENDED",
+                state=state,
+                run_id=run_id,
+                job_id=job_id,
+                attempt_id=attempt["attempt_id"],
+                payload=supervision.as_dict(),
+            )
+            result = verified_campaign_result(target, batch_root, identity)
+            if supervision.ok and result is not None:
+                result["go3055_qc"] = evaluate_go3055_qc(result)
+                result["qc_status"] = result["go3055_qc"]["status"]
+                result["qc_flags"] = result["go3055_qc"]["flags"]
+                state.transition_job(run_id, job_id, "VERIFYING", force=True)
+                for artifact in result.get("artifact_manifest", []):
+                    state.record_artifact(
+                        run_id, job_id, attempt_id=attempt["attempt_id"],
+                        kind=artifact["name"], path=artifact["path"],
+                        size_bytes=artifact.get("size_bytes"),
+                        sha256=artifact.get("sha256"), verified=artifact.get("ok"),
+                        metadata={
+                            "fits_valid": artifact.get("fits_valid"),
+                            "csv_valid": artifact.get("csv_valid"),
+                            "row_count": artifact.get("row_count"),
+                        },
+                    )
+                state.record_attempt_end(
+                    attempt["attempt_id"], state="SUCCEEDED",
+                    exit_code=supervision.returncode,
+                    metadata={"supervision": supervision.as_dict()},
+                )
+                state.transition_job(run_id, job_id, "SUCCEEDED")
+                completed_results.append(result)
+                results_by_job[job_id] = result
+                science_fields = science_status_fields(result)
+                persist_target_status(
+                    target,
+                    "done",
+                    method=target_status_measurement_method(result),
+                    **science_fields,
+                    result_json=result_json_path(
+                        batch_root, target["name"], identity=identity
+                    ),
+                    qc=result["go3055_qc"]["summary"],
                     error="",
                 )
-                worker_log = result_json_path(
-                    batch_root, target["name"], identity=identity
-                ).with_suffix(".log")
-                try:
-                    proc = launch_process_group(cmd)
-                except Exception as exc:
-                    attempt = state.record_attempt_start(
-                        run_id, job_id, command=cmd, pid=None, log_path=worker_log
-                    )
-                    state.record_attempt_end(
-                        attempt["attempt_id"], state="FAILED", error=repr(exc)
-                    )
-                    state.transition_job(
-                        run_id, job_id, "FAILED", force=True, error=repr(exc)
-                    )
-                    results_by_job[job_id] = {
-                        "job_id": job_id,
-                        "galaxy": target["name"],
-                        "status": "failed",
-                        "error": f"worker could not start: {exc!r}",
-                    }
-                    persist_target_status(
-                        target,
-                        "failed",
-                        error=f"worker could not start: {exc!r}",
-                    )
-                    continue
-                try:
-                    attempt = state.record_attempt_start(
-                        run_id, job_id, command=cmd, pid=proc.pid,
-                        log_path=worker_log,
-                    )
-                except BaseException:
-                    terminate_process_group(
-                        proc,
-                        term_grace_seconds=args.worker_term_grace_seconds,
-                        kill_grace_seconds=args.worker_kill_grace_seconds,
-                    )
-                    state.transition_job(
-                        run_id, job_id, "INTERRUPTED", force=True,
-                        error="failed to persist worker attempt",
-                    )
-                    persist_target_status(
-                        target,
-                        "pending",
-                        error="failed to persist worker attempt",
-                    )
-                    raise
-                timeout_seconds = (
-                    None
-                    if args.worker_timeout_hours <= 0
-                    else args.worker_timeout_hours * 3600
-                )
-                try:
-                    supervision = supervise_process(
-                        proc,
-                        deadline=deadline,
-                        signal_controller=signal_controller,
-                        timeout_seconds=timeout_seconds,
-                        sample_interval_seconds=args.resource_sample_seconds,
-                        disk_path=data_root,
-                        min_available_ram_gib=args.min_available_ram_gb,
-                        emergency_available_ram_gib=args.emergency_available_ram_gb,
-                        max_worker_rss_gib=(
-                            None
-                            if args.max_worker_rss_gb <= 0
-                            else args.max_worker_rss_gb
-                        ),
-                        min_free_disk_gib=args.critical_free_gb,
-                        callback=lambda sample, jid=job_id, aid=attempt["attempt_id"]: (
-                            record_resource_sample(state, run_id, jid, aid, sample)
-                        ),
-                        term_grace_seconds=args.worker_term_grace_seconds,
-                        kill_grace_seconds=args.worker_kill_grace_seconds,
-                    )
-                except BaseException as exc:
-                    terminate_process_group(
-                        proc,
-                        term_grace_seconds=args.worker_term_grace_seconds,
-                        kill_grace_seconds=args.worker_kill_grace_seconds,
-                    )
-                    state.record_attempt_end(
-                        attempt["attempt_id"],
-                        state="INTERRUPTED",
-                        exit_code=proc.poll(),
-                        error=f"supervisor failed: {exc!r}",
-                    )
-                    state.transition_job(
-                        run_id,
-                        job_id,
-                        "INTERRUPTED",
-                        force=True,
-                        error=f"supervisor failed: {exc!r}",
-                    )
-                    persist_target_status(
-                        target,
-                        "pending",
-                        error=f"supervisor failed: {exc!r}",
-                    )
-                    raise
                 emit_campaign_event(
                     event_log_path,
-                    "WORKER_SUPERVISION_ENDED",
+                    "ARTIFACTS_VERIFIED",
                     state=state,
                     run_id=run_id,
                     job_id=job_id,
                     attempt_id=attempt["attempt_id"],
-                    payload=supervision.as_dict(),
-                )
-
-                result = verified_campaign_result(target, batch_root, identity)
-                if supervision.ok and result is not None:
-                    result["go3055_qc"] = evaluate_go3055_qc(result)
-                    result["qc_status"] = result["go3055_qc"]["status"]
-                    result["qc_flags"] = result["go3055_qc"]["flags"]
-                    state.transition_job(run_id, job_id, "VERIFYING", force=True)
-                    for artifact in result.get("artifact_manifest", []):
-                        state.record_artifact(
-                            run_id, job_id, attempt_id=attempt["attempt_id"],
-                            kind=artifact["name"], path=artifact["path"],
-                            size_bytes=artifact.get("size_bytes"),
-                            sha256=artifact.get("sha256"), verified=artifact.get("ok"),
-                            metadata={
-                                "fits_valid": artifact.get("fits_valid"),
-                                "csv_valid": artifact.get("csv_valid"),
-                                "row_count": artifact.get("row_count"),
-                            },
-                        )
-                    state.record_attempt_end(
-                        attempt["attempt_id"], state="SUCCEEDED",
-                        exit_code=supervision.returncode,
-                        metadata={"supervision": supervision.as_dict()},
-                    )
-                    state.transition_job(run_id, job_id, "SUCCEEDED")
-                    completed_results.append(result)
-                    results_by_job[job_id] = result
-                    science_fields = science_status_fields(result)
-                    persist_target_status(
-                        target,
-                        "done",
-                        method=target_status_measurement_method(result),
-                        **science_fields,
-                        result_json=result_json_path(
-                            batch_root, target["name"], identity=identity
+                    payload={
+                        "target": target["name"],
+                        "artifact_count": result.get("artifact_count"),
+                        "artifact_manifest_path": result.get(
+                            "artifact_manifest_path"
                         ),
-                        qc=result["go3055_qc"]["summary"],
-                        error="",
-                    )
-                    emit_campaign_event(
-                        event_log_path,
-                        "ARTIFACTS_VERIFIED",
-                        state=state,
-                        run_id=run_id,
-                        job_id=job_id,
-                        attempt_id=attempt["attempt_id"],
-                        payload={
-                            "target": target["name"],
-                            "artifact_count": result.get("artifact_count"),
-                            "artifact_manifest_path": result.get(
-                                "artifact_manifest_path"
-                            ),
-                            "artifacts": result.get("artifact_manifest"),
-                        },
-                    )
-                else:
-                    error = supervision.detail or (
-                        f"worker exited {supervision.returncode}; "
-                        "required artifacts are absent or invalid"
-                    )
-                    attempt_state = (
-                        "INTERRUPTED"
-                        if supervision.reason in {"signal", "deadline"}
-                        else "FAILED"
-                    )
-                    state.record_attempt_end(
-                        attempt["attempt_id"], state=attempt_state,
-                        exit_code=supervision.returncode, error=error,
-                        metadata={"supervision": supervision.as_dict()},
-                    )
-                    refreshed = state.get_job(run_id, job_id)
-                    if (
-                        attempt_state == "FAILED"
-                        and refreshed["attempt_count"] < args.max_attempts
-                        and deadline.may_start()
-                        and not signal_controller.stop_requested
-                    ):
-                        state.transition_job(
-                            run_id, job_id, "RETRY_WAIT", force=True, error=error
-                        )
-                        persist_target_status(target, "failed", error=error)
-                        # Requeue at the tail.  The stable job_id keeps the
-                        # second attempt attached to the same database row.
-                        target_jobs.append((target, state.get_job(run_id, job_id)))
-                    else:
-                        state.transition_job(
-                            run_id, job_id, attempt_state, force=True, error=error
-                        )
-                        persist_target_status(
-                            target,
-                            "pending" if attempt_state == "INTERRUPTED" else "failed",
-                            error=error,
-                        )
-                        results_by_job[job_id] = {
-                            "job_id": job_id,
-                            "galaxy": target["name"],
-                            "status": "failed",
-                            "error": error,
-                            "supervision": supervision.as_dict(),
-                        }
-                    if attempt_state == "INTERRUPTED":
-                        stop_reason = supervision.reason
-                        break
-
-                current_results = list(results_by_job.values())
-                write_summary(current_results, batch_root)
-                write_go3055_qc(current_results, batch_root)
-                link_residuals(current_results, batch_root)
-                state.snapshot_queue(run_id)
-                ensure_disk_space_for_downloads(
-                    data_root, completed_results,
-                    min_free_gb=args.min_free_gb,
-                    cleanup_enabled=not args.no_cleanup_inputs,
-                    protected_input_paths={
-                        str(path.resolve())
-                        for candidate_target, candidate_job in target_jobs
-                        if candidate_job["job_id"] not in results_by_job
-                        for path in local_target_files(
-                            candidate_target, data_root
-                        ).values()
+                        "artifacts": result.get("artifact_manifest"),
                     },
                 )
-                gc.collect()
-        finally:
-            stop_download_manager(prefetch_proc)
+            else:
+                error = supervision.detail or (
+                    f"worker exited {supervision.returncode}; "
+                    "required artifacts are absent or invalid"
+                )
+                attempt_state = (
+                    "INTERRUPTED"
+                    if supervision.reason in {"signal", "deadline"}
+                    else "FAILED"
+                )
+                state.record_attempt_end(
+                    attempt["attempt_id"], state=attempt_state,
+                    exit_code=supervision.returncode, error=error,
+                    metadata={"supervision": supervision.as_dict()},
+                )
+                refreshed = state.get_job(run_id, job_id)
+                if (
+                    attempt_state == "FAILED"
+                    and refreshed["attempt_count"] < args.max_attempts
+                    and deadline.may_start()
+                    and not signal_controller.stop_requested
+                ):
+                    state.transition_job(
+                        run_id, job_id, "RETRY_WAIT", force=True, error=error
+                    )
+                    persist_target_status(target, "failed", error=error)
+                    # Requeue at the tail.  The stable job_id keeps the
+                    # second attempt attached to the same database row.
+                    target_jobs.append((target, state.get_job(run_id, job_id)))
+                else:
+                    state.transition_job(
+                        run_id, job_id, attempt_state, force=True, error=error
+                    )
+                    persist_target_status(
+                        target,
+                        "pending" if attempt_state == "INTERRUPTED" else "failed",
+                        error=error,
+                    )
+                    results_by_job[job_id] = {
+                        "job_id": job_id,
+                        "galaxy": target["name"],
+                        "status": "failed",
+                        "error": error,
+                        "supervision": supervision.as_dict(),
+                    }
+                if attempt_state == "INTERRUPTED":
+                    stop_reason = supervision.reason
+                    break
+            current_results = list(results_by_job.values())
+            write_summary(current_results, batch_root)
+            write_go3055_qc(current_results, batch_root)
+            link_residuals(current_results, batch_root)
+            state.snapshot_queue(run_id)
+            gc.collect()
 
     final_results = list(results_by_job.values())
     write_summary(final_results, batch_root)
@@ -4801,7 +3900,7 @@ def parse_args(argv=None):
         "--extra-target-csv",
         action="append",
         default=[],
-        help="additional target manifest; may be repeated",
+        help=argparse.SUPPRESS,
     )
     parser.add_argument(
         "--programs",
@@ -4818,8 +3917,6 @@ def parse_args(argv=None):
         ),
     )
     parser.add_argument("--poll-seconds", type=int, default=60)
-    parser.add_argument("--timeout-seconds", type=int, default=0)
-    parser.add_argument("--download-retry-seconds", type=int, default=120)
     parser.add_argument("--min-free-gb", type=float, default=40.0)
     parser.add_argument("--min-available-ram-gb", type=float, default=0.0)
     parser.add_argument(
@@ -4880,28 +3977,9 @@ def parse_args(argv=None):
     parser.add_argument("--worker-term-grace-seconds", type=float, default=300.0)
     parser.add_argument("--worker-kill-grace-seconds", type=float, default=10.0)
     parser.add_argument("--max-attempts", type=int, default=5)
-    parser.add_argument(
-        "--prefetch-targets",
-        type=int,
-        choices=(0, 1),
-        default=0,
-        help="hard cap on future targets downloaded while a worker runs",
-    )
     parser.add_argument("--galaxies", nargs="*", default=None)
     parser.add_argument(
         "--target-keys",
-        nargs="*",
-        default=None,
-        help=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--cleanup-job-ids",
-        nargs="*",
-        default=None,
-        help=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--protected-inputs",
         nargs="*",
         default=None,
         help=argparse.SUPPRESS,
@@ -4914,33 +3992,19 @@ def parse_args(argv=None):
             f"{MAX_IMPLICIT_TARGETS} actionable targets"
         ),
     )
-    download_mode = parser.add_mutually_exclusive_group()
-    download_mode.add_argument(
+    parser.add_argument(
         "--no-download",
         dest="no_download",
         action="store_true",
         default=True,
-        help="offline mode (default)",
+        help=argparse.SUPPRESS,
     )
-    download_mode.add_argument(
-        "--allow-download",
-        dest="no_download",
-        action="store_false",
-        help="explicitly allow the inherited downloader",
-    )
-    cleanup_mode = parser.add_mutually_exclusive_group()
-    cleanup_mode.add_argument(
+    parser.add_argument(
         "--no-cleanup-inputs",
         dest="no_cleanup_inputs",
         action="store_true",
         default=True,
-        help="never remove GO-3055 science inputs (default)",
-    )
-    cleanup_mode.add_argument(
-        "--allow-input-cleanup",
-        dest="no_cleanup_inputs",
-        action="store_false",
-        help="explicitly allow removal of verified completed inputs",
+        help=argparse.SUPPRESS,
     )
     parser.add_argument("--wss-opd-dir", default=str(DEFAULT_WSS_OPD_DIR))
     parser.add_argument(
@@ -4954,7 +4018,6 @@ def parse_args(argv=None):
         help="maximum allowed science-to-WSS-OPD date separation",
     )
     parser.add_argument("--worker", action="store_true")
-    parser.add_argument("--download-worker", action="store_true")
     parser.add_argument("--galaxy", default=None)
     parser.add_argument("--job-id", default=None)
     parser.add_argument(
@@ -4989,37 +4052,6 @@ def main():
     global _ACTIVE_CAMPAIGN_LOCK
     args = parse_args()
     normalize_cli_paths(args)
-    if args.download_worker:
-        targets = load_manifest_targets(
-            args.target_csv,
-            args.data_root,
-            args.extra_target_csv,
-        )
-        targets = select_targets(
-            targets,
-            args.galaxies,
-            allow_bulk_targets=args.allow_bulk_targets,
-            target_keys=args.target_keys,
-            programs=args.programs,
-        )
-        if not targets:
-            raise RuntimeError("download worker has no explicitly selected targets")
-        completed_results = load_completed_results(
-            args.batch_root,
-            allowed_job_ids=set(args.cleanup_job_ids or []),
-        )
-        download_targets_until_stopped(
-            targets,
-            Path(args.data_root).resolve(),
-            Path(args.batch_root).resolve(),
-            completed_results,
-            min_free_gb=args.min_free_gb,
-            cleanup_enabled=not args.no_cleanup_inputs,
-            retry_sleep=args.download_retry_seconds,
-            eligible_cleanup_job_ids=set(args.cleanup_job_ids or []),
-            protected_input_paths=set(args.protected_inputs or []),
-        )
-        return 0
     if args.worker:
         if not args.galaxy or not args.signal or not args.color:
             raise SystemExit("--worker requires --galaxy, --signal and --color")

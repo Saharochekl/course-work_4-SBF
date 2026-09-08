@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare local JWST WSS OPDs for fully offline STPSF calculations.
+"""RU: локальные WSS OPD для автономного STPSF. EN: offline WSS OPD cache.
 
 The default mode only inventories local ``*_i2d.fits`` files (including usable
 partial headers from the program manifests) and checks the project-local OPD
@@ -11,7 +11,6 @@ science date within the configured maximum age.
 from __future__ import annotations
 
 import argparse
-import json
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.request import Request, urlopen
@@ -19,15 +18,20 @@ from urllib.request import Request, urlopen
 import numpy as np
 from astropy.io import fits
 from astropy.time import Time
-from stpsf import mast_wss
 
-from download_go3055_go7763 import partial_path, read_products, restart_path
+from download_go3055_go7763 import FITS_BLOCK_SIZE, partial_path, read_products, restart_path
+from sbf_campaign_runtime import atomic_write_json
 
 
+# Portable cache destinations; no user-specific absolute path is stored here.
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA_ROOT = PROJECT_ROOT / "data"
 DEFAULT_OUTPUT_DIR = DEFAULT_DATA_ROOT / "wss_opd"
-FITS_HEADER_PROBE_BYTES = 2880 * 32
+# FITS cards are fixed at 80 bytes; 32 blocks cover normal JWST primary headers
+# without downloading a science image. Oversized headers fail explicitly.
+FITS_CARD_SIZE = 80
+FITS_HEADER_PROBE_BYTES = FITS_BLOCK_SIZE * 32
+# Identifies range probes to the archive, not a scientific parameter.
 USER_AGENT = "course-work-SBF/wss-opd-1.0"
 
 
@@ -48,7 +52,7 @@ def header_time(header) -> Time | None:
 
 def opd_time(path: Path) -> Time | None:
     try:
-        if path.stat().st_size <= 0 or path.stat().st_size % 2880:
+        if path.stat().st_size <= 0 or path.stat().st_size % FITS_BLOCK_SIZE:
             return None
         with fits.open(path, memmap=False) as hdul:
             hdul.verify("exception")
@@ -107,9 +111,9 @@ def group_science_headers(
 def parse_fits_header_prefix(payload: bytes) -> fits.Header:
     """Parse a primary FITS header from a small HTTP range response."""
     end_offset = None
-    for offset in range(0, len(payload) - 79, 80):
+    for offset in range(0, len(payload) - FITS_CARD_SIZE + 1, FITS_CARD_SIZE):
         if payload[offset : offset + 8] == b"END     ":
-            end_offset = offset + 80
+            end_offset = offset + FITS_CARD_SIZE
             break
     if end_offset is None:
         raise ValueError(
@@ -230,7 +234,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--program", choices=("3055", "7763", "both"), default="both"
     )
+    # This is an inventory coverage cap, not an assumed optical-stability time.
+    # The measured nearest OPD and exact time difference remain in the report.
     parser.add_argument("--max-delta-days", type=float, default=30.0)
+    # Tiny header probes should not hang the inventory indefinitely.
     parser.add_argument("--header-timeout", type=float, default=30.0)
     parser.add_argument(
         "--remote-manifest-headers",
@@ -248,6 +255,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.max_delta_days < 0 or args.header_timeout <= 0:
+        raise SystemExit("--max-delta-days >= 0 and --header-timeout > 0 required")
+    # STPSF may inspect remote reference metadata at import time. Keep even
+    # that import out of dry-run; load it only after explicit --download.
+    if args.download:
+        from stpsf import mast_wss
     data_root = args.data_root.resolve()
     output_dir = args.output_dir.resolve()
     status_file = (args.status_file or output_dir / "download_status.json").resolve()
@@ -334,7 +347,7 @@ def main(argv: list[str] | None = None) -> int:
         "manifest_headers": product_header_inventory,
         "dates": rows,
     }
-    status_file.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+    atomic_write_json(status_file, payload)
     print(
         f"Готово локально: {payload['ready_count']}/{payload['date_count']}; "
         f"отчёт: {status_file}"

@@ -9,6 +9,9 @@ galaxy it performs two durable stages:
 2. measure the adopted ``normalized_full_3p5`` branch, reading the saved
    normalized FITS back before the FFT.
 
+RU: два этапа — модель/маска/PSF, затем спектр нормированных остатков.
+EN: settings and retained scientific safeguards are listed in docs/measurement.rst.
+
 The public completion marker is a plain ``target_status.csv``.  Internal
 fingerprints are used only to protect numerical caches; they never decide the
 human-readable status by themselves.
@@ -105,19 +108,13 @@ DEFAULT_STPSF_DATA = default_stpsf_data_dir()
 DEFAULT_WSS_OPD = DEFAULT_DATA_ROOT / "wss_opd"
 SIGNAL_FILTER = "F090W"
 AUXILIARY_FILTER = "F150W"
-MAIN_KMIN = 0.04
-MAIN_KMAX = 0.25
-ESTIMATED_CAMPAIGN_GB = 50.0
+MAIN_KMIN = 0.04  # RU/EN: adopted window; 0.01/0.03 remain sensitivity checks.
+MAIN_KMAX = 0.25  # RU/EN: same frequency ceiling as the frozen F150W analysis.
+ESTIMATED_CAMPAIGN_GB = 50.0  # RU/EN: storage estimate, not a scientific parameter.
 FINAL_TABLE_KEYS = {
     "power_spectra", "fit_per_psf", "fit_summary", "clipping",
     "production_closure", "combined_annuli",
 }
-SOURCE_SCHEMA_REPAIR_TARGETS = {
-    "NGC 1380", "NGC 1399", "NGC 1404", "NGC 4374", "NGC 4406",
-    "NGC 4472", "NGC 4486", "NGC 4552", "NGC 4621", "NGC 4636",
-    "NGC 4649", "NGC 4697", "NGC 1549", "NGC 3379",
-}
-
 STATUS_COLUMNS = [
     "galaxy",
     "status",
@@ -382,7 +379,7 @@ def invalidate_completion_markers(
 def _read_json(path: Path) -> dict[str, Any] | None:
     try:
         return load_project_json(path)
-    except Exception:
+    except (OSError, ValueError):
         return None
 
 
@@ -545,63 +542,62 @@ def source_result_valid(
         except Exception as error:
             return False, result, f"unreadable source table: {value}: {error}"
     source_schema = int(result.get("f090_source_schema", 1))
-    if galaxy in SOURCE_SCHEMA_REPAIR_TARGETS and source_schema < F090W_SOURCE_SCHEMA:
+    if source_schema < F090W_SOURCE_SCHEMA:
         return (
             False,
             result,
             "legacy F090W source must be rebuilt with the current isophote method",
         )
-    if source_schema >= F090W_SOURCE_SCHEMA:
-        if result.get("f090_isophote_method") != F090W_ISOPHOTE_METHOD:
-            return False, result, "source result uses a different isophote method"
-        if result.get("f090_mask_method") != F090W_MASK_METHOD:
-            return False, result, "source result uses a different contaminant-mask method"
-        diagnostics = result.get("f090_diagnostic_tables", {})
-        expected = {
-            "center", "isophote_attempts", "isophotes",
-            "external_contaminants",
-        }
-        if set(diagnostics) != expected:
-            return False, result, "source result misses F090W centre/isophote diagnostics"
-        for name, value in diagnostics.items():
-            try:
-                table = pd.read_csv(value)
-                if name != "external_contaminants" and table.empty:
-                    raise ValueError("empty table")
-            except Exception as error:
-                return False, result, f"unreadable F090W {name} table: {value}: {error}"
+    if result.get("f090_isophote_method") != F090W_ISOPHOTE_METHOD:
+        return False, result, "source result uses a different isophote method"
+    if result.get("f090_mask_method") != F090W_MASK_METHOD:
+        return False, result, "source result uses a different contaminant-mask method"
+    diagnostics = result.get("f090_diagnostic_tables", {})
+    expected = {
+        "center", "isophote_attempts", "isophotes",
+        "external_contaminants",
+    }
+    if set(diagnostics) != expected:
+        return False, result, "source result misses F090W centre/isophote diagnostics"
+    for name, value in diagnostics.items():
         try:
-            table_qc = _selected_isophote_qc(
-                Path(diagnostics["isophote_attempts"])
-            )
+            table = pd.read_csv(value)
+            if name != "external_contaminants" and table.empty:
+                raise ValueError("empty table")
         except Exception as error:
-            return False, result, f"cannot recheck F090W isophote QC: {error}"
-        if not table_qc["passed"]:
-            return (
-                False,
-                result,
-                "F090W isophote geometry QC did not pass: "
-                + str(table_qc.get("reason", "")),
-            )
-        saved_qc = result.get("f090_isophote_qc", {})
+            return False, result, f"unreadable F090W {name} table: {value}: {error}"
+    try:
+        table_qc = _selected_isophote_qc(
+            Path(diagnostics["isophote_attempts"])
+        )
+    except Exception as error:
+        return False, result, f"cannot recheck F090W isophote QC: {error}"
+    if not table_qc["passed"]:
+        return (
+            False,
+            result,
+            "F090W isophote geometry QC did not pass: "
+            + str(table_qc.get("reason", "")),
+        )
+    saved_qc = result.get("f090_isophote_qc", {})
+    if (
+        not bool(result.get("f090_isophote_qc_passed", False))
+        or not bool(saved_qc.get("passed", False))
+        or saved_qc.get("method") != F090W_ISOPHOTE_METHOD
+    ):
+        return False, result, "F090W isophote geometry QC did not pass"
+    contaminant_path = result.get("f090_external_contaminant_mask_fits")
+    readable, error = fits_is_readable(contaminant_path or "")
+    if not readable:
+        return False, result, f"unreadable F090W contaminant mask: {error}"
+    if galaxy in F090W_INNER_MASK_GUARD_TARGETS:
+        guard = result.get("f090_isophote_inner_mask_guard", {})
         if (
-            not bool(result.get("f090_isophote_qc_passed", False))
-            or not bool(saved_qc.get("passed", False))
-            or saved_qc.get("method") != F090W_ISOPHOTE_METHOD
+            not bool(guard.get("enabled", False))
+            or guard.get("method") != F090W_INNER_MASK_GUARD_METHOD
+            or bool(guard.get("affects_sbf_measurement_mask", True))
         ):
-            return False, result, "F090W isophote geometry QC did not pass"
-        contaminant_path = result.get("f090_external_contaminant_mask_fits")
-        readable, error = fits_is_readable(contaminant_path or "")
-        if not readable:
-            return False, result, f"unreadable F090W contaminant mask: {error}"
-        if galaxy in F090W_INNER_MASK_GUARD_TARGETS:
-            guard = result.get("f090_isophote_inner_mask_guard", {})
-            if (
-                not bool(guard.get("enabled", False))
-                or guard.get("method") != F090W_INNER_MASK_GUARD_METHOD
-                or bool(guard.get("affects_sbf_measurement_mask", True))
-            ):
-                return False, result, "required F090W inner isophote-mask guard is absent"
+            return False, result, "required F090W inner isophote-mask guard is absent"
     psf_path = Path(result["output_dir"]) / f"{result['stem']}_psf_129.fits"
     cache = load_f090w_psf_cache(
         psf_path,
@@ -610,6 +606,7 @@ def source_result_valid(
         str(result["stem"]),
         expected_filter=SIGNAL_FILTER,
         expected_size=F090W_PSF_SIZE,
+        write_table=False,
     )
     if cache is None:
         return False, result, f"invalid F090W PSF cache: {psf_path}"
@@ -629,6 +626,15 @@ def _candidate_ring_paths(result: dict[str, Any]) -> dict[str, Path]:
 def serialized_config(config: ExperimentConfig) -> dict[str, Any]:
     """Return exactly the representation written to a JSON result file."""
     return json.loads(json.dumps(asdict(config)))
+
+
+def science_config(args: argparse.Namespace) -> ExperimentConfig:
+    """RU: одна конфигурация для parent/worker. EN: identical cache identity."""
+    return ExperimentConfig(
+        e_realizations=args.e_realizations,
+        fft_workers=args.fft_workers,
+        save_ring_fft_fits=True,
+    )
 
 
 def final_result_valid(
@@ -750,8 +756,11 @@ def _pid_is_alive(value: str | int | None) -> bool:
         return False
     try:
         os.kill(pid, 0)
-    except (OSError, PermissionError):
+    except ProcessLookupError:
         return False
+    except PermissionError:
+        # RU/EN: an existing process without signal permission is still alive.
+        return True
     return True
 
 
@@ -1018,18 +1027,7 @@ def run_worker(args: argparse.Namespace) -> int:
     target = selected[0]
     galaxy = target["name"]
     set_log_context(galaxy, args.queue_index, args.queue_total)
-    config = ExperimentConfig(
-        normalized_sigma=3.5,
-        kmins=(0.01, 0.03, 0.04),
-        kmax=0.25,
-        k_bins=80,
-        e_realizations=args.e_realizations,
-        random_seed=1489,
-        fft_workers=args.fft_workers,
-        min_modes_per_bin=10,
-        save_ring_fft_fits=True,
-        save_all_branch_fits=False,
-    )
+    config = science_config(args)
     log_path = paths["logs"] / f"{galaxy_slug(galaxy)}.log"
     log_path.parent.mkdir(parents=True, exist_ok=True)
     with log_path.open("a", encoding="utf-8", buffering=1) as log_handle:
@@ -1272,18 +1270,7 @@ def main(argv: list[str] | None = None) -> int:
     validate_offline_dependencies(
         dependency_args, targets, args.data_root, paths["source_batch"]
     )
-    config = ExperimentConfig(
-        normalized_sigma=3.5,
-        kmins=(0.01, 0.03, 0.04),
-        kmax=0.25,
-        k_bins=80,
-        e_realizations=args.e_realizations,
-        random_seed=1489,
-        fft_workers=args.fft_workers,
-        min_modes_per_bin=10,
-        save_ring_fft_fits=True,
-        save_all_branch_fits=False,
-    )
+    config = science_config(args)
     status = sync_status(targets, paths, config)
     print(f"Status table: {paths['status']}")
     print(status[["galaxy", "status", "stage", "attempt", "pid"]].to_string(index=False))

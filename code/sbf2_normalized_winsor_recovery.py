@@ -2,6 +2,9 @@
 
 Тест изолирует только порядок винзорирования перед FFT. Он не моделирует
 ошибки изофот, фона, каталога компактных источников или поправки P_r.
+
+Recover a known SBF amplitude to isolate normalization/winsorization order;
+this is not an end-to-end model of sky, catalogue, or isophotal systematics.
 """
 
 from pathlib import Path
@@ -24,6 +27,7 @@ from sbf2_normalized_winsor_core import (
 )
 
 
+# Paired controls isolate operation order; only normalized_full_3p5 is adopted.
 BRANCHES = (
     "no_winsor",
     "raw_global_3p5",
@@ -106,9 +110,11 @@ def _find_reference_psf(project_root: Path) -> Path:
         (project_root / "runs" / "sbf2_go3055" / "products" / "NGC_3379")
         .glob("**/*_psf_129.fits")
     )
-    if not paths:
-        raise FileNotFoundError("Не найдена сохранённая PSF NGC 3379")
-    return paths[-1]
+    if len(paths) != 1:
+        raise FileNotFoundError(
+            f"Нужна одна сохранённая PSF NGC 3379, найдено {len(paths)}"
+        )
+    return paths[0]
 
 
 def run_recovery_test(
@@ -118,7 +124,12 @@ def run_recovery_test(
     expectation_realizations: int = 96,
     seed: int = 3055,
 ) -> tuple[pd.DataFrame, pd.DataFrame, Path]:
-    """Запускает тест и возвращает реализации, сводку и путь к рисунку."""
+    """Вернуть реализации/сводку/рисунок / Return trials, summary, figure path.
+
+    64 trials and 96 independent expectation realizations bound runtime;
+    they are Monte Carlo sampling choices, not astrophysical parameters.
+    Seed 3055 fixes reproducibility. Increase counts to assess MC convergence.
+    """
 
     project_root = Path(project_root).resolve()
     output_dir = project_path(
@@ -128,10 +139,15 @@ def run_recovery_test(
     )
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # Deliberately synthetic geometry: a 512-pixel field fits the 129-pixel PSF,
+    # two separated annuli, and a radial variance gradient at modest FFT cost.
     size = 512
+    # Known positive amplitudes test recovery of PSF-shaped and white power.
     p0_true, p1_true = 0.90, 0.08
     yy, xx = np.indices((size, size))
     radius = np.hypot(yy - size / 2, xx - size / 2)
+    # Toy profile/annuli/mask, not a fitted galaxy: retained to reproduce the
+    # saved ordering experiment. These numbers are not calibrated observables.
     model = 150 + 1800 * np.exp(-(radius / 115) ** 0.55)
     full_support = (radius >= 40) & (radius <= 230)
     inner = full_support & (radius >= 70) & (radius <= 125)
@@ -152,6 +168,7 @@ def run_recovery_test(
     psf /= psf.sum()
     psf_filter = _padded_psf_fft(psf, model.shape)
 
+    # 80 radial edges (79 bins) and min_count=10 match the saved synthetic test.
     plans = {name: radial_plan(model.shape, 80) for name in ("inner", "outer")}
     windows = {"inner": inner, "outer": outer}
     expectations = {
@@ -165,6 +182,7 @@ def run_recovery_test(
         for index, (name, window) in enumerate(windows.items())
     }
 
+    # Offsets separate the science realizations from masks and E(k) draws.
     rng = np.random.default_rng(seed + 1000)
     rows = []
     for trial in range(trials):

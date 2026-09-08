@@ -17,6 +17,9 @@
 
 Модуль намеренно ничего не делает при импорте.  Его используют отдельный
 ноутбук и отдельный последовательный runner.
+
+EN: the adopted normalized-full branch and the three still-used sensitivity
+controls share one FFT implementation. Settings: docs/measurement.rst.
 """
 
 from __future__ import annotations
@@ -45,8 +48,19 @@ from sbf_paths import PROJECT_ROOT, load_project_json, project_path
 EXPERIMENT_VERSION = "sbf2-normalized-winsor-v3"
 INPUT_CACHE_VERSION = "sbf2-normalized-winsor-v2"
 EXPECTATION_CACHE_VERSION = "sbf2-normalized-winsor-v2"
-RAW_PRODUCTION_SIGMA = 3.5
-RAW_PRODUCTION_MAXITERS = 5
+RAW_PRODUCTION_SIGMA = 3.5  # RU/EN: frozen winsorization threshold, not pixel removal.
+RAW_PRODUCTION_MAXITERS = 5  # RU/EN: capped robust location/scale estimation iterations.
+# Rounded conversions match the frozen notebook exactly; do not silently
+# substitute higher-precision values when comparing archived measurements.
+ARCSEC2_TO_SR = 2.350443e-11  # RU/EN: solid angle of one square arcsecond.
+MJY_SR_TO_JY_ARCSEC2 = 2.350443e-5  # RU/EN: same conversion, multiplied by 10^6.
+AB_ZERO_JY = 3631.0  # RU/EN: flux-density reference of the AB magnitude system.
+MAD_TO_SIGMA = 1.4826  # RU/EN: Gaussian-equivalent scale of a median absolute deviation.
+POSITIVE_FLOOR = 1e-12  # RU/EN: arithmetic guard; not an added measurement uncertainty.
+PIXEL_CLOSURE_TOL = 1e-5  # RU/EN: absolute float32 reconstruction tolerance, image units.
+SPECTRAL_CLOSURE_TOL = 0.005  # RU/EN: old-branch check in mag and fractional P0/P1.
+MIN_FIT_BINS = 10  # RU/EN: fixed guard against fitting two parameters to sparse bins.
+MIN_FIELD_WAVES = 10.0  # RU/EN: finite-crop low-k guard inherited from the notebook.
 REGION_NAMES = {
     "inner": "circular_inner_lit",
     "outer": "circular_outer_lit",
@@ -62,16 +76,16 @@ TARGET_STATUS_COLUMNS = [
 class ExperimentConfig:
     """Все параметры, способные изменить численный результат эксперимента."""
 
-    normalized_sigma: float = 3.5
-    kmins: tuple[float, ...] = (0.01, 0.03, 0.04)
-    kmax: float = 0.25
-    k_bins: int = 80
-    e_realizations: int = 64
-    random_seed: int = 1489
-    fft_workers: int = -1
-    min_modes_per_bin: int = 10
-    save_ring_fft_fits: bool = False
-    save_all_branch_fits: bool = False
+    normalized_sigma: float = 3.5  # Union sensitivity only; adopted full threshold is fixed.
+    kmins: tuple[float, ...] = (0.01, 0.03, 0.04)  # Low-frequency sensitivity windows.
+    kmax: float = 0.25  # Adopted ceiling, in cycles per pixel.
+    k_bins: int = 80  # 80 edges (79 bins), matching saved production spectra.
+    e_realizations: int = 64  # Fixed Monte Carlo budget, not an accuracy guarantee.
+    random_seed: int = 1489  # Arbitrary fixed seed for reproducible E(k).
+    fft_workers: int = -1  # SciPy convention: all available CPU workers.
+    min_modes_per_bin: int = 10  # Minimum support before reporting a radial SEM.
+    save_ring_fft_fits: bool = False  # Optional diagnostic output; F090 runner enables it.
+    save_all_branch_fits: bool = False  # Avoid fourfold diagnostic FITS storage by default.
 
     @property
     def candidate_branch(self) -> str:
@@ -625,7 +639,7 @@ def _build_compact_input_cache(
             max_production_difference = float(
                 np.max(np.abs(production_difference))
             )
-            if max_production_difference > 1e-5:
+            if max_production_difference > PIXEL_CLOSURE_TOL:
                 raise RuntimeError(
                     f"{source['galaxy']} {ring}: pixel closure старой ветви "
                     f"не пройден, max |Δ|={max_production_difference:.3e}"
@@ -652,7 +666,7 @@ def _build_compact_input_cache(
                 ),
             }
 
-        pixel_area = float(science_header["PIXAR_SR"]) / 2.350443e-11
+        pixel_area = float(science_header["PIXAR_SR"]) / ARCSEC2_TO_SR
 
     with fits.open(paths["psf"], memmap=True) as psf_hdul:
         psfs, psf_ids = [], []
@@ -697,7 +711,7 @@ def _build_compact_input_cache(
         "rings": ring_metadata,
         "pixel_area_arcsec2": pixel_area,
         "ab_zeropoint_per_pixel": float(
-            -2.5 * np.log10((2.350443e-5 * pixel_area) / 3631.0)
+            -2.5 * np.log10((MJY_SR_TO_JY_ARCSEC2 * pixel_area) / AB_ZERO_JY)
         ),
         "production_rows": [
             _jsonable(row.to_dict()) for _, row in measurements.iterrows()
@@ -1001,7 +1015,7 @@ def weighted_fit(
     """Взвешенный МНК для production-модели ``P0 E(k) + P1``."""
 
     design = np.column_stack([expectation, np.ones_like(expectation)])
-    safe_error = np.maximum(y_error, 1e-12)
+    safe_error = np.maximum(y_error, POSITIVE_FLOOR)
     weighted_design = design / safe_error[:, None]
     weighted_y = y / safe_error
     coefficients = np.linalg.lstsq(
@@ -1034,7 +1048,7 @@ def robust_mag_scatter(values: Iterable[float]) -> tuple[float, str]:
     array = array[np.isfinite(array)]
     if array.size >= 3:
         median = float(np.median(array))
-        mad_sigma = float(1.4826 * np.median(np.abs(array - median)))
+        mad_sigma = float(MAD_TO_SIGMA * np.median(np.abs(array - median)))
         std_sigma = float(np.std(array, ddof=1))
         if np.isfinite(mad_sigma) and mad_sigma > 0:
             return mad_sigma, "k-window MAD"
@@ -1148,7 +1162,7 @@ def _save_full_normalized_residual(
         normalized = np.full(science.shape, np.nan, dtype=np.float32)
         n_valid = 0
         n_clipped = 0
-        rows_per_chunk = 256
+        rows_per_chunk = 256  # Memory-only chunking; no resampling or pixel averaging.
         for y0 in range(0, science.shape[0], rows_per_chunk):
             y1 = min(y0 + rows_per_chunk, science.shape[0])
             science_chunk = np.asarray(
@@ -1477,7 +1491,7 @@ def _run_spectral_experiment(
                 power, plan, config.min_modes_per_bin
             )
             e_median = np.nanmedian(e_profiles, axis=0)
-            e_mad = 1.4826 * np.nanmedian(
+            e_mad = MAD_TO_SIGMA * np.nanmedian(
                 np.abs(e_profiles - e_median), axis=0
             )
             for index, k_value in enumerate(plan["k"]):
@@ -1500,7 +1514,7 @@ def _run_spectral_experiment(
             zeropoint = float(metadata["ab_zeropoint_per_pixel"])
             for requested_kmin in config.kmins:
                 effective_kmin = max(
-                    float(requested_kmin), 10.0 / min(window.shape)
+                    float(requested_kmin), MIN_FIELD_WAVES / min(window.shape)
                 )
                 for psf_id, e_profile in zip(
                     metadata["psf_ids"], e_profiles
@@ -1514,7 +1528,7 @@ def _run_spectral_experiment(
                         & np.isfinite(e_profile)
                         & (e_profile > 0)
                     )
-                    if int(selected.sum()) < 10:
+                    if int(selected.sum()) < MIN_FIT_BINS:
                         continue
                     fit = weighted_fit(
                         pk[selected], pk_error[selected], e_profile[selected]
@@ -1570,7 +1584,7 @@ def _run_spectral_experiment(
         p0_values = group["P0"].to_numpy(float)
         p0 = float(np.median(p0_values))
         p0_formal = float(np.median(group["P0_sigma_formal"]))
-        p0_psf = float(1.4826 * np.median(np.abs(p0_values - p0)))
+        p0_psf = float(MAD_TO_SIGMA * np.median(np.abs(p0_values - p0)))
         p0_total = float(np.hypot(p0_formal, p0_psf))
         pr = float(np.median(group["Pr"]))
         fluctuation_power = p0 - pr
@@ -1639,7 +1653,7 @@ def _run_spectral_experiment(
         relative_p0 = float(row["P0"] / production_row["P0"] - 1.0)
         relative_p1 = float(
             (row["P1"] - production_row["P1"])
-            / max(abs(float(production_row["P1"])), 1e-12)
+            / max(abs(float(production_row["P1"])), POSITIVE_FLOOR)
         )
         delta_mbar = float(row["mbar"] - production_row["mbar_spec"])
         closure_rows.append({
@@ -1656,9 +1670,9 @@ def _run_spectral_experiment(
             "recreated_mbar": float(row["mbar"]),
             "delta_mbar": delta_mbar,
             "passed": bool(
-                abs(delta_mbar) <= 0.005
-                and abs(relative_p0) <= 0.005
-                and abs(relative_p1) <= 0.005
+                abs(delta_mbar) <= SPECTRAL_CLOSURE_TOL
+                and abs(relative_p0) <= SPECTRAL_CLOSURE_TOL
+                and abs(relative_p1) <= SPECTRAL_CLOSURE_TOL
             ),
         })
     closure = pd.DataFrame(closure_rows, columns=[
