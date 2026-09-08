@@ -25,6 +25,9 @@ from astropy.io import fits
 CODE_DIR = Path(__file__).resolve().parent
 if str(CODE_DIR) not in sys.path:
     sys.path.insert(0, str(CODE_DIR))
+LEGACY_SBF3_DIR = CODE_DIR / "legacy" / "review-2026-09-08" / "sbf3"
+if str(LEGACY_SBF3_DIR) not in sys.path:
+    sys.path.append(str(LEGACY_SBF3_DIR))
 
 import run_sbf_batch as batch
 import sbf_campaign_runtime as runtime

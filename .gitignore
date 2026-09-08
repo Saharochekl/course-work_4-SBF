@@ -31,3 +31,9 @@ runs/.runtime_cache/
 .ipynb_checkpoints/
 .matplotlib/
 *.fits.interrupted
+
+# Publication inputs live with the article, including its PNG panels.
+!texts/paper_work/materials/figures/*.png
+
+# Archived campaigns stay local; do not re-add old databases/products at new paths.
+/runs/legacy/

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import csv
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -10,6 +11,10 @@ from unittest.mock import patch
 
 import numpy as np
 from astropy.io import fits
+
+LEGACY_SBF3_DIR = Path(__file__).resolve().parent / "legacy" / "review-2026-09-08" / "sbf3"
+if str(LEGACY_SBF3_DIR) not in sys.path:
+    sys.path.append(str(LEGACY_SBF3_DIR))
 
 import run_sbf_batch as batch
 from sbf_target_status import (
@@ -201,7 +206,7 @@ class LegacyGo3055AdoptionTests(unittest.TestCase):
             args = batch.parse_args(
                 [
                     "--template",
-                    str(batch.SCRIPT_DIR / "sbf-3.ipynb"),
+                    str(batch.ARCHIVE_DIR / "sbf-3.ipynb"),
                     "--target-csv",
                     str(batch.SCRIPT_DIR / "targets_go3055_manifest.csv"),
                     "--programs",

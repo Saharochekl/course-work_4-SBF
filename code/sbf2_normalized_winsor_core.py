@@ -35,6 +35,7 @@ import pandas as pd
 from astropy.io import fits
 from astropy.stats import sigma_clipped_stats
 from scipy.fft import fft2, fftfreq, set_workers
+from sbf_paths import PROJECT_ROOT, load_project_json, project_path
 
 
 # The result/FITS contract changed in v3.  The compact inputs and E(k)
@@ -102,9 +103,9 @@ def experiment_config_key(config: ExperimentConfig) -> str:
 
 
 def find_project_root(start: str | Path | None = None) -> Path:
-    """Находит корень проекта при запуске из корня или из ``code``."""
+    """Берёт корень из расположения модуля; явный start нужен только для override."""
 
-    root = Path.cwd() if start is None else Path(start)
+    root = PROJECT_ROOT if start is None else Path(start)
     root = root.resolve()
     if root.name == "code":
         root = root.parent
@@ -207,7 +208,7 @@ def _atomic_csv(path: Path, frame: pd.DataFrame) -> None:
 
 
 def target_status_path(output_root: str | Path) -> Path:
-    return Path(output_root).resolve() / "batch" / "target_status.csv"
+    return project_path(output_root) / "batch" / "target_status.csv"
 
 
 def _status_config(config: ExperimentConfig) -> dict[str, str]:
@@ -254,13 +255,13 @@ def load_completed_result(
     """
 
     path = (
-        Path(output_root).resolve() / "batch"
+        project_path(output_root) / "batch"
         / f"{galaxy_slug(galaxy)}_result.json"
     )
     if not path.is_file():
         return None
     try:
-        result = json.loads(path.read_text(encoding="utf-8"))
+        result = load_project_json(path)
     except Exception:
         return None
     if not _result_config_matches(result, config):
@@ -403,7 +404,7 @@ def _fits_readable(path: Path) -> bool:
 def discover_galaxies(source_batch_root: str | Path) -> list[str]:
     """Возвращает успешные цели в порядке production-таблицы."""
 
-    source_batch_root = Path(source_batch_root).resolve()
+    source_batch_root = project_path(source_batch_root)
     table_path = source_batch_root / "sbf2_batch_results.csv"
     if table_path.is_file():
         frame = pd.read_csv(table_path)
@@ -421,24 +422,24 @@ def discover_galaxies(source_batch_root: str | Path) -> list[str]:
 def inspect_source(galaxy: str, source_batch_root: str | Path) -> dict[str, Any]:
     """Проверяет и описывает read-only входы одного production-результата."""
 
-    source_batch_root = Path(source_batch_root).resolve()
+    source_batch_root = project_path(source_batch_root)
     result_path = source_batch_root / f"{galaxy_slug(galaxy)}_result.json"
     if not result_path.is_file():
         raise FileNotFoundError(result_path)
 
-    result = json.loads(result_path.read_text(encoding="utf-8"))
+    result = load_project_json(result_path)
     if result.get("status") != "ok":
         raise RuntimeError(f"{galaxy}: production status={result.get('status')}")
 
-    run_dir = Path(result["output_dir"]).resolve()
+    run_dir = project_path(result["output_dir"])
     stem = str(result["stem"])
     paths = {
-        "signal": Path(result["signal_path"]).resolve(),
-        "model": Path(result["model_full_fits"]).resolve(),
-        "production_residual": Path(result["science_residual_fits"]).resolve(),
-        "inner_ring": Path(result["inner_usable_residual_fits"]).resolve(),
-        "outer_ring": Path(result["outer_usable_residual_fits"]).resolve(),
-        "measurements": Path(result["df_sbf_csv"]).resolve(),
+        "signal": project_path(result["signal_path"]),
+        "model": project_path(result["model_full_fits"]),
+        "production_residual": project_path(result["science_residual_fits"]),
+        "inner_ring": project_path(result["inner_usable_residual_fits"]),
+        "outer_ring": project_path(result["outer_usable_residual_fits"]),
+        "measurements": project_path(result["df_sbf_csv"]),
         "catalog_mask": run_dir / f"{stem}_sbf_catalog_mask_mcut.fits",
         "psf": run_dir / f"{stem}_psf_129.fits",
     }
@@ -527,7 +528,7 @@ def _build_compact_input_cache(
 ) -> None:
     """Один раз читает большие FITS и сохраняет только рабочие crops."""
 
-    paths = {name: Path(path) for name, path in source["paths"].items()}
+    paths = {name: project_path(path) for name, path in source["paths"].items()}
     result = source["result"]
     measurements = _main_measurements(paths["measurements"], config)
     geometry_rows = {
@@ -733,7 +734,7 @@ def load_or_build_compact_cache(
     source: dict[str, Any], cache_root: str | Path,
     config: ExperimentConfig, rebuild: bool = False,
 ) -> tuple[dict[str, Any], Path, bool]:
-    cache_root = Path(cache_root).resolve()
+    cache_root = project_path(cache_root)
     input_key = _stable_hash({
         "version": INPUT_CACHE_VERSION,
         "source_key": source["source_key"],
@@ -818,7 +819,7 @@ def _monte_carlo_expectation(
 
 
 def _project_root_from_result(result_path: str | Path) -> Path | None:
-    path = Path(result_path).resolve()
+    path = project_path(result_path)
     for parent in [path.parent, *path.parents]:
         if (parent / "code" / "sbf-2.ipynb").is_file():
             return parent
@@ -875,7 +876,7 @@ def _existing_systematics_expectation(
         row = manifest.loc[old_name]
         current = fingerprints[current_name]
         if (
-            Path(str(row["path"])).resolve() != Path(current["path"]).resolve()
+            project_path(str(row["path"])) != project_path(current["path"])
             or int(row["size_bytes"]) != int(current["size"])
             or int(row["mtime_ns"]) != int(current["mtime_ns"])
         ):
@@ -921,7 +922,7 @@ def load_or_build_expectation_cache(
     }
     e_key = _stable_hash(e_payload)
     cache_path = (
-        Path(cache_root).resolve() / "expectation"
+        project_path(cache_root) / "expectation"
         / f"{galaxy_slug(metadata['galaxy'])}_{e_key[:16]}.npz"
     )
     cache_hit = cache_path.is_file() and not rebuild
@@ -1069,7 +1070,7 @@ def _save_fft_input_fits(
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     crop = metadata["rings"][ring]["crop"]
-    header = _crop_header(Path(source["paths"]["signal"]), crop)
+    header = _crop_header(project_path(source["paths"]["signal"]), crop)
     header["BUNIT"] = "sqrt(MJy/sr)"
     header["GALAXY"] = metadata["galaxy"]
     header["SBFREG"] = ring
@@ -1124,7 +1125,7 @@ def _save_full_normalized_residual(
     until a ring is selected for FFT.
     """
 
-    paths = {name: Path(path) for name, path in source["paths"].items()}
+    paths = {name: project_path(path) for name, path in source["paths"].items()}
     background = float(source["result"]["signal_background_scalar"])
     output_dir = run_dir / "normalized_fits"
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -1747,11 +1748,11 @@ def _run_spectral_experiment(
 
 
 def _result_artifacts_valid(result: dict[str, Any]) -> bool:
-    table_paths = [Path(path) for path in result.get("table_paths", {}).values()]
+    table_paths = [project_path(path) for path in result.get("table_paths", {}).values()]
     full_path_text = result.get("full_normalized_residual_fits")
-    full_path = Path(full_path_text) if full_path_text else None
+    full_path = project_path(full_path_text) if full_path_text else None
     fits_paths = [
-        Path(item["path"]) for item in result.get("normalized_fits", [])
+        project_path(item["path"]) for item in result.get("normalized_fits", [])
     ]
     return (
         bool(table_paths) and full_path is not None
@@ -1773,7 +1774,7 @@ def process_target(
     """Последовательно пересчитывает только спектральную часть одной цели."""
 
     config = ExperimentConfig() if config is None else config
-    output_root = Path(output_root).resolve()
+    output_root = project_path(output_root)
     source = inspect_source(galaxy, source_batch_root)
     experiment_payload = {
         "version": EXPERIMENT_VERSION,
@@ -1804,7 +1805,7 @@ def process_target(
     for cached_path in (cached_result_paths if not force else []):
         if not cached_path.is_file():
             continue
-        old_result = json.loads(cached_path.read_text(encoding="utf-8"))
+        old_result = load_project_json(cached_path)
         if (
             old_result.get("status") == "ok"
             and old_result.get("version") == EXPERIMENT_VERSION
@@ -1887,7 +1888,7 @@ def process_target(
 
 def load_result_tables(result: dict[str, Any]) -> dict[str, pd.DataFrame]:
     return {
-        name: pd.read_csv(path)
+        name: pd.read_csv(project_path(path))
         for name, path in result["table_paths"].items()
     }
 
@@ -2072,7 +2073,7 @@ def build_evaluation_table(
     if len(config_keys) > 1:
         raise ValueError("Нельзя смешивать разные config_key в одной сводке")
     output_path = (
-        Path(output_root).resolve() / "batch" / "aggregates"
+        project_path(output_root) / "batch" / "aggregates"
         / "evaluation.csv"
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -2084,7 +2085,7 @@ def write_aggregate_tables(
     results: Iterable[dict[str, Any]], output_root: str | Path
 ) -> dict[str, str]:
     results = list(results)
-    output_root = Path(output_root).resolve()
+    output_root = project_path(output_root)
     config_keys = {
         result.get("config_key") for result in results
         if result.get("status") == "ok"
@@ -2117,10 +2118,10 @@ def load_matching_results(
     """Загружает все готовые цели данной конфигурации для устойчивой сводки."""
 
     key = experiment_config_key(config)
-    result_root = Path(output_root).resolve() / "batch" / "results"
+    result_root = project_path(output_root) / "batch" / "results"
     results = []
     for path in sorted(result_root.glob("NGC_*_result.json")):
-        result = json.loads(path.read_text(encoding="utf-8"))
+        result = load_project_json(path)
         source_is_current = True
         if source_batch_root is not None and result.get("galaxy"):
             try:
@@ -2154,7 +2155,7 @@ def plot_normalized_inputs(
     cmap.set_bad("black")
 
     if branch == result["candidate_branch"]:
-        path = Path(result["full_normalized_residual_fits"])
+        path = project_path(result["full_normalized_residual_fits"])
         with fits.open(path, memmap=True) as hdul:
             data = hdul[0].data
             sample = np.array(
@@ -2178,7 +2179,7 @@ def plot_normalized_inputs(
         return fig
 
     selected = {
-        item["ring"]: Path(item["path"])
+        item["ring"]: project_path(item["path"])
         for item in result["normalized_fits"]
         if item["branch"] == branch
     }

@@ -5,6 +5,7 @@
 """
 
 from pathlib import Path
+from sbf_paths import PROJECT_ROOT, project_path
 
 import matplotlib
 
@@ -120,10 +121,11 @@ def run_recovery_test(
     """Запускает тест и возвращает реализации, сводку и путь к рисунку."""
 
     project_root = Path(project_root).resolve()
-    output_dir = Path(
+    output_dir = project_path(
         output_dir
-        or project_root / "runs" / "sbf2_normalized_winsor" / "recovery"
-    ).resolve()
+        or project_root / "runs" / "sbf2_normalized_winsor" / "recovery",
+        root=project_root,
+    )
     output_dir.mkdir(parents=True, exist_ok=True)
 
     size = 512
@@ -359,7 +361,7 @@ def run_recovery_test(
 
 
 if __name__ == "__main__":
-    root = Path(__file__).resolve().parents[1]
+    root = PROJECT_ROOT
     _, final_summary, final_figure = run_recovery_test(root)
     print(final_summary.to_string(index=False))
     print(f"Рисунок: {final_figure}")

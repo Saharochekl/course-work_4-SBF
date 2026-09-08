@@ -30,6 +30,7 @@ from pathlib import Path
 import numpy as np
 from astropy.io import fits
 from astropy.time import Time
+from sbf_paths import default_stpsf_data_dir, load_project_json, project_path
 
 from sbf_campaign_state import CampaignState, canonical_sha256, stable_job_id
 from sbf_campaign_runtime import (
@@ -67,7 +68,7 @@ DEFAULT_CAMPAIGN_ROOT = DEFAULT_RUN_ROOT / "campaign"
 DEFAULT_TARGET_CSV = SCRIPT_DIR / "targets_go3055_manifest.csv"
 DEFAULT_PAPER_IV_METADATA = DEFAULT_DATA_ROOT / "go3055_paper_iv_metadata.csv"
 DEFAULT_WSS_OPD_DIR = DEFAULT_DATA_ROOT / "wss_opd"
-DEFAULT_STPSF_DATA_DIR = Path.home() / "data" / "stpsf-data"
+DEFAULT_STPSF_DATA_DIR = default_stpsf_data_dir()
 TARGET_STATUS_FILENAME = "target_status.csv"
 GO3055_QC_FILENAME = "go3055_qc.csv"
 MAST_DOWNLOAD_PREFIX = "https://mast.stsci.edu/api/v0.1/Download/file?uri="
@@ -163,10 +164,7 @@ def resolve_cli_path(value):
     """Resolve relative CLI paths against the repository, never the shell CWD."""
     if value in (None, ""):
         return value
-    path = Path(value).expanduser()
-    if not path.is_absolute():
-        path = PROJECT_ROOT / path
-    return str(path.resolve())
+    return str(project_path(value, root=PROJECT_ROOT))
 
 
 def normalize_cli_paths(args):
@@ -502,7 +500,7 @@ def input_fingerprint(path):
             "device": None,
             "inode": None,
         }
-    resolved = Path(path).resolve()
+    resolved = project_path(path)
     try:
         stat = resolved.stat()
     except FileNotFoundError:
@@ -683,7 +681,7 @@ def final_result_for(target, batch_root, identity=None, allow_legacy=False):
     if not path.exists():
         return None
     try:
-        result = json.loads(path.read_text())
+        result = load_project_json(path)
     except Exception:
         return None
     if result.get("status") != "ok":
@@ -1762,7 +1760,7 @@ def write_go3055_qc(results, batch_root):
     summary_json = Path(batch_root) / "sbf2_batch_results.json"
     if summary_json.is_file():
         try:
-            stored_results = json.loads(summary_json.read_text(encoding="utf-8"))
+            stored_results = load_project_json(summary_json)
             if isinstance(stored_results, list):
                 results = stored_results
         except Exception:
@@ -2678,7 +2676,7 @@ def load_completed_results(batch_root, allowed_job_ids=None):
     completed = []
     for result_file in sorted(Path(batch_root).glob("*_result.json")):
         try:
-            result = json.loads(result_file.read_text())
+            result = load_project_json(result_file)
         except Exception:
             continue
         if allowed_job_ids is not None and result.get("job_id") not in allowed_job_ids:

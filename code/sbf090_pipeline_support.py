@@ -362,7 +362,9 @@ def load_f150w_reference_center(
     if not result_path.is_file():
         raise FileNotFoundError(f"accepted F150W result is absent: {result_path}")
     result = json.loads(result_path.read_text(encoding="utf-8"))
-    model_path = Path(result.get("model_full_fits", ""))
+    from sbf_paths import project_path
+
+    model_path = project_path(result.get("model_full_fits", ""), root=root)
     if not model_path.is_file():
         raise FileNotFoundError(f"accepted F150W model is absent: {model_path}")
 

@@ -1,13 +1,19 @@
 # Target manifest contract
 
-There are two operational manifests in `code/`:
+Run the commands below from `code/` with the existing environment active (`py`).
+This document primarily describes the historical extended SBF-3 campaign;
+its runner and notebooks now live in `legacy/review-2026-09-08/sbf3/`.
+For the current F090W workflow, use `SBF_F090W_RUN.md`.
+
+There are three operational manifests in `code/`:
 
 - `targets_go3055_manifest.csv`: the original 14 GO-3055 calibration targets;
+- `targets_go3055_f090w_manifest.csv`: the current 14-target F090W signal campaign;
 - `targets_additional_manifest.csv`: the 2026-07-16 archive snapshot for
   GO-5989, GO-7763 and the additional demonstration/future targets.
 
 The detailed archive inventories and their source notes live in
-`code/catalog_search/`. They are evidence tables, not direct batch inputs.
+`code/legacy/review-2026-09-08/catalog_search/`. They are evidence tables, not direct batch inputs.
 
 ## Additional-manifest snapshot
 
@@ -45,7 +51,7 @@ two manifests, validates existing FITS files and reports only the missing or
 incomplete queue without opening a network connection:
 
 ```bash
-astro_env/bin/python code/download_go3055_go7763.py
+py download_go3055_go7763.py
 ```
 
 The current contract contains 14 enabled GO-3055 targets and 74 enabled
@@ -53,7 +59,7 @@ GO-7763 targets (176 products in total). Five additional GO-7763 rows stay
 disabled because no target-level F150W signal product exists. A real run is:
 
 ```bash
-astro_env/bin/python code/download_go3055_go7763.py --download
+py download_go3055_go7763.py --download
 ```
 
 That command processes all missing products from both programmes with four
@@ -75,13 +81,13 @@ skipped and `.part` files are resumed.
 
 ### Downloading while processing
 
-For `run_sbf_batch.py`, always select a first target explicitly. The selected names are propagated to
+For the archived `legacy/review-2026-09-08/sbf3/run_sbf_batch.py`, always select a first target explicitly. The selected names are propagated to
 the separate download worker, so this command downloads and processes only
 NGC 4889:
 
 ```bash
-astro_env/bin/python code/run_sbf_batch.py \
-  --template code/sbf-3.ipynb \
+py legacy/review-2026-09-08/sbf3/run_sbf_batch.py \
+  --template code/legacy/review-2026-09-08/sbf3/sbf-3.ipynb \
   --target-csv code/targets_additional_manifest.csv \
   --data-root data \
   --batch-root code/sbf3_runs/batch \
@@ -134,8 +140,8 @@ current terminal directory. Therefore the same command works both from the
 project root and from `code/`.
 
 ```bash
-astro_env/bin/python code/run_sbf_batch.py \
-  --template code/sbf-3.ipynb \
+py legacy/review-2026-09-08/sbf3/run_sbf_batch.py \
+  --template code/legacy/review-2026-09-08/sbf3/sbf-3.ipynb \
   --target-csv code/targets_go3055_manifest.csv \
   --extra-target-csv code/targets_additional_manifest.csv \
   --programs 3055 7763 \
@@ -235,8 +241,8 @@ below `--critical-free-gb`.
 A bounded example is:
 
 ```bash
-astro_env/bin/python code/run_sbf_batch.py \
-  --template code/sbf-3.ipynb \
+py legacy/review-2026-09-08/sbf3/run_sbf_batch.py \
+  --template code/legacy/review-2026-09-08/sbf3/sbf-3.ipynb \
   --target-csv code/targets_additional_manifest.csv \
   --data-root data \
   --batch-root code/sbf3_runs/batch \

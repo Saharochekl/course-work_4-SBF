@@ -15,6 +15,7 @@ import time
 import traceback
 from dataclasses import asdict
 from pathlib import Path
+from sbf_paths import project_path
 
 from sbf2_normalized_winsor_core import (
     ExperimentConfig,
@@ -87,12 +88,12 @@ def main() -> int:
     args = parse_args()
     project_root = find_project_root()
     source_batch_root = (
-        args.source_batch_root.resolve()
+        project_path(args.source_batch_root, root=project_root)
         if args.source_batch_root is not None
         else project_root / "runs" / "sbf2_go3055" / "batch"
     )
     output_root = (
-        args.output_root.resolve()
+        project_path(args.output_root, root=project_root)
         if args.output_root is not None
         else project_root / "runs" / "sbf2_normalized_winsor"
     )

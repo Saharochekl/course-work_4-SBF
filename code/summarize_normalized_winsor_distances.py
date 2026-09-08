@@ -1,11 +1,9 @@
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
+from sbf_paths import PROJECT_ROOT
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
 EXPERIMENT_DIR = PROJECT_ROOT / "runs" / "sbf2_normalized_winsor" / "batch" / "aggregates"
 MASTER_CSV = (
     PROJECT_ROOT

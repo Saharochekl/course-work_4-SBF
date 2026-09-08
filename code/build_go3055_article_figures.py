@@ -5,8 +5,10 @@ The script reads only completed analysis tables.  It does not execute either
 measurement pipeline and does not rewrite any scientific table.
 """
 
-import json
 from pathlib import Path
+
+from publish_article_assets import publish_figure
+from sbf_paths import load_project_json
 
 import matplotlib
 
@@ -80,7 +82,9 @@ def save_figure(fig, directory, stem):
     directory.mkdir(parents=True, exist_ok=True)
     place_galaxy_labels(fig)
     for suffix in ("pdf", "png"):
-        fig.savefig(directory / f"{stem}.{suffix}", dpi=300, bbox_inches="tight")
+        path = directory / f"{stem}.{suffix}"
+        fig.savefig(path, dpi=300, bbox_inches="tight")
+        publish_figure(path)
     plt.close(fig)
 
 
@@ -543,7 +547,7 @@ def make_winsorization_plot(f090):
     base = ROOT / "runs/sbf2_normalized_winsor/batch/aggregates"
     clipping = {"F150W": pd.read_csv(base / "all_galaxies_clipping.csv")}
     annuli = {"F150W": pd.read_csv(base / "all_galaxies_combined_annuli.csv")}
-    paths = [json.loads(Path(p).read_text())["table_paths"] for p in f090["final_result_path"]]
+    paths = [load_project_json(p)["table_paths"] for p in f090["final_result_path"]]
     clipping["F090W"] = pd.concat([pd.read_csv(p["clipping"]) for p in paths])
     annuli["F090W"] = pd.concat([pd.read_csv(p["combined_annuli"]) for p in paths])
     fig, axes = plt.subplots(2, 2, figsize=(13.2, 10.0))

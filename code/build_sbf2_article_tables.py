@@ -9,8 +9,10 @@ records software/provenance metadata.
 from __future__ import annotations
 
 import hashlib
-import json
 from pathlib import Path
+
+from publish_article_assets import publish_figure
+from sbf_paths import load_project_json, project_path
 
 import matplotlib
 
@@ -191,7 +193,7 @@ jensen2015["sigma_D_jensen2015_f160w_total_mpc"] = distance_uncertainty(
 )
 
 normalized_results = [
-    json.loads(path.read_text(encoding="utf-8"))
+    load_project_json(path)
     for path in sorted((NORMALIZED_RUN_DIR / "batch" / "results").glob(
         "NGC_*_result.json"
     ))
@@ -657,6 +659,7 @@ ax.legend(frameon=False, loc="upper left")
 fig.tight_layout()
 for suffix in ["png", "pdf"]:
     fig.savefig(FIGURE_DIR / f"go3055_sbf_vs_trgb_leave_one_out_constant.{suffix}", dpi=220)
+    publish_figure(FIGURE_DIR / f"go3055_sbf_vs_trgb_leave_one_out_constant.{suffix}")
 plt.close(fig)
 
 constant_predictions["realized_distance_error_percent"] = 100 * np.abs(
@@ -695,6 +698,7 @@ axes[1].legend(frameon=False, ncol=3, fontsize=8)
 fig.tight_layout()
 for suffix in ["png", "pdf"]:
     fig.savefig(FIGURE_DIR / f"go3055_distance_accuracy_by_galaxy_constant.{suffix}", dpi=220)
+    publish_figure(FIGURE_DIR / f"go3055_distance_accuracy_by_galaxy_constant.{suffix}")
 plt.close(fig)
 
 error_plot = constant_measurements.copy()
@@ -738,6 +742,7 @@ for ax in axes:
 fig.tight_layout()
 for suffix in ["png", "pdf"]:
     fig.savefig(FIGURE_DIR / f"go3055_error_budget_by_galaxy_constant.{suffix}", dpi=220)
+    publish_figure(FIGURE_DIR / f"go3055_error_budget_by_galaxy_constant.{suffix}")
 plt.close(fig)
 
 prediction_definitions = [
@@ -797,13 +802,13 @@ prediction_tex.extend([r"\bottomrule", r"\end{tabular}", ""])
 
 
 provenance_path = RUN_DIR / "campaign" / "run_provenance.json"
-provenance = json.loads(provenance_path.read_text())
+provenance = load_project_json(provenance_path)
 results = pd.read_csv(RUN_DIR / "batch" / "sbf2_batch_results.csv")
 
 input_provenance = []
 for role in ["signal_path", "color_path"]:
     for input_path in results[role].dropna():
-        with fits.open(Path(input_path), memmap=True) as hdul:
+        with fits.open(project_path(input_path, must_exist=True), memmap=True) as hdul:
             header = hdul[0].header
         input_provenance.append(
             {

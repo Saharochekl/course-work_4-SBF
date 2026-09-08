@@ -36,6 +36,7 @@ from dataclasses import asdict
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
+from sbf_paths import default_stpsf_data_dir, load_project_json, project_path
 
 os.environ.setdefault("MPLBACKEND", "Agg")
 _PROJECT_CACHE = Path(__file__).resolve().parent.parent / "runs" / ".runtime_cache"
@@ -100,7 +101,7 @@ DEFAULT_MANIFEST = SCRIPT_DIR / "targets_go3055_f090w_manifest.csv"
 DEFAULT_BASE_NOTEBOOK = SCRIPT_DIR / "sbf-2.ipynb"
 DEFAULT_DATA_ROOT = PROJECT_ROOT / "data"
 DEFAULT_RUN_ROOT = PROJECT_ROOT / "runs" / "sbf_f090w_go3055"
-DEFAULT_STPSF_DATA = Path.home() / "data" / "stpsf-data"
+DEFAULT_STPSF_DATA = default_stpsf_data_dir()
 DEFAULT_WSS_OPD = DEFAULT_DATA_ROOT / "wss_opd"
 SIGNAL_FILTER = "F090W"
 AUXILIARY_FILTER = "F150W"
@@ -206,10 +207,7 @@ class Tee:
 
 
 def resolve_project_path(value: str | Path) -> Path:
-    path = Path(value).expanduser()
-    if not path.is_absolute():
-        path = PROJECT_ROOT / path
-    return path.resolve()
+    return project_path(value, root=PROJECT_ROOT)
 
 
 def campaign_paths(run_root: Path) -> dict[str, Path]:
@@ -383,7 +381,7 @@ def invalidate_completion_markers(
 
 def _read_json(path: Path) -> dict[str, Any] | None:
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        return load_project_json(path)
     except Exception:
         return None
 

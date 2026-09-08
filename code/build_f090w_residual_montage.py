@@ -3,8 +3,10 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
+
+from publish_article_assets import publish_figure
+from sbf_paths import load_project_json
 
 import matplotlib
 
@@ -33,7 +35,7 @@ for galaxy in GALAXIES:
     if not manifest_path.exists():
         raise FileNotFoundError(f"Missing product manifest: {manifest_path}")
 
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = load_project_json(manifest_path)
     residual_path = Path(manifest["products"]["normalized_full"])
     model_path = Path(manifest["products"]["model"])
     if not residual_path.exists() or not model_path.exists():
@@ -135,6 +137,8 @@ png_path = FIGURES / "go3055_f090w_final_working_residuals.png"
 pdf_path = FIGURES / "go3055_f090w_final_working_residuals.pdf"
 fig.savefig(png_path, dpi=300, bbox_inches="tight")
 fig.savefig(pdf_path, bbox_inches="tight")
+publish_figure(png_path)
+publish_figure(pdf_path)
 plt.close(fig)
 
 print(f"Saved {png_path.relative_to(ROOT)}")

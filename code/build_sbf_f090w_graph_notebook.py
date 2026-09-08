@@ -93,6 +93,12 @@ cells = [
         raise FileNotFoundError("Не найден корень проекта с code/run_sbf_f090w.py")
 
     CODE_DIR = PROJECT_ROOT / "code"
+    import sys
+    if str(CODE_DIR) not in sys.path:
+        sys.path.insert(0, str(CODE_DIR))
+    from sbf_paths import load_project_json, project_path, default_stpsf_data_dir
+    from publish_article_assets import publish_figure
+
     DATA_DIR = PROJECT_ROOT / "data"
     RUN_DIR = PROJECT_ROOT / "runs" / "sbf_f090w_go3055"
     PRODUCTS_DIR = RUN_DIR / "products"
@@ -127,6 +133,7 @@ cells = [
     def save_show(fig, name):
         for extension in ["png", "pdf"]:
             fig.savefig(FIGURE_DIR / f"{name}.{extension}", bbox_inches="tight", facecolor="white")
+            publish_figure(FIGURE_DIR / f"{name}.{extension}")
         display(Image(filename=str(FIGURE_DIR / f"{name}.png")))
         plt.close(fig)
 
@@ -157,9 +164,9 @@ cells = [
     )
 
     for manifest_path in sorted(PRODUCTS_DIR.glob("NGC_*/products.json")):
-        manifest = json.loads(manifest_path.read_text())
-        final = json.loads(Path(manifest["final_result"]).read_text())
-        source = json.loads(Path(manifest["source_result"]).read_text())
+        manifest = load_project_json(manifest_path)
+        final = load_project_json(manifest["final_result"])
+        source = load_project_json(manifest["source_result"])
         galaxy = manifest["galaxy"]
         branch = final["candidate_branch"]
 
@@ -1319,7 +1326,7 @@ cells = [
     code(r"""
     import stpsf
 
-    stpsf_data = Path.home() / "data" / "stpsf-data"
+    stpsf_data = default_stpsf_data_dir()
     if not stpsf_data.is_dir():
         raise FileNotFoundError(f"Локальные данные STPSF не найдены: {stpsf_data}")
     os.environ["STPSF_PATH"] = str(stpsf_data)

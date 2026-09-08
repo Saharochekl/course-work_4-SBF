@@ -12,10 +12,16 @@ completed calibration tables and preserves their fitted values.
 
 ```bash
 py build_go3055_article_figures.py
+py publish_article_assets.py
+py publish_article_assets.py --check
 latexmk -cd -pdf -outdir=build -interaction=nonstopmode -halt-on-error ../texts/paper_work/go3055_jwst_sbf_article_draft.tex
 ```
 
 The PDF and all LaTeX auxiliary files are in `texts/paper_work/build/`.
+The TeX reads all figures from `texts/paper_work/materials/figures/`, using
+relative paths. `materials/figure_sources.json` records their producer outputs.
+The export command only copies existing images; it does not execute analysis.
+Original figures remain under `runs/` for notebook consumers and manual replotting.
 The figure builder also retains some diagnostic plots that are intentionally not
 included in the printed article; generating a file does not make it a paper figure.
 The three main calibration panels show adopted one-sigma color errors and
@@ -53,6 +59,8 @@ jupyter nbconvert --to notebook --execute --inplace sbf-2-graph.ipynb --ExecuteP
 jupyter nbconvert --to notebook --execute --inplace sbf-f090w-graph.ipynb --ExecutePreprocessor.timeout=7200
 py build_sbf2_article_tables.py
 py build_go3055_article_figures.py
+py publish_article_assets.py
+py publish_article_assets.py --check
 latexmk -cd -pdf -outdir=build -interaction=nonstopmode -halt-on-error ../texts/paper_work/go3055_jwst_sbf_article_draft.tex
 ```
 

@@ -3,8 +3,10 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
+
+from publish_article_assets import publish_figure
+from sbf_paths import load_project_json
 
 import matplotlib
 
@@ -36,6 +38,8 @@ KMIN, KMAX = 0.04, 0.25
 def save_figure(fig: plt.Figure, stem: str) -> None:
     fig.savefig(FIGURES / f"{stem}.png", dpi=300, bbox_inches="tight")
     fig.savefig(FIGURES / f"{stem}.pdf", bbox_inches="tight")
+    publish_figure(FIGURES / f"{stem}.png")
+    publish_figure(FIGURES / f"{stem}.pdf")
     plt.close(fig)
 
 
@@ -44,9 +48,9 @@ manifests = {}
 final_results = {}
 for galaxy in GALAXIES:
     manifest_path = PRODUCTS / galaxy.replace(" ", "_") / "products.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = load_project_json(manifest_path)
     result_path = Path(manifest["final_result"])
-    result = json.loads(result_path.read_text(encoding="utf-8"))
+    result = load_project_json(result_path)
     if result.get("status") != "ok" or result.get("candidate_branch") != ADOPTED_BRANCH:
         raise RuntimeError(f"{galaxy}: unexpected final result state")
     manifests[galaxy] = manifest
@@ -148,7 +152,7 @@ legend = [
 
 for galaxy in REPRESENTATIVE:
     manifest = manifests[galaxy]
-    source = json.loads(Path(manifest["source_result"]).read_text(encoding="utf-8"))
+    source = load_project_json(manifest["source_result"])
     out_dir = Path(source["output_dir"])
     mask_path = out_dir / f"{source['stem']}_sbf_catalog_mask_mcut.fits"
 
@@ -473,13 +477,13 @@ def draw_histogram(ax, values, thresholds, band):
 
 
 for galaxy in REPRESENTATIVE:
-    f150_result = json.loads(
+    f150_result = load_project_json(
         (ROOT / "runs/sbf2_normalized_winsor/batch"
-         / f"{galaxy.replace(' ', '_')}_result.json").read_text(encoding="utf-8")
+         / f"{galaxy.replace(' ', '_')}_result.json")
     )
     sources = {
-        "F150W": json.loads(Path(f150_result["source_result"]).read_text(encoding="utf-8")),
-        "F090W": json.loads(Path(manifests[galaxy]["source_result"]).read_text(encoding="utf-8")),
+        "F150W": load_project_json(f150_result["source_result"]),
+        "F090W": load_project_json(manifests[galaxy]["source_result"]),
     }
     saved_limits = {
         "F150W": f150_result["candidate_limits"],
@@ -575,13 +579,11 @@ for galaxy in GALAXIES:
         ROOT / "runs/sbf2_normalized_winsor/batch"
         / f"{galaxy.replace(' ', '_')}_result.json"
     )
-    result = json.loads(result_path.read_text(encoding="utf-8"))
+    result = load_project_json(result_path)
     if result.get("status") != "ok" or result.get("candidate_branch") != ADOPTED_BRANCH:
         raise RuntimeError(f"{galaxy}: unexpected F150W final result state")
     f150_results[galaxy] = result
-    f150_sources[galaxy] = json.loads(
-        Path(result["source_result"]).read_text(encoding="utf-8")
-    )
+    f150_sources[galaxy] = load_project_json(result["source_result"])
 
 
 def make_power_spectrum_comparison(result, band, output_directory, stem):
@@ -627,6 +629,8 @@ def make_power_spectrum_comparison(result, band, output_directory, stem):
     fig.tight_layout(rect=[0, 0, 1, 0.96])
     fig.savefig(output_directory / f"{stem}.png", dpi=300, bbox_inches="tight")
     fig.savefig(output_directory / f"{stem}.pdf", bbox_inches="tight")
+    publish_figure(output_directory / f"{stem}.png")
+    publish_figure(output_directory / f"{stem}.pdf")
     plt.close(fig)
 
 
@@ -698,6 +702,8 @@ def pr_measurement_sensitivity(results, band, output_directory, stem):
     fig.tight_layout()
     fig.savefig(output_directory / f"{stem}.png", dpi=300, bbox_inches="tight")
     fig.savefig(output_directory / f"{stem}.pdf", bbox_inches="tight")
+    publish_figure(output_directory / f"{stem}.png")
+    publish_figure(output_directory / f"{stem}.pdf")
     plt.close(fig)
 
 
@@ -783,6 +789,8 @@ def psf_normalization_sensitivity(
     fig.tight_layout()
     fig.savefig(output_directory / f"{stem}.png", dpi=300, bbox_inches="tight")
     fig.savefig(output_directory / f"{stem}.pdf", bbox_inches="tight")
+    publish_figure(output_directory / f"{stem}.png")
+    publish_figure(output_directory / f"{stem}.pdf")
     plt.close(fig)
 
 
