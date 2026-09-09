@@ -44,6 +44,13 @@ runs/.runtime_cache/
 !/Readme.md
 !/Readme_RUS.md
 
+# Local-only documents and third-party references, not public release assets.
+# Keep article figures under texts/**/materials tracked; this rule is root-only.
+/materials/*.pdf
+/texts/course_work/Referee_report_MSU_diplomae_signed.pdf
+/texts/report_work/sbf_scientific_project_report_signed.pdf
+/texts/Келдышевские-чтения/AndreevMI/
+
 # Keep former archive/output locations ignored if old tooling recreates them.
 # Historical experiments were removed; no compatibility links are required.
 /code/legacy/
