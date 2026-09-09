@@ -21,6 +21,14 @@ runs/**/cache/
 runs/.runtime_cache/
 .codebase-memory/
 
+AGENTS.md
+CLEANUP_CANDIDATES.md
+CODEBASE_MEMORY_SETUP.md
+PROJECT_MEMORY.md
+REPOSITORY_AUDIT.md
+REVIEW_CHANGES.md
+REVIEW_FINDINGS.md
+
 # Local environment, inspection artifacts and cleanup quarantine.
 # /trash/ is optional temporary quarantine; its previous contents were deleted.
 /trash/
