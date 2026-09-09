@@ -6,20 +6,27 @@
 
 Все команды выполняются из ``code/`` в активном окружении проекта.
 Поддерживаются macOS/Linux. ``psutil`` обязателен для контроля ресурсов,
-``Astropy`` — для проверки FITS. Научные notebook этими командами не запускаются.
+``Astropy`` — для проверки FITS. Служебные кэши находятся в ``.cache/runtime/``
+от корня проекта, отдельно от научных ``runs/F150W`` и ``runs/F090W``.
 
-1. ``py download_go3055_go7763.py --program 3055`` — проверить локальные входы.
+1. ``py download.py images --program 3055`` — проверить локальные входы.
    Добавление ``--download`` явно разрешает сеть. Загружаются обе полосы из
    принятого manifest, поэтому отдельный загрузчик изображений F090W не нужен.
-2. ``py download_wss_opds.py --program 3055`` — проверить локальные WSS OPD.
+2. ``py download.py opd --program 3055`` — проверить локальные WSS OPD.
    ``--download`` разрешает STPSF/MAST получить недостающие OPD. Без этого флага
    даже импорт STPSF отложен, чтобы его проверка reference data не обращалась в сеть.
-3. ``py -m unittest test_sbf_campaign test_sbf_target_status
-   test_download_go3055_go7763 test_download_wss_opds`` — быстрые проверки.
+3. ``py process.py --filter F150W``, ``--filter F090W`` или ``--filter both`` —
+   **обработка**, а не проверка: source-stage и спектры, с проверкой готового кэша.
+   Для проверки без измерения добавьте ``--check``; ``--dry-run`` только печатает
+   команды. При ``both`` F150W обрабатывается первым, поскольку F090W использует
+   его центр/метаданные. Для F150W допускается ``--stage source`` или ``--stage spectra``.
+4. ``py -m sbf.check_project_layout --with-products`` — статическая проверка кода
+   и наличия принятых продуктов, без выполнения научных notebook.
+5. ``py -m unittest discover -s tests -t .`` — модульные проверки.
    HTTP-тесты поднимают только временный сервер на ``127.0.0.1``.
 
-Назначение модулей
-~~~~~~~~~~~~~~~~~
+Назначение модулей (``code/sbf/``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * ``download_go3055_go7763``: manifest → проверка файлов → ограниченная очередь
   HTTP → проверка FITS → атомарное переименование. ``.part`` докачивается только
@@ -93,14 +100,27 @@ English
 
 Run commands from ``code/`` in the project environment; macOS/Linux are supported.
 ``psutil`` is required for resource monitoring and Astropy for FITS validation.
+Runtime caches live in project-root ``.cache/runtime/``, outside both science campaigns.
 
-* ``download_go3055_go7763.py --program 3055`` inventories both science bands
+* ``py download.py images --program 3055`` inventories both science bands
   without network access. Add ``--download`` explicitly to fetch missing inputs.
   Safe HTTP Range resumes require matching remote identity; complete files skip
   network access. Publication follows size/header/checksum validation.
-* ``download_wss_opds.py --program 3055`` checks local WSS coverage. STPSF is
+* ``py download.py opd --program 3055`` checks local WSS coverage. STPSF is
   imported only with ``--download`` to keep its own reference checks out of dry
   runs. The report records actual OPD age, not just pass/fail.
+* ``py process.py --filter F150W``, ``--filter F090W`` or ``--filter both`` runs
+  source modelling and spectra, reusing compatible completed stages. ``--check``
+  validates without scientific processing; ``--dry-run`` only prints commands.
+  ``both`` runs F150W first because F090W depends on its centre/metadata.
+  F150W also supports ``--stage source`` or ``--stage spectra``.
+* ``py -m sbf.check_project_layout --with-products`` checks syntax and saved
+  products without running scientific notebook cells.
+* ``py -m unittest discover -s tests -t .`` runs the active unit suite; HTTP tests
+  use a temporary localhost server, not MAST downloads.
+
+The following internal modules live in ``code/sbf/``:
+
 * ``sbf_campaign_runtime`` owns process groups, resource limits, deadlines,
   FITS validation, hashing and atomic writes. Missing monitored resources stop
   a guarded worker rather than silently disabling a configured limit.

@@ -26,34 +26,47 @@ environment activated. Importing a builder never runs its analysis.
   alternatives were rejected, not alternative adopted distances.
 * ``sbf-f090w-graph.ipynb``: the corresponding F090W analysis; stable
   ``products.json`` files identify each accepted source and spectrum.
-* ``py build_sbf_f090w_graph_notebook.py``: recreate the F090W notebook source,
+* ``py -m figures.build_sbf_f090w_graph_notebook``: recreate the F090W notebook source,
   **not execute it**. RU: заменяет файл и его сохранённые выводы; обычно не нужен.
   EN: replaces the saved notebook, including outputs; normally unnecessary.
-* ``py build_go3055_article_figures.py``: draw both bands from completed CSVs.
+* ``py -m figures.build_go3055_article_figures``: draw both bands from completed CSVs.
   RU: текущие публикационные графики. EN: the current publication plotter.
-* ``py build_f090w_residual_montage.py``: montage of saved normalized F090W
+* ``py -m figures.build_f090w_residual_montage``: montage of saved normalized F090W
   residuals. Image subsampling/stretch are display-only.
-* ``py build_f090w_appendix_diagnostics.py``: the seven selected appendix
+* ``py -m figures.build_f090w_appendix_diagnostics``: the seven selected appendix
   figures: three paired histograms and two spectrum/PSF comparisons per band.
   It reads FITS pixels for histograms, but does not repeat source extraction or
   spectral measurement. Superseded duplicate figures are no longer generated.
-* ``py build_sbf2_article_tables.py``: joins F150W/F090W/TRGB/Jensen results,
+* ``py -m figures.build_sbf2_article_tables``: joins F150W/F090W/TRGB/Jensen results,
   writes CSV/TeX tables and provenance. No fitting or figure production.
-* ``py publish_article_assets.py``: refresh selected copies beside the TeX;
+* ``py -m figures.publish_article_assets``: refresh selected copies beside the TeX;
   ``--check`` validates without writing. The manifest is
   ``texts/paper_work/materials/figure_sources.json``. Producer copies stay in
   ``runs/`` so notebooks can redraw them independently.
 
+RU: Рабочие notebook остаются в ``code/``. Служебные сборщики находятся в
+``code/figures/``, общие пути — в ``code/sbf/sbf_paths.py``. Литературные CSV
+лежат в ``code/reference/``. Продукты F150W разделены на
+``runs/F150W/source/``, ``spectra/`` и ``analysis/``; F090W — в ``runs/F090W/``.
+
+EN: Notebook entry points remain in ``code/``. Builders live in ``figures/``;
+``sbf.sbf_paths`` anchors paths independently of the current directory.
+Reference CSVs live in ``code/reference/``. F150W source products, spectra and
+analysis are separated under ``runs/F150W/``; F090W uses ``runs/F090W/``.
+
 Контрольные опыты / Validation experiments
 ----------------------------------------
 
-RU: ``sbf-2-systematics.ipynb`` и ``sbf-2-normalized-winsor.ipynb`` — не
-дополнительные production-обработчики. Это сохранённые проверки шума, размера
-PSF и порядка нормировки/винзорирования. Не удалять как «мёртвый код» только
-потому, что принят один вариант: тесты объясняют выбор метода.
+RU: ``sbf-2-systematics.ipynb``, ``sbf-2-normalized-winsor.ipynb``, recovery и
+сравнение четырёх ветвей перенесены в ``code/legacy/review-2026-09-09/``.
+Это локальный архив проверок шума, PSF и порядка операций, не часть релизного
+запуска. Основной код их не импортирует. Старый ``runs/sbf2_systematics`` не
+нужен активным notebook; ручной повтор архивной систематики создаёт отдельный
+``runs/legacy/review-2026-09-09/sbf2_systematics/``.
 
-EN: These notebooks are validation experiments, not extra production runners.
-The rejected branches are useful controls; only ``normalized_full_3p5`` is
+EN: These validation notebooks and their helper scripts are local archive
+material, not release dependencies. Rejected branches remain useful controls;
+only ``normalized_full_3p5`` is
 adopted. ``sbf2_normalized_winsor_recovery.run_recovery_test`` generates paired
 synthetic realizations to isolate operation order. It does not validate sky,
 isophotal models, catalogue completeness, or correlated detector noise.
@@ -176,9 +189,9 @@ The primary individual-Paper-IV LOO calculation is a distinct path.
 
 ::
 
-    py -m unittest test_analysis_tools test_article_assets
-    py check_project_layout.py --with-products
-    py publish_article_assets.py --check
+    py -m unittest tests.test_analysis_tools tests.test_article_assets
+    py -m sbf.check_project_layout --with-products
+    py -m figures.publish_article_assets --check
 
 RU: Эти проверки не запускают научные ячейки и не пересчитывают галактики.
 Тест производных использует только определения чистых функций и искусственные

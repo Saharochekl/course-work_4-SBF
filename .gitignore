@@ -41,6 +41,7 @@ runs/.runtime_cache/
 # Personal notes stay on disk, not in the source release.
 *.[mM][dD]
 !/Readme.md
+!/Readme_RUS.md
 
 # Local archives and compatibility links are not active source code.
 /code/legacy/
@@ -70,3 +71,8 @@ runs/.runtime_cache/
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
+
+# Runtime caches are outside the two science campaigns.
+/.cache/
+# Keep the same F090W exclusion after the directory move.
+/runs/F090W/

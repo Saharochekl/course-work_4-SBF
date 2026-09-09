@@ -3,9 +3,10 @@
 astro_env/
 output/
 tmp/
+.cache/
+code/legacy/
 .matplotlib/
 code/.matplotlib/
-code/runs/
 **/.ipynb_checkpoints/
 
 # Двоичные научные данные и готовые изображения не дают полезного AST/графа.
@@ -29,6 +30,9 @@ code/runs/
 
 # CSV, JSON, TXT, Markdown и TeX намеренно не исключены: в них лежат
 # человекочитаемые результаты, параметры, статусы и выводы анализа.
+# Активные code/sbf, code/figures, code/tests, code/config, code/reference и
+# три notebook в code/ индексируются. Игнор научных массивов не запрещает
+# агенту читать их напрямую, когда задача требует пикселей или метаданных.
 
 # Артефакт самого codebase-memory не должен индексировать сам себя.
 .codebase-memory/

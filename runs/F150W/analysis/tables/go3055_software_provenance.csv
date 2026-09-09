@@ -1,0 +1,24 @@
+item,version_or_identifier
+Input i2d products (2/28),pipeline 1.19.1; CRDS 12.1.11; jwst_1413.pmap
+Input i2d products (22/28),pipeline 1.20.2; CRDS 13.0.6; jwst_1464.pmap
+Input i2d products (4/28),pipeline 2.0.1; CRDS 13.1.13; jwst_1535.pmap
+Python,3.13.2
+numpy,2.3.5
+astropy,7.2.0
+photutils,2.3.0
+stpsf,2.1.0
+scipy,1.16.3
+matplotlib,3.10.8
+pandas,2.3.3
+Adopted F150W SBF contract,sbf2-normalized-winsor-v3; normalized_full_3p5; kmin=0.04
+Normalized SBF core SHA256,33f9e794e329a505b6eb8eadbb9f2c9f44f91b0843407cd770be2ce00b8550cd
+Normalized SBF runner SHA256,2505a6de87dc5325d1b9f245e680ffc9ee19430ab6b28cc1b60754d993446880
+Product-generation Git HEAD,5d0fd14964741e2f25dbac4b62dac4ea2e043217
+Executed sbf-2.ipynb SHA256,a1828d2d8d975c193707df9ff95516750e8a410623fe7a2f1eb149fef17bcd4a
+Current sbf-2-graph.ipynb SHA256,f21849efcbb3de4bbbcdc2ed94893f1746e9368eec84e66d0938ca4ce6f6d32f
+Current sbf-2-systematics.ipynb SHA256,32cfe6de01f85c5f811335b503424ba06b8d4fcdb9ee7633371daecf8ffc09eb
+Current sbf-f090w-graph.ipynb SHA256,94b312a69979883e6dcc204bae00f3e9cd0999b92cb4f75d6ef6585071033cdb
+F090W runner SHA256,af641dd553cf77549744324b9d8f6df4de93debbd2c337f6be492e508dc1e2ed
+F090W graph builder SHA256,a4e965b84ecdf7429b1fe40eae9c9f7555a2a8c26c8ddb30891990e4ca016c9c
+Article-table builder SHA256,7af50143cb81a53707cab2d5855c9abe8dc838a65f49777eef4cb4b8733211ce
+F150W science-freeze Git commit,d89e09482978a4df01324e3fd532ad2e3c03c924

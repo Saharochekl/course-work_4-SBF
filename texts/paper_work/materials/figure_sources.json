@@ -1,244 +1,244 @@
 [
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_final_working_residuals.png",
+    "source": "runs/F150W/analysis/figures/go3055_final_working_residuals.png",
     "destination": "texts/paper_work/materials/figures/go3055_final_working_residuals.png",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_f150w_article_calibration.pdf",
+    "source": "runs/F150W/analysis/figures/go3055_f150w_article_calibration.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f150w_article_calibration.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_f150w_article_calibration_linear.pdf",
+    "source": "runs/F150W/analysis/figures/go3055_f150w_article_calibration_linear.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f150w_article_calibration_linear.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_article_same8_three_band_color_comparison.pdf",
+    "source": "runs/F150W/analysis/figures/go3055_article_same8_three_band_color_comparison.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_article_same8_three_band_color_comparison.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_f150w_article_loo_recovery.pdf",
+    "source": "runs/F150W/analysis/figures/go3055_f150w_article_loo_recovery.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f150w_article_loo_recovery.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_f150w_article_loo_residuals.pdf",
+    "source": "runs/F150W/analysis/figures/go3055_f150w_article_loo_residuals.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f150w_article_loo_residuals.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_f150w_article_measurement_error_budget.pdf",
+    "source": "runs/F150W/analysis/figures/go3055_f150w_article_measurement_error_budget.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f150w_article_measurement_error_budget.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_f150w_article_distance_error_budget.pdf",
+    "source": "runs/F150W/analysis/figures/go3055_f150w_article_distance_error_budget.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f150w_article_distance_error_budget.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_f150w_article_annulus_comparison.pdf",
+    "source": "runs/F150W/analysis/figures/go3055_f150w_article_annulus_comparison.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f150w_article_annulus_comparison.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf_f090w_go3055/analysis/figures/go3055_f090w_final_working_residuals.pdf",
+    "source": "runs/F090W/analysis/figures/go3055_f090w_final_working_residuals.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f090w_final_working_residuals.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf_f090w_go3055/analysis/figures/go3055_f090w_article_calibration.pdf",
+    "source": "runs/F090W/analysis/figures/go3055_f090w_article_calibration.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f090w_article_calibration.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf_f090w_go3055/analysis/figures/go3055_f090w_article_loo_recovery.pdf",
+    "source": "runs/F090W/analysis/figures/go3055_f090w_article_loo_recovery.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f090w_article_loo_recovery.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf_f090w_go3055/analysis/figures/go3055_f090w_article_loo_residuals.pdf",
+    "source": "runs/F090W/analysis/figures/go3055_f090w_article_loo_residuals.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f090w_article_loo_residuals.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf_f090w_go3055/analysis/figures/go3055_f090w_article_measurement_error_budget.pdf",
+    "source": "runs/F090W/analysis/figures/go3055_f090w_article_measurement_error_budget.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f090w_article_measurement_error_budget.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf_f090w_go3055/analysis/figures/go3055_f090w_article_distance_error_budget.pdf",
+    "source": "runs/F090W/analysis/figures/go3055_f090w_article_distance_error_budget.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f090w_article_distance_error_budget.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf_f090w_go3055/analysis/figures/go3055_f090w_article_annulus_comparison.pdf",
+    "source": "runs/F090W/analysis/figures/go3055_f090w_article_annulus_comparison.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f090w_article_annulus_comparison.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_f150w_psf_normalization_sensitivity.pdf",
+    "source": "runs/F150W/analysis/figures/go3055_f150w_psf_normalization_sensitivity.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f150w_psf_normalization_sensitivity.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf_f090w_go3055/analysis/figures/go3055_f090w_psf_normalization_sensitivity.pdf",
+    "source": "runs/F090W/analysis/figures/go3055_f090w_psf_normalization_sensitivity.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f090w_psf_normalization_sensitivity.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf_f090w_go3055/analysis/figures/go3055_f150w_f090w_article_winsorization.pdf",
+    "source": "runs/F090W/analysis/figures/go3055_f150w_f090w_article_winsorization.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f150w_f090w_article_winsorization.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf_f090w_go3055/analysis/figures/ngc_3379_f150w_f090w_normalized_full_pixel_histograms.pdf",
+    "source": "runs/F090W/analysis/figures/ngc_3379_f150w_f090w_normalized_full_pixel_histograms.pdf",
     "destination": "texts/paper_work/materials/figures/ngc_3379_f150w_f090w_normalized_full_pixel_histograms.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf_f090w_go3055/analysis/figures/ngc_1380_f150w_f090w_normalized_full_pixel_histograms.pdf",
+    "source": "runs/F090W/analysis/figures/ngc_1380_f150w_f090w_normalized_full_pixel_histograms.pdf",
     "destination": "texts/paper_work/materials/figures/ngc_1380_f150w_f090w_normalized_full_pixel_histograms.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf_f090w_go3055/analysis/figures/ngc_4486_f150w_f090w_normalized_full_pixel_histograms.pdf",
+    "source": "runs/F090W/analysis/figures/ngc_4486_f150w_f090w_normalized_full_pixel_histograms.pdf",
     "destination": "texts/paper_work/materials/figures/ngc_4486_f150w_f090w_normalized_full_pixel_histograms.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/ngc_1380_f150w_pk_fit_comparison.pdf",
+    "source": "runs/F150W/analysis/figures/ngc_1380_f150w_pk_fit_comparison.pdf",
     "destination": "texts/paper_work/materials/figures/ngc_1380_f150w_pk_fit_comparison.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf_f090w_go3055/analysis/figures/ngc_1380_f090w_pk_fit_comparison.pdf",
+    "source": "runs/F090W/analysis/figures/ngc_1380_f090w_pk_fit_comparison.pdf",
     "destination": "texts/paper_work/materials/figures/ngc_1380_f090w_pk_fit_comparison.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_synthetic_fft_normalization.png",
+    "source": "runs/F150W/analysis/figures/go3055_synthetic_fft_normalization.png",
     "destination": "texts/paper_work/materials/figures/go3055_synthetic_fft_normalization.png",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_f150w_article_f160w_comparison.pdf",
+    "source": "runs/F150W/analysis/figures/go3055_f150w_article_f160w_comparison.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f150w_article_f160w_comparison.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf_f090w_go3055/analysis/figures/go3055_f090w_article_f160w_comparison.pdf",
+    "source": "runs/F090W/analysis/figures/go3055_f090w_article_f160w_comparison.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f090w_article_f160w_comparison.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf_f090w_go3055/analysis/figures/go3055_f090w_article_vs_f150w_sbf.pdf",
+    "source": "runs/F090W/analysis/figures/go3055_f090w_article_vs_f150w_sbf.pdf",
     "destination": "texts/paper_work/materials/figures/go3055_f090w_article_vs_f150w_sbf.pdf",
     "documents": [
       "go3055_jwst_sbf_article_draft.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_f150w_sbf_calibration.png",
+    "source": "runs/F150W/analysis/figures/go3055_f150w_sbf_calibration.png",
     "destination": "texts/paper_work/materials/figures/go3055_f150w_sbf_calibration.png",
     "documents": [
       "go3055_jwst_sbf_article_draft_ru.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_color_correlation_vs_jensen.png",
+    "source": "runs/F150W/analysis/figures/go3055_color_correlation_vs_jensen.png",
     "destination": "texts/paper_work/materials/figures/go3055_color_correlation_vs_jensen.png",
     "documents": [
       "go3055_jwst_sbf_article_draft_ru.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_annulus_local_color_sbf.png",
+    "source": "runs/F150W/analysis/figures/go3055_annulus_local_color_sbf.png",
     "destination": "texts/paper_work/materials/figures/go3055_annulus_local_color_sbf.png",
     "documents": [
       "go3055_jwst_sbf_article_draft_ru.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_sbf_vs_trgb_leave_one_out.png",
+    "source": "runs/F150W/analysis/figures/go3055_sbf_vs_trgb_leave_one_out.png",
     "destination": "texts/paper_work/materials/figures/go3055_sbf_vs_trgb_leave_one_out.png",
     "documents": [
       "go3055_jwst_sbf_article_draft_ru.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_sbf_vs_host_luminosity.png",
+    "source": "runs/F150W/analysis/figures/go3055_sbf_vs_host_luminosity.png",
     "destination": "texts/paper_work/materials/figures/go3055_sbf_vs_host_luminosity.png",
     "documents": [
       "go3055_jwst_sbf_article_draft_ru.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_correlated_noise_diagnostics.png",
+    "source": "runs/F150W/analysis/figures/go3055_correlated_noise_diagnostics.png",
     "destination": "texts/paper_work/materials/figures/go3055_correlated_noise_diagnostics.png",
     "documents": [
       "go3055_jwst_sbf_article_draft_ru.tex"
     ]
   },
   {
-    "source": "runs/sbf2_go3055/analysis/figures/go3055_winsorization_diagnostics.png",
+    "source": "runs/F150W/analysis/figures/go3055_winsorization_diagnostics.png",
     "destination": "texts/paper_work/materials/figures/go3055_winsorization_diagnostics.png",
     "documents": [
       "go3055_jwst_sbf_article_draft_ru.tex"

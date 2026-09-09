@@ -1,137 +1,136 @@
 # JWST surface-brightness fluctuations — GO-3055
 
-Измерение флуктуаций поверхностной яркости (SBF) в **F150W и F090W** для
-14 галактик, калибровка по индивидуальным TRGB-расстояниям и сравнение расстояний.
-Основная калибровка F150W — постоянная; F090W — линейная по цвету.
-Цветовая зависимость проверяется, а не задаётся при измерении амплитуды SBF.
+SBF measurements in NIRCam F150W and F090W for 14 galaxies, TRGB calibration,
+distance comparisons and publication figures. [Russian version](Readme_RUS.md).
 
-## Структура
+## Layout
 
-| Путь | Назначение |
-|---|---|
-| `code/` | Загрузка, измерения, анализ, рисунки, тесты |
-| `docs/` | Краткая документация к коду на русском и английском |
-| `data/` | Локальные JWST i2d, OPD и небольшие входные таблицы |
-| `runs/` | Локальные модели, маски, PSF, кэши и результаты; лёгкие таблицы анализа сохранены в Git |
-| `texts/paper_work/` | TeX статьи; изображения в `materials/figures/` |
-| `materials/` | Литература, использованная в работе |
+```text
+code/
+  download.py                 image and OPD download/check entry point
+  process.py                  F150W/F090W processing entry point
+  sbf-2.ipynb                 shared image-processing template; interactive inspection
+  sbf-2-graph.ipynb            F150W analysis and figures
+  sbf-f090w-graph.ipynb        F090W analysis and figures
+  sbf/                       production modules and product validator
+  figures/                   figure, table and notebook builders
+  config/                    exact target/product manifests
+  reference/                 curated literature inputs
+  tests/                     small offline/synthetic tests
+  legacy/                    local historical experiments; not part of the release
+runs/
+  F150W/
+    source/                  galaxy models, masks, PSFs and source measurements
+    spectra/                 adopted normalized-residual measurements and cache
+    analysis/                calibration tables and plotting inputs
+  F090W/                     source, spectra, final products and analysis
+data/                        downloaded images, OPDs and reference data
+docs/                        concise Russian/English module documentation
+texts/paper_work/materials/   article figures and their source manifest
+.cache/                      regenerable runtime/font caches
+```
 
-Личные заметки, память ассистента, окружение, сборки и архивы не публикуются.
-Git-ignore не означает, что локальный файл можно безусловно удалить.
+There are two command-line entry scripts and three working notebooks: one shared
+processing template and a separate analysis notebook for each band. Helpers are
+regular Python packages, not filesystem aliases. Local notes, environments,
+legacy experiments and large generated data are excluded from Git.
 
-## Запуск
+## Run
 
-Все команды ниже выполняются **из `code/`**, в активированном окружении.
-`py` — пользовательское имя команды Python; без такого alias используйте `python3`.
-Код рассчитан на macOS/Linux (POSIX). Проверенное окружение — macOS, Python 3.13;
-прямые зависимости в `../requirements.txt`:
+All commands below run **from `code/`**, with the environment already activated.
+`py` denotes Python; use `python3` if that command is not configured locally.
+The processing code targets POSIX systems; the checked environment is macOS,
+Python 3.13.
 
 ```bash
 py -m pip install -r ../requirements.txt
-py check_project_layout.py
+py -m sbf.check_project_layout
 ```
 
-### 1. Исходные изображения и OPD
+### 1. Prepare inputs
 
 ```bash
-py download_go3055_go7763.py --program 3055
-py download_go3055_go7763.py --program 3055 --download
-py download_wss_opds.py --program 3055 --download
+py download.py images --program 3055
+py download.py images --program 3055 --download
+py download.py opd --program 3055 --download
 ```
 
-Первая команда проверяет наличие; только `--download` разрешает скачивание.
-Загрузчик также поддерживает GO-7763, но эта программа не входит в текущую выборку.
-Имена точных i2d-продуктов заданы в `targets_go3055_manifest.csv`.
-Отдельно нужны reference data STPSF: укажите `STPSF_PATH` либо разместите их
-в `data/stpsf-data/`. OPD и reference data — разные входы.
-Код использует готовые i2d и не запускает калибровочный JWST pipeline с detector-level кадров.
+Without `--download`, the downloader only checks local files. Product names are
+in `config/targets_go3055_manifest.csv`. The optional GO-7763 manifest is not part
+of the current article sample. STPSF reference data are needed separately: set
+`STPSF_PATH` or install them in `../data/stpsf-data/`. OPDs are not a substitute
+for those reference data. Processing starts from calibrated i2d images; this
+repository does not recalibrate detector-level exposures.
 
-### 2. Измерения
+### 2. Process
 
 ```bash
-py run_sbf_2_batch.py
-py run_sbf_2_normalized_winsor.py
-py run_sbf_f090w.py
+py process.py --dry-run
+py process.py --filter F150W
+py process.py --filter F090W
 ```
 
-Первый этап строит модель и маски F150W из `sbf-2.ipynb`; второй измеряет
-нормированные остатки с принятым винзорированием; третий обрабатывает F090W.
-Это длительные вычисления. Повторный запуск использует подходящие результаты и
-кэши; `--force` и родственные флаги нужны только для намеренного пересчёта.
-Готовые данные можно проверить без измерений:
+The first command only prints the planned commands. The next two are long
+scientific runs; valid completed products and caches are reused. Run F150W before
+a first F090W campaign because F090W uses its source products. To run both in that
+order, use `py process.py`.
+
+For an explicit F150W stage use `--stage source` or `--stage spectra`.
+For a target subset use `--galaxies "NGC 4636"`.
+F090W uses `--stage all` and resumes its individual stages from cache.
+Advanced worker options remain available through `py -m sbf.run_sbf_f090w --help`
+and the other modules in `sbf/`.
+
+Validate saved inputs and products without remeasuring galaxies:
 
 ```bash
-py check_project_layout.py --with-products
+py -m sbf.check_project_layout --with-products
 ```
 
-### 3. Калибровки и рисунки
+### 3. Analyze or redraw figures
 
-Откройте `sbf-2-graph.ipynb` для F150W и `sbf-f090w-graph.ipynb` для F090W.
-Ячейки исполняются сверху вниз; графики отображаются в notebook.
-Они используют готовые измерения, а не скачивают и не моделируют галактики заново.
+Open `sbf-2-graph.ipynb` for F150W or `sbf-f090w-graph.ipynb` for F090W.
+Their cells run top to bottom and display figures inline. Changing labels,
+colors or backgrounds does not require refitting images.
 
-Публикационные рисунки из уже подготовленных таблиц:
+Publication builders operate on the existing analysis products:
 
 ```bash
-py build_go3055_article_figures.py
-py publish_article_assets.py --check
+py -m figures.build_go3055_article_figures
+py -m figures.publish_article_assets --check
 ```
 
-Дополнительные построители, порядок их входов и параметры описаны в
-[документации анализа](docs/analysis.rst).
-`build_sbf_f090w_graph_notebook.py` пересоздаёт notebook: **не запускайте его
-поверх ручных изменений, которые хотите сохранить**.
+See [analysis documentation](docs/analysis.rst) for the remaining builders and
+their inputs. `figures.build_sbf_f090w_graph_notebook` **regenerates the notebook**:
+do not run it over manual notebook edits you want to preserve.
 
-## Метод и проверка
+## Documentation and checks
 
-Остаток `(SCI − sky − model) / sqrt(model)` винзорируется при `3.5σ` по всей
-валидной области. Для двух круговых колец спектр описывается `P(k)=P0 E(k)+P1`.
-Из `P0` вычитается вклад неразрешённых источников, затем амплитуда переводится
-в видимую SBF-величину. Расстояние требует отдельной абсолютной калибровки.
-
-- [Измерения и обоснование параметров](docs/measurement.rst)
-- [Параметры исходного notebook](docs/notebook_parameters.rst)
-- [Загрузка, возобновление и ресурсы](docs/infrastructure.rst)
-- [Анализ и графики](docs/analysis.rst)
-- [Пути, проверка и очистка](docs/repository.rst)
+- [Measurement stages and parameter rationale](docs/measurement.rst)
+- [Image-processing notebook parameters](docs/notebook_parameters.rst)
+- [Downloads, resume and resources](docs/infrastructure.rst)
+- [Analysis and figures](docs/analysis.rst)
+- [Paths, repository layout and cleanup](docs/repository.rst)
 
 ```bash
-py -m unittest discover -s . -p 'test_*.py'
+py -m unittest discover -s tests -t .
 ```
 
-Тесты не заменяют полного численного прогона. Тестам загрузчика нужен локальный
-HTTP-сервер; сетевые ограничения песочницы могут запрещать его запуск.
-Научные notebook автоматически этим набором не выполняются.
+Tests use small fixtures and do not execute scientific notebook cells. Downloader
+tests need a local HTTP server. Syntax, metadata and unit checks are not a
+substitute for numerical validation of a new scientific run.
 
-Это пока **не обещание побитового воспроизведения на любом компьютере**:
-нужны исходные i2d, OPD, reference data и согласованные версии библиотек.
-`requirements.txt` фиксирует прямые зависимости, но не все транзитивные пакеты
-и внешние данные. Сохранённые выходы notebook относятся к прежним выполненным
-прогонам, а не доказывают выполнение текущей ревизии.
+## Reproducibility and local data
 
-## English
+The source release consists of the active scripts/notebooks, their packages,
+tests, manifests, literature inputs, documentation and publication assets.
+Personal Markdown is excluded except these two READMEs. Downloaded FITS, caches
+and local experiments are not release source code. Ignored does **not** mean
+safe to delete: models, masks, normalized residuals, PSFs, tables and background
+logs are still required for some figures or for resuming processing.
 
-This repository measures JWST/NIRCam F150W and F090W SBF for 14 GO-3055 galaxies
-and calibrates distances against individual TRGB anchors. F150W uses a constant
-calibration; F090W uses a linear color calibration. Leave-one-out evaluation is
-internal cross-validation, not an independent external distance test.
-
-Run the commands above from `code/` with the environment activated; `py` denotes
-Python (`python3` without the local alias). Install `../requirements.txt`, prepare
-the exact manifest i2d files, WSS OPDs and STPSF reference data, then run the three
-measurement stages in order. Existing valid products are reused. Open the two
-graph notebooks sequentially for calibration and plotting. Figure-only changes
-do not require repeating the measurement stages.
-
-Each linked `.rst` document contains Russian and English instructions, input/output
-contracts and parameter rationale. `check_project_layout.py --with-products`
-checks source syntax, target membership and saved file references without running
-notebook cells or fitting galaxies. Tests use small fixtures; downloader tests
-require a local HTTP server. Scientific equivalence still needs numerical
-validation, not just passing unit tests.
-
-Personal Markdown notes (except this README), local archives, intermediate images,
-caches and document builds are excluded from Git. They are not deleted locally.
-The source tree is not a self-contained dataset: exact external inputs are required
-for a fresh scientific run. Existing notebook outputs are historical, not evidence
-that the current revision has been rerun.
+This is not a promise of bit-identical output on any machine. A fresh run also
+needs the exact i2d/OPD inputs, STPSF reference files and compatible dependencies.
+`requirements.txt` pins direct dependencies, not every transitive package or
+external dataset. Stored notebook outputs belong to earlier runs, not to an
+automatic rerun of the current checkout.

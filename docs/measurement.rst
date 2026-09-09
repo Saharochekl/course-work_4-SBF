@@ -6,35 +6,47 @@
 
 RU. Текущий код измеряет SBF в 14 галактиках GO-3055. Обработчики не
 скачивают и не удаляют исходные FITS. Скачивание выполняет отдельно
-``download_go3055_go7763.py``. Команды ниже запускаются из ``code/`` с
+``download.py``. Команды ниже запускаются из ``code/`` с
 активированным окружением. Научный notebook не исполняется при импорте.
 
 EN. The current pipeline measures the 14 GO-3055 galaxies. Processing never
-downloads or deletes input FITS; ``download_go3055_go7763.py`` owns downloads.
+downloads or deletes input FITS; ``download.py`` is the download entry point.
 Run these commands from ``code/`` in the active environment. Importing modules
 does not execute the scientific notebook.
 
 Порядок / Order
 --------------
 
-1. ``py run_sbf_2_batch.py`` — F150W: модель, маска, PSF и исходные спектры /
+1. ``py process.py --filter F150W --stage source`` — модель, маска, PSF и исходные спектры /
    F150W model, mask, PSF and source spectra.
-2. ``py run_sbf_2_normalized_winsor.py`` — принятый F150W после нормировки /
+2. ``py process.py --filter F150W --stage spectra`` — принятый F150W после нормировки /
    adopted F150W measurement after normalization, using saved source products.
-3. ``py run_sbf_f090w.py`` — F090W: модель/маска/PSF и нормированные спектры /
+3. ``py process.py --filter F090W`` — модель/маска/PSF и нормированные спектры /
    F090W source products and normalized spectra. The accepted F150W centre
    provides the WCS reference.
 4. Анализ и расстояния выполняются отдельно / Calibration and distances are
    computed separately; a spectral ``sigma_adopted_internal`` is not the full
    uncertainty of the distance printed in the article.
 
-``--galaxies "NGC 4636"`` ограничивает очередь / selects a target subset.
-Обычный повтор команды использует проверенные продукты / An ordinary restart
-reuses verified products. ``--force-reprocess`` (F150W source), ``--force``
-(normalized F150W) and ``--force-source`` / ``--force-spectra`` (F090W) explicitly
-request recomputation; do not add them to an ordinary restart.
+``py process.py --filter both`` выполняет все три шага по порядку / runs all
+three stages in order. ``--galaxies "NGC 4636"`` ограничивает очередь / selects
+a target subset. ``--dry-run`` только печатает команды / only prints commands;
+``--check`` запускает проверки входов и готовности без научных вычислений /
+runs input/readiness checks without scientific processing. These checks may
+update F090W preflight reports; the F150W source preflight is read-only and
+never creates campaign jobs. / Проверка источников F150W только читает файлы,
+не создавая заданий; F090W может обновить служебные отчёты.
+F090W runs both resumable stages together; selecting
+only ``source`` or ``spectra`` is supported for F150W only.
 
-``run_sbf_2_batch.py`` больше не поддерживает ``--allow-download``,
+Обычный повтор использует проверенные продукты. Для расширенных настроек /
+An ordinary restart reuses verified products. Advanced runner options remain
+available through ``py -m sbf.run_sbf_2_batch``,
+``py -m sbf.run_sbf_2_normalized_winsor`` and ``py -m sbf.run_sbf_f090w``.
+Their ``--force-reprocess``, ``--force`` and ``--force-source`` / ``--force-spectra``
+switches explicitly request recomputation; do not add them to an ordinary restart.
+
+``sbf.run_sbf_2_batch`` больше не поддерживает ``--allow-download``,
 ``--download-worker``, ``--allow-input-cleanup`` или ``--prefetch-targets``.
 EN. Those retired switches belonged to the duplicated downloader. The explicit
 ``--no-download`` and ``--no-cleanup-inputs`` remain harmless aliases of the
@@ -43,30 +55,34 @@ always-offline, input-preserving behaviour for old commands.
 Модули и контракты / Modules and contracts
 ----------------------------------------
 
-``run_sbf_2_batch.py``
+Production modules reside in ``code/sbf/``; public commands remain in ``code/``.
+Рабочие модули находятся в ``code/sbf/``, команды запуска — в ``code/``.
+
+``sbf.run_sbf_2_batch``
   RU: очередь, изолированные процессы, исполнение ячеек ``sbf-2.ipynb``,
   проверка пяти FITS и двух CSV, журналы и восстановление после прерывания.
   EN: queue, subprocess supervision, notebook executor, five-FITS/two-CSV
   completion gate and restart state. SBF3 output handling is not supported.
 
-``sbf2_normalized_winsor_core.py``
+``sbf.sbf2_normalized_winsor_core``
   RU: компактные входные кэши, E(k), нормировка, винзорирование и FFT/МНК.
   EN: compact inputs, Monte Carlo E(k), normalization, winsorization and
   Fourier-space weighted least squares. The adopted spectrum reads the saved
   normalized full-frame FITS back; it is not measured from an unsaved precursor.
 
-``run_sbf_2_normalized_winsor.py``
+``sbf.run_sbf_2_normalized_winsor``
   RU: последовательный запуск этого ядра для F150W. EN: sequential F150W
   wrapper, CSV progress and aggregate sensitivity tables.
 
-``sbf090_pipeline_support.py``
+``sbf.sbf090_pipeline_support``
   RU: сборка F090W execution-копии notebook, диагностика изофот, PSF-кэш.
   EN: deterministic F090W notebook adapter, isophote QC and PSF cache.
   Exact source anchors deliberately fail loudly if the base notebook changes.
 
-``run_sbf_f090w.py``
-  RU: два возобновляемых этапа и публикация стабильных ссылок на продукты.
-  EN: two resumable stages and stable product links. ``science_config`` is the
+``sbf.run_sbf_f090w``
+  RU: два возобновляемых этапа и JSON-манифест реальных файлов без symlink.
+  EN: two resumable stages and a JSON manifest of actual files, without symlinks.
+  ``science_config`` is the
   single settings constructor used by both parent and worker. Readiness checks
   load PSFs with ``write_table=False`` and do not rewrite their CSV catalogue.
 
@@ -136,12 +152,14 @@ from P0 before magnitude conversion. PSF-ensemble MAD and k-window scatter
 remain separately recorded. Spectral CSV files retain a conservative annular
 half-difference diagnostic; they are not the final calibration/distance budget.
 
-RU. ``no_winsor``, ``raw_global_3p5`` и ``normalized_union_*`` не мёртвый код:
-их используют notebook сравнения, тест искусственного сигнала и таблицы
-чувствительности. Старые значения sigma/результаты не подменяются принятыми.
-EN. These three controls are still consumed by comparison notebooks, synthetic
-recovery and sensitivity tables. Removing them would erase reproducibility of
-an explicitly used validation, not merely remove an obsolete branch.
+RU. ``no_winsor``, ``raw_global_3p5`` и ``normalized_union_*`` сохранены для
+совместимости таблиц чувствительности и архивных проверок. Рабочая ветвь —
+``normalized_full_3p5``. Notebook сравнений и тест искусственного сигнала лежат
+в ``code/legacy/review-2026-09-09/`` и не входят в обычный запуск.
+EN. These controls preserve sensitivity-table and archived-test compatibility;
+the adopted branch remains ``normalized_full_3p5``. Comparison notebooks and
+synthetic recovery are archived under ``code/legacy/review-2026-09-09/`` and
+are not part of the normal production command.
 
 Изофоты F090W / F090W isophotes
 ------------------------------
@@ -181,6 +199,21 @@ recorded; failed science-annulus QC is never accepted as success.
 Хранение и выполнение / Storage and execution
 --------------------------------------------
 
+RU. Манифесты целей: ``code/config/``. Источники F150W: ``runs/F150W/source/``;
+нормированные спектры: ``runs/F150W/spectra/``; анализ: ``runs/F150W/analysis/``.
+F090W: ``runs/F090W/``. Служебный кэш: ``.cache/runtime/``. JSON-манифесты
+содержат пути реальных продуктов, не отдельные файловые ссылки.
+EN. Target manifests live in ``code/config/``. F150W source, normalized spectra
+and analysis occupy ``runs/F150W/{source,spectra,analysis}/``; F090W uses
+``runs/F090W/``. Runtime state uses ``.cache/runtime/``. Product manifests
+reference actual files; no symlink tree is generated.
+
+RU. Только при вычислении fingerprint новые каталоги канонизируются в прежние
+идентификаторы: механический перенос не должен инвалидировать численный кэш.
+Это не запасные пути чтения. EN. Fingerprint identity alone maps relocated
+directories to historical identifiers, preserving valid numerical caches.
+Those historical strings are never alternative I/O paths.
+
 RU. ``EXPERIMENT_VERSION=v3`` описывает контракт результатов; отдельные
 ``INPUT_CACHE_VERSION`` и ``EXPECTATION_CACHE_VERSION=v2`` оставлены, потому
 что алгоритмы этих кэшей не менялись. Пути и схемы полей централизованы для
@@ -208,10 +241,11 @@ estimate. Zero RAM/RSS limits disable optional ceilings. F090W reserves
 All are explicit CLI choices. A fitting failure is recorded, not replaced
 by an invented measurement.
 
-Проверка / Verification
-----------------------
+Архивные проверки / Archived checks
+----------------------------------
 
-RU. В ``sbf-2-systematics.ipynb`` оставлен контроль альтернативного N(k).
+RU. В архивном ``code/legacy/review-2026-09-09/sbf-2-systematics.ipynb``
+сохранён контроль альтернативного N(k), не используемый рабочим обработчиком.
 ``TILE_SIZE=512`` и ``TILE_MARGIN=96`` задают размер и отступ пробных площадок;
 доли валидных пикселей 0.80/0.55 ограничивают дырявые окна, максимум 4 площадки
 ограничивает время. Отношение WHT 0.5–2 и относительный MAD <=0.25 отбирают
@@ -219,7 +253,8 @@ RU. В ``sbf-2-systematics.ipynb`` оставлен контроль альте�
 источники; минимум 1000 пикселей защищает статистику от пустой выборки.
 Это эвристики диагностического опыта, не параметры принятой калибровки.
 
-EN. The retained N(k) control uses 512-pixel tiles with a 96-pixel margin,
+EN. The archived N(k) control, unused by the production runner, uses
+512-pixel tiles with a 96-pixel margin,
 valid fractions 0.80/0.55 and at most four tiles to bound support and runtime.
 WHT ratios 0.5–2 and relative MAD <=0.25 select comparable exposure; a 5-sigma
 mask dilated by three pixels suppresses sources. At least 1000 valid pixels
@@ -239,7 +274,10 @@ RU. В диагностике 129/257 повторно используется 
 EN. The size test reuses only PSFs with matching recorded settings. Reuse
 does not rewrite FITS provenance; unknown generator versions stay unknown.
 
-``py -m unittest test_run_sbf_2_batch test_run_sbf_f090w test_run_sbf_2_normalized_winsor``
+Проверка / Verification
+----------------------
+
+``py -m unittest tests.test_run_sbf_2_batch tests.test_run_sbf_f090w tests.test_run_sbf_2_normalized_winsor tests.test_process``
 
 RU. Тесты используют маленькие искусственные массивы/временные FITS, не
 галактики. Они проверяют контракты, FITS-кэш и МНК; не заменяют полный

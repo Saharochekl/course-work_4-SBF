@@ -1,0 +1,2 @@
+n_trials,mean_P0_fractional_error,se_mean_P0_fractional_error,median_P0_fractional_error,rms_P0_fractional_error,mean_mbar_error_mag,se_mean_mbar_error_mag,median_mbar_error_mag,rms_mbar_error_mag,mean_P1_recovered
+32,-0.006531431174997784,0.006159443608826199,-0.012096354934327758,0.0349107534417884,0.007758786137727765,0.006710537340183265,0.013214449368660373,0.03815978793893916,0.08068852792380915

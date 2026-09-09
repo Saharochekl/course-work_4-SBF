@@ -4,97 +4,147 @@
 Русский
 -------
 
-Пути и проверка
+Рабочая структура
+~~~~~~~~~~~~~~~~~
+
+Из корня ``code/`` запускаются два скрипта: ``download.py`` и ``process.py``.
+Рядом остаются три notebook: общий измерительный ``sbf-2.ipynb``,
+анализ F150W ``sbf-2-graph.ipynb`` и анализ F090W ``sbf-f090w-graph.ipynb``.
+
+* ``code/sbf/`` — загрузка, обработка, FFT, состояние кампании и пути.
+* ``code/figures/`` — построение таблиц, рисунков и генератор F090W notebook.
+* ``code/tests/`` — активные модульные тесты.
+* ``code/config/`` — манифесты целей; ``code/reference/`` — литературные таблицы.
+* ``code/legacy/`` — локальный архив, не часть активного выпуска и не зависимость запуска.
+* ``data/`` — исходные кадры, OPD/reference data и небольшие метаданные.
+* ``runs/F150W/source/``, ``spectra/``, ``analysis/`` — исходный этап,
+  принятый нормированный FFT-пересчёт и анализ F150W.
+* ``runs/F090W/`` — исходный этап, спектры, результаты и анализ F090W.
+* ``.cache/runtime/`` и ``.cache/matplotlib/`` — служебные кэши вне ``runs/``.
+* ``texts/paper_work/materials/`` — материалы статьи; TeX-сборка остаётся в ``build/``.
+
+В ``runs/`` только две научные кампании. Активные пути не требуют совместимых
+symlink на прежнюю структуру. Ссылки в метаданных приведены к текущим каталогам;
+наличие старого имени в исторической записи само по себе не означает наличие файла.
+
+Пути и проверки
 ~~~~~~~~~~~~~~~
 
-``sbf_paths.py`` разрешает входные пути относительно расположения кода.
-``project_path`` принимает относительный путь или исторический абсолютный адрес
-в ``course_work-SBF``. ``load_project_json`` читает JSON и преобразует распознанные
-пути только в памяти. Файлы результатов и fingerprints на диске не меняются.
-Неизвестный внешний путь не заменяется на произвольный найденный файл.
+``sbf.sbf_paths`` определяет ``PROJECT_ROOT`` от расположения пакета,
+``CODE_DIR`` — от корня проекта. Текущий каталог оболочки не меняет входные данные.
+``_LEGACY_ROOT`` распознаёт прежнее имя checkout; ``_PROJECT_DIRS`` ограничивает
+каталоги, которые можно считать путями. Неизвестный внешний адрес не заменяется
+случайно найденным файлом. ``load_project_json`` преобразует распознанные пути
+в памяти; само чтение не переписывает provenance. Перенос каталогов — отдельная
+служебная операция с проверкой ссылок и идентичности продуктов.
 
-Константы этого модуля:
+STPSF использует явно заданный ``STPSF_PATH``, затем локальный
+``data/stpsf-data``; существующая домашняя установка поддерживается для текущей
+рабочей станции. Для воспроизводимого запуска задайте путь явно и сохраните версию
+reference data. Это не автоматическая замена научной модели.
 
-* ``PROJECT_ROOT`` — расположение самого проекта; cwd не должен менять входы.
-* ``_LEGACY_ROOT`` — ровно прежнее имя checkout, встречающееся в сохранённых JSON.
-  Совместимость необходима, пока эти результаты используются.
-* ``_PROJECT_DIRS`` — допустимые начала относительных путей; это защита от
-  превращения обычного текста в имя файла.
+Из ``code/``, в уже активном окружении:
 
-STPSF ищется в явно заданном ``STPSF_PATH``, затем в ``data/stpsf-data``.
-Существующая домашняя установка допускается ради текущих локальных прогонов.
-Для воспроизводимого запуска задавайте путь явно. Это выбор reference data,
-не автоматическая замена одной научной модели другой.
+* ``py download.py images --program 3055`` и ``py download.py opd --program 3055``
+  проверяют входы; только ``--download`` разрешает загрузку.
+* ``py process.py --filter both --check`` проверяет подготовку, без моделирования/FFT.
+* ``py -m sbf.check_project_layout --with-products`` проверяет синтаксис и ссылки.
+* ``py -m unittest discover -s tests -t .`` запускает модульные тесты.
 
-``check_project_layout.py`` проверяет синтаксис активных Python/notebook,
-публикационные рисунки и, с ``--with-products``, состав выборки, статусы и ссылки
-продуктов. Список галактик читается из манифеста, а не задаётся вторым числом 14.
-Это проверка структуры, не проверка научной точности. Ошибка о недостающих
-данных должна быть исправлена подготовкой входов, а не подавлена fallback.
+Эти проверки не доказывают научную точность или полную побитовую воспроизводимость.
+Для последней нужны независимый полный запуск, внешние reference data и сравнение
+численных результатов. Пропавший вход нельзя скрывать подстановкой другого файла.
 
-Что можно удалить вручную
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Ручная очистка
+~~~~~~~~~~~~~
 
-Без потери научных входов, после закрытия соответствующих процессов:
+После завершения процессов можно удалить воспроизводимые служебные кэши,
+``__pycache__/``, временный визуальный контроль и TeX ``build/``.
+Сначала сохраните нужные PDF и notebook checkpoints. ``.cache/runtime/`` нельзя
+удалять во время работающего обработчика. ``code/legacy/`` удаляется только
+при отказе от исторических опытов; наличие папки не делает её резервной копией
+всех современных данных.
 
-* ``tmp/`` — одноразовые извлечения PDF и визуальный контроль (около 25 MiB).
-* ``texts/**/build/`` — продукты компиляции, восстановимые из TeX/рисунков;
-  перед удалением сохраните нужный вам итоговый PDF.
-* ``__pycache__/``, ``.matplotlib/``, ``.ipynb_checkpoints/`` — кэши Python,
-  Matplotlib и notebook; checkpoints могут содержать вашу нужную копию правок.
-* ``trash/review-tools/`` — одноразовые инструменты прежнего переноса.
+В аудите 2026-09-09 отмечены 224 промежуточных FITS (45.248 GiB), которые не читаются
+текущей обработкой/графиками, и отдельные условные кандидаты. Точные локальные списки
+находятся в ``CLEANUP_CANDIDATES.md`` и ``trash/2026-09-09/``. Это снимок конкретного
+состояния, не универсальная команда очистки. Ничего из этих списков автоматически
+не удаляется; прежние ``runs/legacy/`` и ``runs/sbf2_systematics/`` пользователь
+уже удалил, поэтому их объём не включён в доступную экономию.
 
-После отказа от исторических экспериментов:
+Сохранить для перерасчёта/перерисовки: F090W/F150W SCI, рабочие модели и остатки,
+маски, кольца, PSF/OPD, текущие спектральные кэши, CSV/JSON, литературные входы,
+журналы расчёта и материалы статьи. ``worker.log`` — не просто мусор:
+из него извлекается в том числе информация об ошибке фона. Не применять
+``git clean -fdx`` или массовое удаление ``*model*``/``*resid*``/``*clip*``.
 
-* ``code/legacy/`` — старый код и старые продукты, около 3.2 GiB.
-* ``runs/legacy/`` — прежние запуски, около 7.5 GiB.
+Git и индекс кода
+~~~~~~~~~~~~~~~~
 
-Это НЕ копии всех действующих измерений. Удаление архивов лишит возможности
-повторить старые эксперименты. Старые совместимые symlink будут указывать в никуда;
-их следует убирать вместе с выбранным архивом. Не запускайте ``git clean -fdx``:
-он также уничтожит игнорируемые исходные FITS, действующие результаты и окружение.
+Личные Markdown исключены из Git; исключения — корневые ``Readme.md`` (EN)
+и ``Readme_RUS.md`` (RU). Документация выпуска — ``docs/*.rst``.
+Локальная память проекта и отчёты аудита в выпуск не входят. Игнорирование файла
+не удаляет его с диска и не вычищает старые коммиты. Git-история здесь не переписывается.
 
-Сейчас не удалять: ``data/`` целиком, текущие ``runs/sbf2_go3055/``,
-``runs/sbf2_normalized_winsor/``, ``runs/sbf_f090w_go3055/``, ``runs/sbf2_systematics/``,
-worker.log (фон используется при анализе), PSF/OPD/reference data, литературные
-входы ``code/sbf2_batch_outputs/`` и рисунки статьи. Исключение из Git не отменяет
-потребность локального анализа в этих файлах.
-
-Git
-~~~
-
-Личные Markdown исключены, кроме корневого ``Readme.md``; документация выпуска
-находится в ``docs/*.rst``. Уже отслеживавшиеся игнорируемые файлы убраны только
-из индекса. Они доступны локально. Старые коммиты не переписаны и размер истории
-от этого сам по себе не уменьшается. Для истории нужна отдельная согласованная
-операция с резервной копией и перепубликацией веток.
+``.cbmignore`` исключает локальный архив, окружение, служебные кэши и двоичные
+массивы/рисунки. Активные модули, notebook, config/reference и текстовые результаты
+остаются доступны индексатору. Это не запрет агенту читать FITS напрямую:
+граф нужен для структуры кода, а не для хранения пиксельных массивов.
 
 English
 -------
 
-``sbf_paths.py`` resolves inputs relative to the source checkout. ``project_path``
-supports the original checkout name; ``load_project_json`` rebases saved paths
-in memory only. On-disk provenance and fingerprints are retained. ``PROJECT_ROOT``
-makes paths independent of cwd; ``_LEGACY_ROOT`` recognizes the one old recorded
-format; ``_PROJECT_DIRS`` prevents ordinary text from being interpreted as paths.
-Unrelated external paths are not guessed. Set ``STPSF_PATH`` explicitly for
-reproducible runs; local and existing home reference-data locations remain supported.
+Layout and entry points
+~~~~~~~~~~~~~~~~~~~~~~~
 
-``check_project_layout.py`` compiles source without executing notebook cells.
-With ``--with-products`` it checks manifest membership, success status and file
-references, not scientific accuracy. Missing inputs are errors, not an invitation
-to substitute different data.
+Run from ``code/`` with the project environment active. The root contains
+``download.py``, ``process.py`` and three notebooks: shared source processing,
+F150W analysis and F090W analysis. Internals live in ``sbf/``; plotting/table
+builders in ``figures/``; tests in ``tests/``; manifests and literature inputs
+in ``config/`` and ``reference/``. ``legacy/`` is a local, ignored archive.
 
-Temporary PDF inspections, document build outputs and Python/font caches are
-rebuildable. Preserve any final PDF or notebook checkpoint you still need.
-``code/legacy`` (about 3.2 GiB) and ``runs/legacy`` (about 7.5 GiB) can be removed
-only if historical experiments are no longer wanted; remove their compatibility
-symlinks accordingly. Current source images, model/PSF products, spectral caches,
-background logs, literature inputs and article figures must remain available
-for analysis and replotting. Never use an indiscriminate ``git clean -fdx`` here.
+There are two science campaigns: ``runs/F150W/`` with ``source/``,
+``spectra/``, ``analysis/``, and ``runs/F090W/``. Runtime and plotting caches
+live in project-root ``.cache/``, not ``runs/``. Article assets remain beside
+the TeX source in ``materials/``; compilation output belongs in ``build/``.
+Active paths do not depend on compatibility symlinks.
 
-Personal Markdown except the root README, archives and generated products are
-untracked but kept on disk. Git history is unchanged. Untracking files neither
-frees their disk space nor erases them from past commits. Exact cold-run
-reproducibility also requires external reference data and numerical comparison;
-syntax checks and small tests alone cannot establish it.
+Checks and reproducibility
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``sbf.sbf_paths`` anchors paths to the checkout, not cwd. Root/name/directory
+constants define path recognition, not scientific parameters. JSON reading
+rebases recognized paths in memory; migration is a separate checked operation.
+Unrelated external paths are not guessed. Set ``STPSF_PATH`` explicitly and
+record the reference-data version for reproducible runs.
+
+* ``py download.py images --program 3055`` and ``py download.py opd --program 3055``
+  inventory inputs; add ``--download`` to authorize downloads.
+* ``py process.py --filter both --check`` validates preparation without modelling/FFT.
+* ``py -m sbf.check_project_layout --with-products`` checks syntax and saved paths.
+* ``py -m unittest discover -s tests -t .`` runs the active unit suite.
+
+Syntax, metadata and unit checks are not a cold scientific reproduction.
+External reference data, a full independent run and numerical comparison are
+still needed to establish that claim.
+
+Cleanup and Git
+~~~~~~~~~~~~~~~
+
+Rebuildable caches/build output may be removed after processes stop; preserve
+wanted PDFs and notebook checkpoints. Do not delete runtime caches under an
+active worker. Remove local archives only if historical experiments are unwanted.
+The dated local cleanup report lists exact candidates; no science files are
+automatically removed. Previously deleted legacy/systematics runs are not
+counted as available disk savings.
+
+Keep source images, working models/masks/residuals, rings, PSF/OPD, current FFT
+caches, result tables/metadata, background logs, literature inputs and article
+assets for reprocessing/replotting. Avoid ``git clean -fdx`` and broad filename
+wildcards: ignored files are often required scientific inputs.
+
+Personal Markdown is ignored except the two root EN/RU READMEs; public
+documentation uses ``docs/*.rst``. Untracking does not reclaim disk space or
+rewrite Git history. ``.cbmignore`` excludes archives/caches/binaries, not current
+source or lightweight result tables. Direct FITS inspection remains available
+when needed; pixel arrays do not belong in a code-structure graph.
