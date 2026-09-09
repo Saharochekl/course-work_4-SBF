@@ -155,11 +155,13 @@ half-difference diagnostic; they are not the final calibration/distance budget.
 RU. ``no_winsor``, ``raw_global_3p5`` и ``normalized_union_*`` сохранены для
 совместимости таблиц чувствительности и архивных проверок. Рабочая ветвь —
 ``normalized_full_3p5``. Notebook сравнений и тест искусственного сигнала лежат
-в ``code/legacy/review-2026-09-09/`` и не входят в обычный запуск.
+в ``trash/2026-09-09/removed/code/legacy/review-2026-09-09/`` и не входят в обычный запуск.
 EN. These controls preserve sensitivity-table and archived-test compatibility;
 the adopted branch remains ``normalized_full_3p5``. Comparison notebooks and
-synthetic recovery are archived under ``code/legacy/review-2026-09-09/`` and
-are not part of the normal production command.
+synthetic recovery are quarantined under
+``trash/2026-09-09/removed/code/legacy/review-2026-09-09/`` and are not part of
+the normal production command. Archived execution requires explicit restoration;
+the active pipeline does not import code from the quarantine.
 
 Изофоты F090W / F090W isophotes
 ------------------------------
@@ -244,7 +246,8 @@ by an invented measurement.
 Архивные проверки / Archived checks
 ----------------------------------
 
-RU. В архивном ``code/legacy/review-2026-09-09/sbf-2-systematics.ipynb``
+RU. В карантине ``trash/2026-09-09/removed/code/legacy/review-2026-09-09/``
+находится архивный ``sbf-2-systematics.ipynb``. В нём
 сохранён контроль альтернативного N(k), не используемый рабочим обработчиком.
 ``TILE_SIZE=512`` и ``TILE_MARGIN=96`` задают размер и отступ пробных площадок;
 доли валидных пикселей 0.80/0.55 ограничивают дырявые окна, максимум 4 площадки

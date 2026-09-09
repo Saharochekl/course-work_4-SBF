@@ -15,13 +15,14 @@
 * ``code/figures/`` — построение таблиц, рисунков и генератор F090W notebook.
 * ``code/tests/`` — активные модульные тесты.
 * ``code/config/`` — манифесты целей; ``code/reference/`` — литературные таблицы.
-* ``code/legacy/`` — локальный архив, не часть активного выпуска и не зависимость запуска.
 * ``data/`` — исходные кадры, OPD/reference data и небольшие метаданные.
 * ``runs/F150W/source/``, ``spectra/``, ``analysis/`` — исходный этап,
   принятый нормированный FFT-пересчёт и анализ F150W.
 * ``runs/F090W/`` — исходный этап, спектры, результаты и анализ F090W.
 * ``.cache/runtime/`` и ``.cache/matplotlib/`` — служебные кэши вне ``runs/``.
 * ``texts/paper_work/materials/`` — материалы статьи; TeX-сборка остаётся в ``build/``.
+* ``trash/2026-09-09/removed/`` — локальный карантин с сохранением исходных
+  относительных путей; старый код находится в его ``code/legacy/``, не в рабочем коде.
 
 В ``runs/`` только две научные кампании. Активные пути не требуют совместимых
 symlink на прежнюю структуру. Ссылки в метаданных приведены к текущим каталогам;
@@ -61,16 +62,18 @@ reference data. Это не автоматическая замена научн
 После завершения процессов можно удалить воспроизводимые служебные кэши,
 ``__pycache__/``, временный визуальный контроль и TeX ``build/``.
 Сначала сохраните нужные PDF и notebook checkpoints. ``.cache/runtime/`` нельзя
-удалять во время работающего обработчика. ``code/legacy/`` удаляется только
-при отказе от исторических опытов; наличие папки не делает её резервной копией
-всех современных данных.
+удалять во время работающего обработчика. Карантин старого кода находится в
+``trash/2026-09-09/removed/code/legacy/`` и не является резервной копией всех
+современных данных. Рабочий запуск не обращается в карантин.
 
-В аудите 2026-09-09 отмечены 224 промежуточных FITS (45.248 GiB), которые не читаются
-текущей обработкой/графиками, и отдельные условные кандидаты. Точные локальные списки
-находятся в ``CLEANUP_CANDIDATES.md`` и ``trash/2026-09-09/``. Это снимок конкретного
-состояния, не универсальная команда очистки. Ничего из этих списков автоматически
-не удаляется; прежние ``runs/legacy/`` и ``runs/sbf2_systematics/`` пользователь
-уже удалил, поэтому их объём не включён в доступную экономию.
+После аудита 2026-09-09 в карантин перенесены 224 промежуточных FITS (45.248 GiB),
+14 старых нормированных F150W FITS, 50 прежних F090W-кэшей, четыре F277W/F356W
+кадра вне текущей статьи и архивный код. Принятые файлы двух рабочих фильтров
+остались на месте. Точные локальные списки — в ``CLEANUP_CANDIDATES.md`` и
+``trash/2026-09-09/``. Это перечень выполненного переноса, не команда массового
+удаления. Окончательно удаляет пользователь; перенос внутри одного диска сам
+по себе место не освобождает. Прежние ``runs/legacy/`` и ``runs/sbf2_systematics/``
+пользователь удалил раньше; они не учитываются повторно.
 
 Сохранить для перерасчёта/перерисовки: F090W/F150W SCI, рабочие модели и остатки,
 маски, кольца, PSF/OPD, текущие спектральные кэши, CSV/JSON, литературные входы,
@@ -101,7 +104,9 @@ Run from ``code/`` with the project environment active. The root contains
 ``download.py``, ``process.py`` and three notebooks: shared source processing,
 F150W analysis and F090W analysis. Internals live in ``sbf/``; plotting/table
 builders in ``figures/``; tests in ``tests/``; manifests and literature inputs
-in ``config/`` and ``reference/``. ``legacy/`` is a local, ignored archive.
+in ``config/`` and ``reference/``. Historical code is quarantined under
+``trash/2026-09-09/removed/code/legacy/``; active code neither imports it nor
+requires filesystem aliases to it.
 
 There are two science campaigns: ``runs/F150W/`` with ``source/``,
 ``spectra/``, ``analysis/``, and ``runs/F090W/``. Runtime and plotting caches
@@ -133,10 +138,11 @@ Cleanup and Git
 
 Rebuildable caches/build output may be removed after processes stop; preserve
 wanted PDFs and notebook checkpoints. Do not delete runtime caches under an
-active worker. Remove local archives only if historical experiments are unwanted.
-The dated local cleanup report lists exact candidates; no science files are
-automatically removed. Previously deleted legacy/systematics runs are not
-counted as available disk savings.
+active worker. Audited redundant exports, superseded caches, unused-band images
+and archived code have been moved to ``trash/2026-09-09/removed/`` while preserving
+their original relative paths. The local report lists the quarantined files;
+permanent deletion is the owner's decision. Moving within one disk does not
+reclaim disk space. Previously deleted legacy/systematics runs are not counted twice.
 
 Keep source images, working models/masks/residuals, rings, PSF/OPD, current FFT
 caches, result tables/metadata, background logs, literature inputs and article

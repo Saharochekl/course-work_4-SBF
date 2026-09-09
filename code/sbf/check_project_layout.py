@@ -8,12 +8,34 @@ import argparse
 import ast
 import csv
 import json
+import os
 from pathlib import Path
 
 from IPython.core.inputtransformer2 import TransformerManager
 
 from figures.publish_article_assets import publish_article_assets
 from sbf.sbf_paths import PROJECT_ROOT, load_project_json
+
+
+def check_no_symlinks():
+    """Check project artifacts, including trash; leave external/runtime installs alone."""
+    links = []
+    # Project-owned trees only: Python environments and Git internals have their
+    # own installation links and must not be modified by a repository cleanup.
+    for name in ('code', 'data', 'runs', 'texts', 'materials', 'trash', '.cache'):
+        base = PROJECT_ROOT / name
+        if base.is_symlink():
+            links.append(base)
+            continue
+        for directory, folders, files in os.walk(base, followlinks=False):
+            for name in folders + files:
+                path = Path(directory) / name
+                if path.is_symlink():
+                    links.append(path)
+    if links:
+        raise ValueError('Filesystem aliases are not permitted in project artifacts:\n'
+                         + '\n'.join(str(path.relative_to(PROJECT_ROOT)) for path in links))
+    print('Filesystem aliases: none in project artifacts (including trash).')
 
 
 def check_sources():
@@ -92,6 +114,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--with-products', action='store_true')
     args = parser.parse_args()
+    check_no_symlinks()
     check_sources()
     print(f'Article figures: {publish_article_assets(check=True)} copies checked.')
     if args.with_products:

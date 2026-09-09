@@ -39,6 +39,19 @@ class ProductLayoutTests(unittest.TestCase):
     def test_expected_targets_pass_without_any_fits_arrays(self):
         self.check()
 
+    def test_regular_directories_have_no_aliases(self):
+        with patch.object(layout, 'PROJECT_ROOT', self.root), contextlib.redirect_stdout(io.StringIO()):
+            layout.check_no_symlinks()
+
+    def test_alias_check_includes_trash_without_creating_real_links(self):
+        artifact = self.root / 'trash' / 'forbidden'
+        artifact.parent.mkdir()
+        artifact.write_text('A regular fixture; symlink metadata is mocked.')
+        with patch.object(layout, 'PROJECT_ROOT', self.root), \
+             patch.object(Path, 'is_symlink', lambda path: path == artifact):
+            with self.assertRaisesRegex(ValueError, 'trash/forbidden'):
+                layout.check_no_symlinks()
+
     def test_same_count_wrong_galaxy_fails(self):
         self.write(self.source, {'galaxy': 'NGC 1399', 'status': 'ok'})
         with self.assertRaisesRegex(FileNotFoundError, 'wrong membership'):

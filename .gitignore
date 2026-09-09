@@ -23,7 +23,8 @@ runs/sbf_f090w_go3055/
 runs/.runtime_cache/
 .codebase-memory/
 
-# Local environment, inspection artifacts and manual cleanup quarantine.
+# Local environment, inspection artifacts and cleanup quarantine.
+# Audited files are moved into /trash/; only the owner deletes them permanently.
 /astro_env/
 /trash/
 /tmp/
@@ -43,7 +44,8 @@ runs/.runtime_cache/
 !/Readme.md
 !/Readme_RUS.md
 
-# Local archives and compatibility links are not active source code.
+# Keep former archive/output locations ignored if old tooling recreates them.
+# The current archive is under /trash/; no compatibility links are required.
 /code/legacy/
 /code/analysis/
 /code/runs
