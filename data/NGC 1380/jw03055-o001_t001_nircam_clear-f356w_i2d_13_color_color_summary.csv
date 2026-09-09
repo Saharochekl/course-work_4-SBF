@@ -1,0 +1,3 @@
+summary,signal_filter,color_filter,color_name,sampling_mode,color_index,sigma_proxy,notes
+SBF-weighted circular-annuli color,F356W,F277W,F277W-F356W,wcs_bilinear,-0.2430595769356271,4.2654230646768654e-05,"uses same annulus weights as recommended SBF; sigma_proxy is half inner-outer color difference, not full calibration error"
+mean of available circular-annuli colors,F356W,F277W,F277W-F356W,wcs_bilinear,-0.24306789180053778,6.0322191473250344e-05,simple annulus-matched diagnostic color summary
