@@ -58,18 +58,18 @@ analysis are separated under ``runs/F150W/``; F090W uses ``runs/F090W/``.
 ----------------------------------------
 
 RU: ``sbf-2-systematics.ipynb``, ``sbf-2-normalized-winsor.ipynb``, recovery и
-сравнение четырёх ветвей находятся в карантине
-``trash/2026-09-09/removed/code/legacy/review-2026-09-09/``.
+сравнение четырёх ветвей удалены из рабочей копии вместе со старым карантином.
 Это история проверок шума, PSF и порядка операций, не часть релизного запуска.
 Основной код её не импортирует. Принятые таблицы чувствительности сохранены в
 рабочих результатах. Для возвращения к архивному опыту потребуется отдельно
-восстановить его код, зависимости и входы; карантин не является готовой средой запуска.
+восстановить его код, зависимости и входы. История Git содержит только ранее
+отслеживаемые файлы и не восстанавливает удалённые игнорируемые данные.
 
-EN: These validation notebooks and their helper scripts are local archive
-material under ``trash/2026-09-09/removed/code/legacy/review-2026-09-09/``, not
-release dependencies. Resuming an archived experiment requires explicit
+EN: These validation notebooks and their helper scripts have been removed
+from the working tree; they are not release dependencies. Resuming an experiment requires explicit
 restoration of its code and inputs; accepted sensitivity tables remain in the
-working results. Rejected branches remain useful controls;
+working results. Git history can restore only previously tracked files, not
+deleted ignored data. Rejected branches remain useful controls;
 only ``normalized_full_3p5`` is
 adopted. ``sbf2_normalized_winsor_recovery.run_recovery_test`` generates paired
 synthetic realizations to isolate operation order. It does not validate sky,
@@ -169,9 +169,9 @@ calibration uncertainty. LOO is internal validation, not an external test.
   first-order propagation; ``common_part`` extracts a known quadrature term.
 * ``save_figure / save_show``: persist figures; notebook helper also displays a
   PNG inline before closing it. ``publish_figure`` copies only manifest entries.
-  The quarantined normalized-winsor notebook also displays explicit PNGs, so its
-  plots work after the recovery module has selected the non-GUI Agg backend.
-  RU: это свойство архивного опыта, не зависимость рабочего вывода от recovery.
+  The removed normalized-winsor notebook also used explicit PNG output after
+  its recovery module selected the non-GUI Agg backend.
+  RU: это свойство исторического опыта, не зависимость рабочего вывода от recovery.
 
 Безопасные проверки / Safe checks
 --------------------------------

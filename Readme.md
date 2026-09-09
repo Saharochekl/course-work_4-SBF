@@ -27,15 +27,15 @@ data/                        downloaded images, OPDs and reference data
 docs/                        concise Russian/English module documentation
 texts/paper_work/materials/   article figures and their source manifest
 .cache/                      regenerable runtime/font caches
-trash/2026-09-09/removed/     quarantined exports and historical code; local only
+trash/                      optional temporary quarantine; local only
 ```
 
 There are two command-line entry scripts and three working notebooks: one shared
 processing template and a separate analysis notebook for each band. Helpers are
 regular Python packages, not filesystem aliases. Local notes, environments,
 legacy experiments and large generated data are excluded from Git.
-Historical code is now under `trash/2026-09-09/removed/code/legacy/`, not `code/`.
-Production does not import it or require aliases to it.
+Historical experiments have been removed from the working tree. Production
+does not import them or require aliases to them.
 
 ## Run
 
@@ -131,10 +131,10 @@ and local experiments are not release source code. Ignored does **not** mean
 safe to delete: models, masks, normalized residuals, PSFs, tables and background
 logs are still required for some figures or for resuming processing.
 
-Audited redundant exports, superseded caches and historical code have been moved
-to `trash/2026-09-09/removed/`, retaining their former relative paths. They are
-outside the active workflow; permanent deletion is left to the owner. Moving
-them within the same disk does not itself free disk space. Current scientific
+The owner has deleted the audited redundant exports, superseded caches and
+historical-code quarantine. Previously tracked files remain in Git history;
+Git cannot restore deleted ignored data. `trash/` is only an optional temporary
+quarantine for future findings, not an existing backup. Current scientific
 tables and accepted processing inputs remain in `runs/` and `data/`.
 
 This is not a promise of bit-identical output on any machine. A fresh run also

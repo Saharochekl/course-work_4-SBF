@@ -4,7 +4,7 @@ astro_env/
 output/
 tmp/
 .cache/
-# Future-proof guard: the existing historical code has moved under trash/.
+# Future-proof guard if removed historical code is restored locally.
 code/legacy/
 .matplotlib/
 code/.matplotlib/

@@ -21,8 +21,8 @@
 * ``runs/F090W/`` — исходный этап, спектры, результаты и анализ F090W.
 * ``.cache/runtime/`` и ``.cache/matplotlib/`` — служебные кэши вне ``runs/``.
 * ``texts/paper_work/materials/`` — материалы статьи; TeX-сборка остаётся в ``build/``.
-* ``trash/2026-09-09/removed/`` — локальный карантин с сохранением исходных
-  относительных путей; старый код находится в его ``code/legacy/``, не в рабочем коде.
+* ``trash/`` — необязательный временный карантин новых находок, не резервная копия.
+  Прежний карантин и исторические эксперименты удалены владельцем.
 
 В ``runs/`` только две научные кампании. Активные пути не требуют совместимых
 symlink на прежнюю структуру. Ссылки в метаданных приведены к текущим каталогам;
@@ -62,17 +62,15 @@ reference data. Это не автоматическая замена научн
 После завершения процессов можно удалить воспроизводимые служебные кэши,
 ``__pycache__/``, временный визуальный контроль и TeX ``build/``.
 Сначала сохраните нужные PDF и notebook checkpoints. ``.cache/runtime/`` нельзя
-удалять во время работающего обработчика. Карантин старого кода находится в
-``trash/2026-09-09/removed/code/legacy/`` и не является резервной копией всех
-современных данных. Рабочий запуск не обращается в карантин.
+удалять во время работающего обработчика. Рабочий запуск не обращается в
+``trash/``; этот каталог можно использовать только как временный карантин.
 
-После аудита 2026-09-09 в карантин перенесены 224 промежуточных FITS (45.248 GiB),
+После аудита 2026-09-09 владелец удалил карантин: 224 промежуточных FITS (45.248 GiB),
 14 старых нормированных F150W FITS, 50 прежних F090W-кэшей, четыре F277W/F356W
 кадра вне текущей статьи и архивный код. Принятые файлы двух рабочих фильтров
-остались на месте. Точные локальные списки — в ``CLEANUP_CANDIDATES.md`` и
-``trash/2026-09-09/``. Это перечень выполненного переноса, не команда массового
-удаления. Окончательно удаляет пользователь; перенос внутри одного диска сам
-по себе место не освобождает. Прежние ``runs/legacy/`` и ``runs/sbf2_systematics/``
+остались на месте. Это описание завершённой очистки, не список существующих
+кандидатов удаления. Ранее отслеживаемые файлы можно найти в истории Git;
+игнорируемые данные Git не восстановит. Прежние legacy/systematics-запуски
 пользователь удалил раньше; они не учитываются повторно.
 
 Сохранить для перерасчёта/перерисовки: F090W/F150W SCI, рабочие модели и остатки,
@@ -104,9 +102,9 @@ Run from ``code/`` with the project environment active. The root contains
 ``download.py``, ``process.py`` and three notebooks: shared source processing,
 F150W analysis and F090W analysis. Internals live in ``sbf/``; plotting/table
 builders in ``figures/``; tests in ``tests/``; manifests and literature inputs
-in ``config/`` and ``reference/``. Historical code is quarantined under
-``trash/2026-09-09/removed/code/legacy/``; active code neither imports it nor
-requires filesystem aliases to it.
+in ``config/`` and ``reference/``. Historical experiments have been removed
+from the working tree; active code neither imports them nor requires
+filesystem aliases to them.
 
 There are two science campaigns: ``runs/F150W/`` with ``source/``,
 ``spectra/``, ``analysis/``, and ``runs/F090W/``. Runtime and plotting caches
@@ -138,11 +136,12 @@ Cleanup and Git
 
 Rebuildable caches/build output may be removed after processes stop; preserve
 wanted PDFs and notebook checkpoints. Do not delete runtime caches under an
-active worker. Audited redundant exports, superseded caches, unused-band images
-and archived code have been moved to ``trash/2026-09-09/removed/`` while preserving
-their original relative paths. The local report lists the quarantined files;
-permanent deletion is the owner's decision. Moving within one disk does not
-reclaim disk space. Previously deleted legacy/systematics runs are not counted twice.
+active worker. The owner has deleted the audited redundant exports, superseded
+caches, unused-band images and historical-code quarantine. Previously tracked
+files remain in Git history; Git cannot restore deleted ignored data.
+``trash/`` is only an optional temporary quarantine for future findings,
+not an existing backup. Previously deleted legacy/systematics runs are not
+counted twice.
 
 Keep source images, working models/masks/residuals, rings, PSF/OPD, current FFT
 caches, result tables/metadata, background logs, literature inputs and article

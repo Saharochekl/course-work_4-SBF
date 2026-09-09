@@ -24,7 +24,7 @@ runs/.runtime_cache/
 .codebase-memory/
 
 # Local environment, inspection artifacts and cleanup quarantine.
-# Audited files are moved into /trash/; only the owner deletes them permanently.
+# /trash/ is optional temporary quarantine; its previous contents were deleted.
 /astro_env/
 /trash/
 /tmp/
@@ -45,7 +45,7 @@ runs/.runtime_cache/
 !/Readme_RUS.md
 
 # Keep former archive/output locations ignored if old tooling recreates them.
-# The current archive is under /trash/; no compatibility links are required.
+# Historical experiments were removed; no compatibility links are required.
 /code/legacy/
 /code/analysis/
 /code/runs
