@@ -48,6 +48,7 @@ from sbf.sbf_paths import PROJECT_ROOT, load_project_json, project_path
 EXPERIMENT_VERSION = "sbf2-normalized-winsor-v3"
 INPUT_CACHE_VERSION = "sbf2-normalized-winsor-v2"
 EXPECTATION_CACHE_VERSION = "sbf2-normalized-winsor-v2"
+RADIAL_SEM_METHOD = "hermitian-weighted-v1"  # RU/EN: pairs count once in the SEM only.
 RAW_PRODUCTION_SIGMA = 3.5  # RU/EN: frozen winsorization threshold, not pixel removal.
 RAW_PRODUCTION_MAXITERS = 5  # RU/EN: capped robust location/scale estimation iterations.
 # Rounded conversions match the frozen notebook exactly; do not silently
@@ -267,6 +268,7 @@ def _result_config_matches(
         result.get("status") == "ok"
         and result.get("version") == EXPERIMENT_VERSION
         and result.get("config") == _jsonable(asdict(config))
+        and result.get("radial_sem_method") == RADIAL_SEM_METHOD
     )
 
 
@@ -787,23 +789,65 @@ def load_or_build_compact_cache(
 
 
 def radial_plan(shape: tuple[int, int], k_bins: int) -> dict[str, Any]:
+    """Bin a full real-image FFT, retaining each mode's Hermitian multiplicity.
+
+    RU: DC и доступные по чётным осям точки Найквиста сопряжены сами
+    с собой (вес 1); остальные элементы входят в пары (вес 2).
+    EN: multiplicity is used only for the SEM, not for the radial mean.
+    """
+
     ky = fftfreq(shape[0])[:, None]
     kx = fftfreq(shape[1])[None, :]
     radius = np.hypot(kx, ky)
     edges = np.linspace(0.0, float(radius.max()), k_bins)
     centers = 0.5 * (edges[:-1] + edges[1:])
     ids = np.searchsorted(edges, radius.ravel(), side="right") - 1
+    valid = (ids >= 0) & (ids < centers.size)
+    multiplicity = np.full(shape, 2, dtype=np.uint8)
+    self_y = [0] + ([shape[0] // 2] if shape[0] % 2 == 0 else [])
+    self_x = [0] + ([shape[1] // 2] if shape[1] % 2 == 0 else [])
+    multiplicity[np.ix_(self_y, self_x)] = 1
+    multiplicity = multiplicity.ravel()
+    count = np.bincount(ids[valid], minlength=centers.size)
+    squared_weights = np.bincount(
+        ids[valid], weights=multiplicity[valid], minlength=centers.size
+    )
+    independent_count = np.bincount(
+        ids[valid], weights=1.0 / multiplicity[valid], minlength=centers.size
+    ).astype(int)
+    effective_count = np.divide(
+        count.astype(float) ** 2, squared_weights,
+        out=np.zeros(centers.size), where=squared_weights > 0,
+    )
     return {
         "k": centers,
         "ids": ids,
-        "valid": (ids >= 0) & (ids < centers.size),
+        "valid": valid,
         "n_bins": centers.size,
+        "mode_multiplicity": multiplicity,
+        "independent_count": independent_count,
+        "effective_count": effective_count,
     }
 
 
 def radial_mean_sem(
     power: np.ndarray, plan: dict[str, Any], min_count: int
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return the unchanged full-grid mean, conjugate-aware SEM and grid count.
+
+    A conjugate pair is one independent sample with weight 2 in the full-grid
+    mean; a self-conjugate mode has weight 1. With W=sum(w), Q=sum(w**2),
+    the weighted sample variance is S/(W-Q/W), and its SEM is sqrt(var/neff),
+    where neff=W**2/Q. For bins containing only pairs this is exactly the
+    ordinary SEM of one representative per pair. Mixed DC/Nyquist bins use
+    this weighted empirical estimator, not an assumed Gaussian power law.
+
+    RU: это устраняет повторный учёт сопряжённых мод, но не корреляции разных
+    мод из-за маски. Самосопряжённые моды не удваиваются. Число в третьем
+    результате по-прежнему означает элементы полной FFT-сетки. Планы без
+    mode_multiplicity описывают обычные независимые, не Fourier-выборки.
+    """
+
     values = np.asarray(power, dtype=float).ravel()
     selected = plan["valid"] & np.isfinite(values)
     ids = plan["ids"][selected]
@@ -813,15 +857,27 @@ def radial_mean_sem(
     count = np.bincount(ids, minlength=n_bins).astype(int)
     total = np.bincount(ids, weights=values, minlength=n_bins)
     total2 = np.bincount(ids, weights=values**2, minlength=n_bins)
+    if "mode_multiplicity" in plan:
+        squared_weights = np.bincount(
+            ids, weights=plan["mode_multiplicity"][selected], minlength=n_bins
+        )
+    else:
+        squared_weights = count.astype(float)
+    effective_count = np.divide(
+        count.astype(float) ** 2, squared_weights,
+        out=np.zeros(n_bins), where=squared_weights > 0,
+    )
     mean = np.full(n_bins, np.nan)
     sem = np.full(n_bins, np.nan)
     enough = count >= min_count
     mean[enough] = total[enough] / count[enough]
-    variance = np.zeros(n_bins)
-    variance[enough] = (
-        total2[enough] - total[enough] ** 2 / count[enough]
-    ) / np.maximum(count[enough] - 1, 1)
-    sem[enough] = np.sqrt(np.maximum(variance[enough], 0) / count[enough])
+    supported = enough & (effective_count > 1)
+    variance = (
+        total2[supported] - total[supported] ** 2 / count[supported]
+    ) / (count[supported] - squared_weights[supported] / count[supported])
+    sem[supported] = np.sqrt(
+        np.maximum(variance, 0) / effective_count[supported]
+    )
     return mean, sem, count
 
 
@@ -923,7 +979,12 @@ def load_or_build_expectation_cache(
 def weighted_fit(
     y: np.ndarray, y_error: np.ndarray, expectation: np.ndarray
 ) -> dict[str, Any]:
-    """Взвешенный МНК для production-модели ``P0 E(k) + P1``."""
+    """Взвешенный МНК для production-модели ``P0 E(k) + P1``.
+
+    EN: covariance is inflated by max(reduced chi-square, 1). Consequently,
+    uniformly rescaling SEM leaves the inflated covariance unchanged while
+    reduced chi-square remains above one; it does not rescale errors blindly.
+    """
 
     design = np.column_stack([expectation, np.ones_like(expectation)])
     safe_error = np.maximum(y_error, POSITIVE_FLOOR)
@@ -1414,6 +1475,8 @@ def _run_spectral_experiment(
                     "Pk": float(pk[index]),
                     "Pk_error": float(pk_error[index]),
                     "Pk_count": int(pk_count[index]),
+                    "Pk_independent_count": int(plan["independent_count"][index]),
+                    "Pk_effective_count": float(plan["effective_count"][index]),
                     "E_median": float(e_median[index]),
                     "E_mad": float(e_mad[index]),
                 })
@@ -1663,6 +1726,7 @@ def _run_spectral_experiment(
 
     return {
         "table_paths": {name: str(path) for name, path in table_paths.items()},
+        "radial_sem_method": RADIAL_SEM_METHOD,
         "full_normalized_residual_fits": str(candidate_full_path),
         "full_normalized_residual": candidate_full_provenance,
         "normalized_fits": fits_products,
@@ -1732,9 +1796,7 @@ def process_target(
             continue
         old_result = load_project_json(cached_path)
         if (
-            old_result.get("status") == "ok"
-            and old_result.get("version") == EXPERIMENT_VERSION
-            and old_result.get("config") == _jsonable(asdict(config))
+            _result_config_matches(old_result, config)
             and old_result.get("source_key") == source["source_key"]
             and _result_artifacts_valid(old_result)
         ):
@@ -2059,7 +2121,7 @@ def load_matching_results(
             except Exception:
                 source_is_current = False
         if (
-            result.get("status") == "ok"
+            _result_config_matches(result, config)
             and result.get("config_key") == key
             and source_is_current
             and _result_artifacts_valid(result)

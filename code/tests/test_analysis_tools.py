@@ -111,9 +111,12 @@ class AnalysisToolsTests(unittest.TestCase):
 
     def test_f150w_fit_rejects_invalid_values_and_keeps_annular_aliases(self):
         from scipy.optimize import minimize
+        from sbf.sbf_calibration_covariance import shared_anchor_covariance, validate_color_covariance
         notebook = json.loads((CODE_DIR / "sbf-2-graph.ipynb").read_text())
         namespace = {"np": np, "minimize": minimize, "USE_COLOR_ERRORS_IN_FIT": True,
-                     "COLOR_MODELS": {"constant", "linear", "quadratic", "broken"}}
+                     "COLOR_MODELS": {"constant", "linear", "quadratic", "broken"},
+                     "shared_anchor_covariance": shared_anchor_covariance,
+                     "validate_color_covariance": validate_color_covariance}
         for cell in notebook["cells"]:
             if cell["cell_type"] != "code":
                 continue

@@ -8,6 +8,7 @@ measurement pipeline and does not rewrite any scientific table.
 from figures.publish_article_assets import publish_figure
 from sbf.sbf_paths import PROJECT_ROOT, load_project_json
 
+import argparse
 import matplotlib
 
 matplotlib.use("Agg")
@@ -38,6 +39,7 @@ GROUP_STYLES = {
 # Match the broad environment classes in the measurement tables; this is
 # deliberately not the seven-member strict Virgo subset used in the step test.
 ENVIRONMENT = None  # Loaded by main(); importing plotting helpers must not read runs/.
+PASA = False  # Separate journal rendering; never overwrites published assets.
 COMPONENT_COLORS = {
     "Power spectrum": "#4c92c3",
     "Background": "#9e9e9e",
@@ -80,12 +82,22 @@ plt.rcParams.update(
 
 
 def save_figure(fig, directory, stem):
+    if PASA:
+        from figures.pasa_style import prepare_figure
+
+        directory = ROOT / "texts/paper_work/materials/pasa/figures"
+        prepare_figure(fig, stem)
     directory.mkdir(parents=True, exist_ok=True)
     place_galaxy_labels(fig)
-    for suffix in ("pdf", "png"):
+    # The manuscript consumes vector PDFs; avoid duplicate PASA PNG assets.
+    for suffix in (("pdf",) if PASA else ("pdf", "png")):
         path = directory / f"{stem}.{suffix}"
-        fig.savefig(path, dpi=300, bbox_inches="tight")
-        publish_figure(path)
+        if PASA:
+            with plt.rc_context({"pdf.fonttype": 42, "ps.fonttype": 42}):
+                fig.savefig(path, dpi=300, bbox_inches=None)
+        else:
+            fig.savefig(path, dpi=300, bbox_inches="tight")
+            publish_figure(path)
     plt.close(fig)
 
 
@@ -122,7 +134,7 @@ def place_galaxy_labels(fig):
         occupied.extend(Bbox.from_bounds(x-5, y-5, 10, 10) for x, y in positions)
         for galaxy, x, y in points:
             label = ax.annotate(galaxy.replace("NGC ", ""), (x, y),
-                xytext=(6, 6), textcoords="offset points", fontsize=9,
+                xytext=(6, 6), textcoords="offset points", fontsize=8 if PASA else 9,
                 zorder=6, bbox=dict(fc="white", ec="none", alpha=0.78, pad=0.3),
                 arrowprops=dict(arrowstyle="-", color="0.55", lw=0.5))
             candidates = [(sx*dx, sy*dy) for dx, dy in
@@ -373,8 +385,11 @@ def make_f160_comparison(frame, band, directory, stem):
     axes[1].invert_xaxis()
     axes[1].invert_yaxis()
 
-    low = min(frame["mu_F160W_jensen2015"].min(), frame["mu_target"].min()) - 0.08
-    high = max(frame["mu_F160W_jensen2015"].max(), frame["mu_target"].max()) + 0.08
+    # Include full absolute error bars, not only the central distance moduli.
+    low = min((frame["mu_F160W_jensen2015"] - frame["sigma_mu_F160W_jensen2015"]).min(),
+              (frame["mu_target"] - frame["sigma_mu_target"]).min()) - 0.03
+    high = max((frame["mu_F160W_jensen2015"] + frame["sigma_mu_F160W_jensen2015"]).max(),
+               (frame["mu_target"] + frame["sigma_mu_target"]).max()) + 0.03
     plot_points(axes[2], frame, "mu_F160W_jensen2015", "mu_target", "sigma_mu_target", "sigma_mu_F160W_jensen2015")
     axes[2].plot([low, high], [low, high], color=BLACK, lw=1.7)
     axes[2].set_xlim(low, high)
@@ -584,9 +599,27 @@ def make_psf_size_plot(frame, band, delta_column, directory, stem):
     save_figure(fig, directory, stem)
 
 
-def main():
+def make_synthetic_fft_plot():
+    """Draw the saved toy-test trials; do not generate or fit a new signal."""
+    trials = pd.read_csv(F150_TABLES / "go3055_synthetic_fft_trials.csv")
+    fig, axes = plt.subplots(1, 2, figsize=(10.4, 4.1))
+    # Preserve the ten-bin histograms and reference lines of the original cell.
+    axes[0].hist(trials["P0_recovered"], bins=10, color="#2563eb", alpha=0.80)
+    axes[0].axvline(trials["P0_true"].iloc[0], color="black", lw=1.5, label="input")
+    axes[0].set(xlabel=r"Recovered $P_0$", ylabel="Trials", title="Synthetic amplitude recovery")
+    axes[0].legend(frameon=False)
+    axes[1].hist(trials["mbar_error_mag"], bins=10, color="#059669", alpha=0.80)
+    axes[1].axvline(0, color="black", lw=1.5)
+    axes[1].set(xlabel=r"Recovered minus input $\overline{m}$ (mag)", ylabel="Trials",
+                title="FFT-stage magnitude bias")
+    fig.tight_layout()
+    save_figure(fig, F150_FIGURES, "go3055_synthetic_fft_normalization")
+
+
+def main(pasa=False):
     """Перерисовать обе полосы без измерения SBF / Render both saved analyses."""
-    global ENVIRONMENT
+    global ENVIRONMENT, PASA
+    PASA = pasa
     f150 = pd.read_csv(F150_TABLES / "go3055_master_measurements.csv")
     ENVIRONMENT = f150.set_index("galaxy")["environment"].replace({"Virgo": "Virgo region"})
     f090 = pd.read_csv(F090_TABLES / "go3055_f090w_master.csv")
@@ -657,7 +690,7 @@ def main():
         Mbar_target=overlap["Mbar_F150W"],
         sigma_Mbar_target=overlap["sigma_Mbar_internal"],
         mu_target=overlap["mu_sbf_loo"],
-        sigma_mu_target=overlap["sigma_mu_sbf_internal"],
+        sigma_mu_target=overlap["sigma_mu_sbf_absolute"],
     )
     make_f160_comparison(
         f150_f160,
@@ -683,7 +716,7 @@ def main():
         on="galaxy",
         how="inner",
     ).merge(
-        f090_loo[["galaxy", "mu_sbf", "sigma_mu_internal"]], on="galaxy", how="inner"
+        f090_loo[["galaxy", "mu_sbf", "sigma_mu_total"]], on="galaxy", how="inner"
     )
     f090_f160 = f090_overlap.assign(
         mbar_difference=f090_overlap["mbar_F090W_0"] - f090_overlap["m160_ab"],
@@ -693,7 +726,7 @@ def main():
         Mbar_target=f090_overlap["Mbar_F090W"],
         sigma_Mbar_target=f090_overlap["sigma_Mbar_F090W"],
         mu_target=f090_overlap["mu_sbf"],
-        sigma_mu_target=f090_overlap["sigma_mu_internal"],
+        sigma_mu_target=f090_overlap["sigma_mu_total"],
     )
     make_f160_comparison(
         f090_f160,
@@ -850,11 +883,17 @@ def main():
         "go3055_f090w_article_distance_error_budget",
     )
 
+    if PASA:
+        make_synthetic_fft_plot()
+
     print("Publication figures written:")
-    for directory in (F150_FIGURES, F090_FIGURES):
-        for path in sorted(directory.glob("*article*.pdf")):
+    directories = (ROOT / "texts/paper_work/materials/pasa/figures",) if PASA else (F150_FIGURES, F090_FIGURES)
+    for directory in directories:
+        for path in sorted(directory.glob("*.pdf" if PASA else "*article*.pdf")):
             print(path.relative_to(ROOT))
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--pasa", action="store_true", help="Write separate PASA-sized figures; preserve primary products.")
+    main(pasa=parser.parse_args().pasa)

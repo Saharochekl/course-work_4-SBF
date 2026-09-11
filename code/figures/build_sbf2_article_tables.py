@@ -31,6 +31,9 @@ SCIENCE_FREEZE_GIT_HEAD = "d89e09482978a4df01324e3fd532ad2e3c03c924"
 # Published shared scales: Paper IV and Paper III; neither shrinks as 1/sqrt(N).
 TRGB_IV_COMMON_SIGMA_MAG = 0.047
 JENSEN_III_COMMON_SIGMA_MAG = 0.063
+# Jensen et al. (2015), Section 5.2: Cepheid distance-scale zero point.
+# This is not part of the reconstructed measurement/calibration error below.
+JENSEN_2015_COMMON_SIGMA_MAG = 0.10
 
 
 def sha256(path: Path) -> str:
@@ -64,6 +67,31 @@ def distance_uncertainty(distance, sigma_mu):
 def common_part(total, internal):
     """Recover a common quadrature term without numerical round-off failures."""
     return np.sqrt(np.maximum(np.asarray(total) ** 2 - np.asarray(internal) ** 2, 0.0))
+
+
+def jensen2015_distances(reference: pd.DataFrame) -> pd.DataFrame:
+    """Добавить общую шкалу / Add the shared Cepheid scale to reconstructed errors.
+
+    The saved reconstruction already contains the measurement, colour,
+    coefficient errors and 0.114-mag scatter, but not the 0.10-mag scale.
+    """
+    result = reference[[
+        "galaxy", "mu_f160w_jensen2015_reconstructed",
+        "sigma_mu_f160w_jensen2015_reconstructed",
+    ]].rename(columns={
+        "mu_f160w_jensen2015_reconstructed": "mu_jensen2015_f160w",
+        "sigma_mu_f160w_jensen2015_reconstructed": "sigma_mu_jensen2015_f160w_internal",
+    }).copy()
+    result["sigma_mu_jensen2015_f160w_common"] = JENSEN_2015_COMMON_SIGMA_MAG
+    result["sigma_mu_jensen2015_f160w_total"] = np.hypot(
+        result["sigma_mu_jensen2015_f160w_internal"], JENSEN_2015_COMMON_SIGMA_MAG
+    )
+    result["D_jensen2015_f160w_mpc"] = distance_from_modulus(result["mu_jensen2015_f160w"])
+    for component in ["internal", "common", "total"]:
+        result[f"sigma_D_jensen2015_f160w_{component}_mpc"] = distance_uncertainty(
+            result["D_jensen2015_f160w_mpc"], result[f"sigma_mu_jensen2015_f160w_{component}"]
+        )
+    return result
 
 
 def environment_label(value: str) -> str:
@@ -164,27 +192,9 @@ def main():
             f090["D_sbf_f090w_mpc"], f090[f"sigma_mu_sbf_f090w_{component}"]
         )
 
-    jensen2015 = pd.read_csv(
+    jensen2015 = jensen2015_distances(pd.read_csv(
         ROOT / "code" / "reference" / "jensen2015_f160w_comparison.csv"
-    )[
-        [
-            "galaxy",
-            "mu_f160w_jensen2015_reconstructed",
-            "sigma_mu_f160w_jensen2015_reconstructed",
-        ]
-    ].rename(
-        columns={
-            "mu_f160w_jensen2015_reconstructed": "mu_jensen2015_f160w",
-            "sigma_mu_f160w_jensen2015_reconstructed": "sigma_mu_jensen2015_f160w_total",
-        }
-    )
-    jensen2015["D_jensen2015_f160w_mpc"] = distance_from_modulus(
-        jensen2015["mu_jensen2015_f160w"]
-    )
-    jensen2015["sigma_D_jensen2015_f160w_total_mpc"] = distance_uncertainty(
-        jensen2015["D_jensen2015_f160w_mpc"],
-        jensen2015["sigma_mu_jensen2015_f160w_total"],
-    )
+    ))
 
     normalized_results = [
         load_project_json(path)
@@ -241,9 +251,8 @@ def main():
         on="galaxy", how="left", validate="one_to_one",
     )
 
-    # A long-form machine-readable table preserves the uncertainty level for every
-    # method.  Missing Jensen (2015) internal/common components are intentional:
-    # the supplied reconstruction reports only its final combined uncertainty.
+    # Keep internal and shared absolute-scale terms separate for every method.
+    # They cannot be treated as independent galaxy errors when averaging offsets.
     method_specs = [
         (
             "trgb_paper4", "TRGB Paper IV", "TRGB",
@@ -263,9 +272,11 @@ def main():
         ),
         (
             "jensen2015_f160w", "Jensen et al. (2015)", "F160W",
-            "mu_jensen2015_f160w", None, None, "sigma_mu_jensen2015_f160w_total",
-            "D_jensen2015_f160w_mpc", None, None, "sigma_D_jensen2015_f160w_total_mpc",
-            "Final combined uncertainty supplied by the existing five-object reconstruction; internal/common split unavailable",
+            "mu_jensen2015_f160w", "sigma_mu_jensen2015_f160w_internal",
+            "sigma_mu_jensen2015_f160w_common", "sigma_mu_jensen2015_f160w_total",
+            "D_jensen2015_f160w_mpc", "sigma_D_jensen2015_f160w_internal_mpc",
+            "sigma_D_jensen2015_f160w_common_mpc", "sigma_D_jensen2015_f160w_total_mpc",
+            "Reconstructed measurement, color, calibration coefficients and 0.114-mag scatter; plus the 0.10-mag common Cepheid scale (Jensen et al. 2015, Section 5.2)",
         ),
         (
             "this_work_f150w", "This work", "F150W",
@@ -373,7 +384,7 @@ def main():
         r"\midrule",
         r"TRGB Paper IV & Published individual uncertainty & Add 0.047 mag \\",
         r"Jensen III F110W & $\overline m$, color, slope, and 0.060-mag population scatter & Add 0.063 mag \\",
-        r"Jensen 2015 F160W & Published final combined uncertainty & Already included \\",
+        r"Jensen 2015 F160W & Reconstructed measurement, color, coefficients, and 0.114-mag scatter & Add 0.10 mag \\",
         r"This work F150W & Measurement, intrinsic scatter, and finite LOO calibration & Add 0.047 mag \\",
         r"This work F090W & Measurement, color, intrinsic scatter, and finite LOO calibration & Add 0.047 mag \\",
         r"\bottomrule",

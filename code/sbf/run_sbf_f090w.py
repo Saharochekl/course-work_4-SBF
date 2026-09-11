@@ -90,6 +90,7 @@ from sbf.sbf090_pipeline_support import (
 )
 from sbf.sbf2_normalized_winsor_core import (
     ExperimentConfig,
+    RADIAL_SEM_METHOD,
     galaxy_slug,
     inspect_source,
     load_result_tables,
@@ -642,6 +643,8 @@ def final_result_valid(
     result = _read_json(result_path)
     if result is None or result.get("status") != "ok":
         return False, result, "final result is absent or incomplete"
+    if result.get("radial_sem_method") != RADIAL_SEM_METHOD:
+        return False, result, "final result uses the old Fourier-mode SEM"
     source_ok, _, source_message = source_result_valid(paths, galaxy)
     if not source_ok:
         return False, result, f"source stage is not reusable: {source_message}"

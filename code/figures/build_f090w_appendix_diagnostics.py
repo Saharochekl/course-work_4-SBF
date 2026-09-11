@@ -8,9 +8,11 @@ read the small saved PSF stamps.
 
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
 from figures.publish_article_assets import publish_figure
+from figures.pasa_style import WIDTH_INCH as PASA_WIDTH, TICK_PT, LABEL_PT, TITLE_PT
 from sbf.sbf_paths import PROJECT_ROOT, load_project_json
 
 import matplotlib
@@ -22,13 +24,14 @@ import numpy as np
 import pandas as pd
 from astropy.io import fits
 from astropy.stats import sigma_clipped_stats
-from matplotlib.patches import Patch
+from matplotlib.patches import Patch, Rectangle
 
 
 ROOT = PROJECT_ROOT
 RUN = ROOT / "runs/F090W"
 PRODUCTS = RUN / "products"
 FIGURES = RUN / "analysis/figures"
+PASA_FIGURES = ROOT / "texts/paper_work/materials/pasa/figures"
 # All 14 calibrators; representative targets span clean/structured residuals.
 GALAXIES = [
     "NGC 1380", "NGC 1399", "NGC 1404", "NGC 1549",
@@ -47,8 +50,13 @@ PSF_RADII_PIXEL = np.array([1, 2, 3, 5, 10, 20, 32, 48, 64], dtype=float)
 zone_colors = {"blue": "#2563eb", "red": "#dc2626", "yellow": "#facc15", "orange": "#f97316"}
 
 
-def save_figure(fig, stem, directory=FIGURES):
+def save_figure(fig, stem, directory=FIGURES, *, pasa=False):
     """Сохранить выбранный рисунок / Save a figure and refresh its article copy."""
+    if pasa:
+        PASA_FIGURES.mkdir(parents=True, exist_ok=True)
+        fig.savefig(PASA_FIGURES / f"{stem}.pdf")
+        plt.close(fig)
+        return
     directory.mkdir(parents=True, exist_ok=True)
     for suffix in ("png", "pdf"):
         path = directory / f"{stem}.{suffix}"
@@ -93,8 +101,13 @@ def normalized_values(source, expected_limits):
 
 
 
-def draw_histogram(ax, values, thresholds, band):
-    """Гистограмма до винзорирования / Histogram before winsorization."""
+def draw_histogram(ax, values, thresholds, band, *, pasa=False):
+    """Равные бины, точные цветовые пороги / Equal bins, exact colour thresholds.
+
+    Цвет меняется внутри бина без пересчёта его высоты: Y — число пикселей
+    во всём бине, не в цветной части. / A colour boundary can cross a bin;
+    its height remains the whole-bin pixel count, not a sub-bin count.
+    """
     low35, high35 = thresholds[3.5]
     center = 0.5 * (low35 + high35)
     scale = (high35 - low35) / 7.0
@@ -102,22 +115,17 @@ def draw_histogram(ax, values, thresholds, band):
     # plotted range enter edge bins; the scientific residual is never modified.
     shown_min, shown_max = center - 6 * scale, center + 6 * scale
     shown = np.clip(values, shown_min, shown_max)
-    exact_edges = np.array([
-        thresholds[4.0][0], low35, thresholds[3.0][0],
-        thresholds[3.0][1], high35, thresholds[4.0][1],
-    ])
-    edges = np.unique(np.r_[np.linspace(shown_min, shown_max, 151), exact_edges])
-    edges = edges[(edges >= shown_min) & (edges <= shown_max)]
+    edges = np.linspace(shown_min, shown_max, 151)
     counts, edges = np.histogram(shown, bins=edges)
-    centers = 0.5 * (edges[:-1] + edges[1:])
-    zones = np.full(centers.size, "orange", dtype=object)
-    zones[(centers >= thresholds[4.0][0]) & (centers <= thresholds[4.0][1])] = "yellow"
-    zones[(centers >= low35) & (centers <= high35)] = "red"
-    zones[(centers >= thresholds[3.0][0]) & (centers <= thresholds[3.0][1])] = "blue"
-    ax.bar(
-        centers, counts, width=np.diff(edges),
-        color=[zone_colors[zone] for zone in zones], linewidth=0,
-    )
+    ax.stairs(counts, edges, fill=True, color=zone_colors["orange"], linewidth=0)
+    # Clip identical coloured layers, not statistical bins. Inserting threshold
+    # edges into the histogram would create narrow bins and false count dips.
+    for sigma, colour in ((4.0, "yellow"), (3.5, "red"), (3.0, "blue")):
+        layer = ax.stairs(counts, edges, fill=True, color=zone_colors[colour], linewidth=0)
+        low, high = np.clip(thresholds[sigma], shown_min, shown_max)
+        layer.set_clip_path(Rectangle(
+            (low, 0), high - low, 1, transform=ax.get_xaxis_transform(),
+        ))
     affected = 100 * np.mean((values < low35) | (values > high35))
     ax.text(
         0.98, 0.92, rf"$3.5\sigma$ affected: {affected:.2f}%",
@@ -125,25 +133,26 @@ def draw_histogram(ax, values, thresholds, band):
     )
     ax.set(
         title=band,
-        xlabel=r"Normalized residual [$(\mathrm{MJy\ sr}^{-1})^{1/2}$]",
+        xlabel=(r"Normalised residual [$(\mathrm{MJy\ sr}^{-1})^{1/2}$]"
+                if pasa else r"Normalized residual [$(\mathrm{MJy\ sr}^{-1})^{1/2}$]"),
         ylabel="Number of pixels",
     )
     ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
 
 
 
-def make_power_spectrum_comparison(result, band, output_directory, stem):
+def make_power_spectrum_comparison(result, band, output_directory, stem, *, pasa=False):
     """Сравнить готовые P(k) / Plot saved fits without fitting again."""
     spectra = pd.read_csv(result["table_paths"]["power_spectra"])
     fit_summary = pd.read_csv(result["table_paths"]["fit_summary"])
     fig, axes = plt.subplots(
-        2, 2, figsize=(11.0, 7.0), sharex="col",
+        2, 2, figsize=(PASA_WIDTH, 4.9) if pasa else (11.0, 7.0), sharex="col",
         gridspec_kw={"height_ratios": [3.0, 1.25]},
     )
     for column, ring in enumerate(("inner", "outer")):
         top, bottom = axes[0, column], axes[1, column]
         for branch, point_color, fit_color, label in [
-            ("no_winsor", "0.65", "0.45", "No winsorization"),
+            ("no_winsor", "0.65", "0.45", "No winsorisation" if pasa else "No winsorization"),
             (ADOPTED_BRANCH, "black", "#dc2626", r"Adopted $3.5\sigma$"),
         ]:
             data = spectra[
@@ -172,9 +181,9 @@ def make_power_spectrum_comparison(result, band, output_directory, stem):
         bottom.axhline(0, color="0.35", linewidth=0.8)
         bottom.set(xlabel=r"$k$ (pixel$^{-1}$)", ylabel="Residual / error")
     axes[0, 0].legend(frameon=False, fontsize=8)
-    fig.suptitle(f"NGC 1380: {band} power-spectrum fits", fontsize=15)
+    fig.suptitle(f"NGC 1380: {band} power-spectrum fits", fontsize=10 if pasa else 15)
     fig.tight_layout(rect=[0, 0, 1, 0.96])
-    save_figure(fig, stem, output_directory)
+    save_figure(fig, stem, output_directory, pasa=pasa)
 
 
 
@@ -193,6 +202,7 @@ def annular_weights(result, galaxy):
 
 def psf_normalization_sensitivity(
     results, psf_paths, weights_by_galaxy, band, size_table_path, size_column, output_directory, stem,
+    *, pasa=False,
 ):
     """Энергия и сдвиги PSF / Encircled energy and saved PSF-induced shifts."""
     growth = []
@@ -231,7 +241,7 @@ def psf_normalization_sensitivity(
 
     growth = np.asarray(growth)
     size_table = pd.read_csv(size_table_path)
-    fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.3))
+    fig, axes = plt.subplots(1, 3, figsize=(PASA_WIDTH, 2.9) if pasa else (13.5, 4.3))
     axes[0].fill_between(
         PSF_RADII_PIXEL, growth.min(axis=0), growth.max(axis=0),
         color="#93c5fd", alpha=0.55, label=f"range of {len(growth)} PSFs",
@@ -239,7 +249,7 @@ def psf_normalization_sensitivity(
     axes[0].plot(PSF_RADII_PIXEL, np.median(growth, axis=0), "o-", color="black", linewidth=1.3)
     axes[0].set_xscale("log")
     axes[0].set(
-        title=f"{band} STPSF curve of growth",
+        title=f"{band}: encircled energy" if pasa else f"{band} STPSF curve of growth",
         xlabel="Radius (pixel)", ylabel="Encircled energy", ylim=(0.5, 1.01),
     )
     axes[0].legend(frameon=False, fontsize=8)
@@ -247,25 +257,37 @@ def psf_normalization_sensitivity(
     axes[1].axhline(0, color="0.35", linewidth=0.8)
     wavelength = "150" if band == "F150W" else "090"
     axes[1].set(
-        title="Finite stamp-size test",
+        title="129 versus 257 pixels" if pasa else "Finite stamp-size test",
         xlabel="Galaxy",
-        ylabel=rf"$\Delta\overline{{m}}_{{{wavelength}}}$: 129 minus 257 (mag)",
+        ylabel=(rf"$\Delta\overline{{m}}_{{{wavelength}}}$ (mag)" if pasa
+                else rf"$\Delta\overline{{m}}_{{{wavelength}}}$: 129 minus 257 (mag)"),
     )
     axes[1].tick_params(axis="x", rotation=25)
     axes[2].hist(field_shifts, bins=12, color="#8b5cf6", edgecolor="white")
     axes[2].axvline(0, color="black", linewidth=0.8)
     axes[2].set(
-        title="Detector-position sensitivity",
-        xlabel=rf"$\Delta\overline{{m}}_{{{wavelength}}}$ from nominal PSF (mag)",
+        title="Detector position" if pasa else "Detector-position sensitivity",
+        xlabel=(rf"$\Delta\overline{{m}}_{{{wavelength}}}$ (mag)" if pasa
+                else rf"$\Delta\overline{{m}}_{{{wavelength}}}$ from nominal PSF (mag)"),
         ylabel="Number of field PSFs",
     )
     fig.tight_layout()
-    save_figure(fig, stem, output_directory)
+    save_figure(fig, stem, output_directory, pasa=pasa)
 
 
 
-def main():
+def main(argv=None):
     """Построить семь используемых рисунков / Render seven selected diagnostics."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--pasa", action="store_true", help="PASA PDF only; no legacy figures, tables or manifests are changed")
+    args = parser.parse_args(argv)
+    if args.pasa:
+        plt.rcParams.update({
+            "font.family": "DejaVu Sans", "font.size": LABEL_PT,
+            "axes.labelsize": LABEL_PT, "axes.titlesize": TITLE_PT,
+            "xtick.labelsize": TICK_PT, "ytick.labelsize": TICK_PT, "legend.fontsize": TICK_PT,
+            "axes.linewidth": 0.7, "pdf.fonttype": 42,
+        })
     results = {"F150W": {}, "F090W": {}}
     sources = {"F150W": {}, "F090W": {}}
     psf_paths = {"F150W": {}, "F090W": {}}
@@ -302,18 +324,22 @@ def main():
         Patch(color=zone_colors["orange"], label=r"capped at $4\sigma$"),
     ]
     for galaxy in REPRESENTATIVE:
-        fig, axes = plt.subplots(2, 1, figsize=(9.0, 8.0))
+        fig, axes = plt.subplots(2, 1, figsize=(PASA_WIDTH, 5.6) if args.pasa else (9.0, 8.0))
         for ax, band in zip(axes, ("F150W", "F090W")):
             values, thresholds = normalized_values(
                 sources[band][galaxy], results[band][galaxy]["candidate_limits"]
             )
-            draw_histogram(ax, values, thresholds, band)
+            draw_histogram(ax, values, thresholds, band, pasa=args.pasa)
             del values
         axes[0].legend(handles=legend, frameon=False, ncol=2, fontsize=8)
-        fig.suptitle(f"{galaxy}: normalized full-support pixel distributions", fontsize=15)
+        fig.suptitle(
+            f"{galaxy}: normalised full-support pixel distributions" if args.pasa
+            else f"{galaxy}: normalized full-support pixel distributions",
+            fontsize=10 if args.pasa else 15,
+        )
         fig.tight_layout(rect=[0, 0, 1, 0.97])
         stem = galaxy.lower().replace(" ", "_")
-        save_figure(fig, f"{stem}_f150w_f090w_normalized_full_pixel_histograms")
+        save_figure(fig, f"{stem}_f150w_f090w_normalized_full_pixel_histograms", pasa=args.pasa)
 
     settings = (
         ("F150W", ROOT / "runs/F150W/analysis",
@@ -325,11 +351,13 @@ def main():
         make_power_spectrum_comparison(
             results[band]["NGC 1380"], band, analysis / "figures",
             f"ngc_1380_{band.lower()}_pk_fit_comparison",
+            pasa=args.pasa,
         )
         psf_normalization_sensitivity(
             results[band], psf_paths[band], weights[band], band,
             analysis / "tables" / size_table, size_column, analysis / "figures",
             f"go3055_{band.lower()}_psf_normalization_sensitivity",
+            pasa=args.pasa,
         )
     print("Built three paired histograms and two P(k)/PSF comparisons from saved products.")
 
