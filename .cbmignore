@@ -21,7 +21,6 @@ code/.matplotlib/
 *.pickle
 *.sqlite
 *.db
-*.pdf
 *.png
 *.jpg
 *.jpeg
